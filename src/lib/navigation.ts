@@ -7,50 +7,27 @@ export const navigation = [
     ],
   },
   {
-    title: 'Core concepts',
+    title: 'Framework',
     links: [
-      { title: 'Understanding caching', href: '/docs/understanding-caching' },
-      {
-        title: 'Predicting user behavior',
-        href: '/docs/predicting-user-behavior',
-      },
-      { title: 'Basics of time-travel', href: '/docs/basics-of-time-travel' },
-      {
-        title: 'Introduction to string theory',
-        href: '/docs/introduction-to-string-theory',
-      },
-      { title: 'The butterfly effect', href: '/docs/the-butterfly-effect' },
+      { title: 'Lifecycle & DI', href: '/docs/lifecycle' },
+      { title: 'Configuration', href: '/docs/configuration' },
+      { title: 'HTTP routing', href: '/docs/http' },
+      { title: 'SQLite database', href: '/docs/sqlite' },
+      { title: 'Authentication', href: '/docs/auth' },
+      { title: 'Logging', href: '/docs/logging' },
     ],
   },
   {
-    title: 'Advanced guides',
+    title: 'Background processing',
     links: [
-      { title: 'Writing plugins', href: '/docs/writing-plugins' },
-      { title: 'Neuralink integration', href: '/docs/neuralink-integration' },
-      { title: 'Temporal paradoxes', href: '/docs/temporal-paradoxes' },
-      { title: 'Testing', href: '/docs/testing' },
-      { title: 'Compile-time caching', href: '/docs/compile-time-caching' },
-      {
-        title: 'Predictive data generation',
-        href: '/docs/predictive-data-generation',
-      },
+      { title: 'Cron scheduler', href: '/docs/cron' },
+      { title: 'Job queue', href: '/docs/queue' },
     ],
   },
   {
-    title: 'API reference',
+    title: 'Tooling',
     links: [
-      { title: 'CacheAdvance.predict()', href: '/docs/cacheadvance-predict' },
-      { title: 'CacheAdvance.flush()', href: '/docs/cacheadvance-flush' },
-      { title: 'CacheAdvance.revert()', href: '/docs/cacheadvance-revert' },
-      { title: 'CacheAdvance.regret()', href: '/docs/cacheadvance-regret' },
-    ],
-  },
-  {
-    title: 'Contributing',
-    links: [
-      { title: 'How to contribute', href: '/docs/how-to-contribute' },
-      { title: 'Architecture guide', href: '/docs/architecture-guide' },
-      { title: 'Design principles', href: '/docs/design-principles' },
+      { title: 'CLI commands', href: '/docs/cli' },
     ],
   },
 ]

@@ -23,11 +23,11 @@ const lexend = localFont({
 
 export const metadata: Metadata = {
   title: {
-    template: '%s - Docs',
-    default: 'CacheAdvance - Never miss the cache again.',
+    template: '%s - Stanza',
+    default: 'Stanza - AI-native Go framework',
   },
   description:
-    'Cache every single thing your app could ever do ahead of time, so your code never even has to run at all.',
+    'One binary, one SQLite file, one data dir. An AI-native, batteries-included Go framework for shipping fast.',
 }
 
 export default function RootLayout({

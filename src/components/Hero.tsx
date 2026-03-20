@@ -8,18 +8,21 @@ import { HeroBackground } from '@/components/HeroBackground'
 import blurCyanImage from '@/images/blur-cyan.png'
 import blurIndigoImage from '@/images/blur-indigo.png'
 
-const codeLanguage = 'javascript'
-const code = `export default {
-  strategy: 'predictive',
-  engine: {
-    cpus: 12,
-    backups: ['./storage/cache.wtf'],
-  },
-}`
+const codeLanguage = 'go'
+const code = `app := lifecycle.New(
+  lifecycle.Provide(
+    provideConfig,
+    provideDB,
+    provideRouter,
+    provideServer,
+  ),
+  lifecycle.Invoke(registerModules),
+)
+app.Run()`
 
 const tabs = [
-  { name: 'cache-advance.config.js', isActive: true },
-  { name: 'package.json', isActive: false },
+  { name: 'main.go', isActive: true },
+  { name: 'go.mod', isActive: false },
 ]
 
 function TrafficLightsIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
@@ -49,15 +52,15 @@ export function Hero() {
             />
             <div className="relative">
               <p className="inline bg-linear-to-r from-indigo-200 via-sky-400 to-indigo-200 bg-clip-text font-display text-5xl tracking-tight text-transparent">
-                Never miss the cache again.
+                Ship fast. Ship solo.
               </p>
               <p className="mt-3 text-2xl tracking-tight text-slate-400">
-                Cache every single thing your app could ever do ahead of time,
-                so your code never even has to run at all.
+                One binary, one SQLite file, one data dir. An AI-native Go
+                framework for ideas that need to be live by tonight.
               </p>
               <div className="mt-8 flex gap-4 md:justify-center lg:justify-start">
-                <Button href="/">Get started</Button>
-                <Button href="/" variant="secondary">
+                <Button href="/docs/installation">Get started</Button>
+                <Button href="https://github.com/stanza-go" variant="secondary">
                   View on GitHub
                 </Button>
               </div>

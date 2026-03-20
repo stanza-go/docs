@@ -3,72 +3,149 @@ title: Installation
 nextjs:
   metadata:
     title: Installation
-    description: Quidem magni aut exercitationem maxime rerum eos.
+    description: Fork the standalone repo, install dependencies, and start building.
 ---
 
-Quasi sapiente voluptates aut minima non doloribus similique quisquam. In quo expedita ipsum nostrum corrupti incidunt. Et aut eligendi ea perferendis.
+Stanza requires Go 1.26+ and Bun (for frontend tooling). The standalone repo is the starting point — fork it, clone it, and you're ready to build.
 
 ---
 
-## Quis vel iste dicta
+## Prerequisites
 
-Sit commodi iste iure molestias qui amet voluptatem sed quaerat. Nostrum aut pariatur. Sint ipsa praesentium dolor error cumque velit tenetur.
+- **Go 1.26.1+** — [go.dev/dl](https://go.dev/dl/)
+- **Bun** — [bun.sh](https://bun.sh/) (for frontend dev and builds)
+- **GCC or Clang** — Required for CGo (SQLite is compiled from vendored C source)
 
-### Et pariatur ab quas
+On macOS, Xcode Command Line Tools includes Clang. On Linux, install `gcc` or `build-essential`.
 
-Sit commodi iste iure molestias qui amet voluptatem sed quaerat. Nostrum aut pariatur. Sint ipsa praesentium dolor error cumque velit tenetur quaerat exercitationem. Consequatur et cum atque mollitia qui quia necessitatibus.
+---
 
-```js
-/** @type {import('@tailwindlabs/lorem').ipsum} */
-export default {
-  lorem: 'ipsum',
-  dolor: ['sit', 'amet', 'consectetur'],
-  adipiscing: {
-    elit: true,
-  },
-}
+## Fork and clone
+
+```shell
+# Fork stanza-go/standalone on GitHub, then:
+git clone https://github.com/your-org/standalone
+cd standalone
 ```
 
-Possimus saepe veritatis sint nobis et quam eos. Architecto consequatur odit perferendis fuga eveniet possimus rerum cumque. Ea deleniti voluptatum deserunt voluptatibus ut non iste. Provident nam asperiores vel laboriosam omnis ducimus enim nesciunt quaerat. Minus tempora cupiditate est quod.
+The standalone repo contains three projects:
 
-### Natus aspernatur iste
-
-Sit commodi iste iure molestias qui amet voluptatem sed quaerat. Nostrum aut pariatur. Sint ipsa praesentium dolor error cumque velit tenetur quaerat exercitationem. Consequatur et cum atque mollitia qui quia necessitatibus.
-
-Voluptas beatae omnis omnis voluptas. Cum architecto ab sit ad eaque quas quia distinctio. Molestiae aperiam qui quis deleniti soluta quia qui. Dolores nostrum blanditiis libero optio id. Mollitia ad et asperiores quas saepe alias.
-
----
-
-## Quos porro ut molestiae
-
-Sit commodi iste iure molestias qui amet voluptatem sed quaerat. Nostrum aut pariatur. Sint ipsa praesentium dolor error cumque velit tenetur.
-
-### Voluptatem quas possimus
-
-Sit commodi iste iure molestias qui amet voluptatem sed quaerat. Nostrum aut pariatur. Sint ipsa praesentium dolor error cumque velit tenetur quaerat exercitationem. Consequatur et cum atque mollitia qui quia necessitatibus.
-
-Possimus saepe veritatis sint nobis et quam eos. Architecto consequatur odit perferendis fuga eveniet possimus rerum cumque. Ea deleniti voluptatum deserunt voluptatibus ut non iste. Provident nam asperiores vel laboriosam omnis ducimus enim nesciunt quaerat. Minus tempora cupiditate est quod.
-
-### Id vitae minima
-
-Sit commodi iste iure molestias qui amet voluptatem sed quaerat. Nostrum aut pariatur. Sint ipsa praesentium dolor error cumque velit tenetur quaerat exercitationem. Consequatur et cum atque mollitia qui quia necessitatibus.
-
-Voluptas beatae omnis omnis voluptas. Cum architecto ab sit ad eaque quas quia distinctio. Molestiae aperiam qui quis deleniti soluta quia qui. Dolores nostrum blanditiis libero optio id. Mollitia ad et asperiores quas saepe alias.
+```
+standalone/
+├── api/        ← Go backend (port 23710)
+├── admin/      ← React admin panel (port 23705)
+├── ui/         ← Blank frontend canvas (port 23700)
+├── Makefile
+└── Dockerfile
+```
 
 ---
 
-## Vitae laborum maiores
+## Install dependencies
 
-Sit commodi iste iure molestias qui amet voluptatem sed quaerat. Nostrum aut pariatur. Sint ipsa praesentium dolor error cumque velit tenetur.
+```shell
+# Install Go dependencies (includes CGo compilation of SQLite)
+cd api && go mod download && cd ..
 
-### Corporis exercitationem
+# Install frontend dependencies
+cd admin && bun install && cd ..
+cd ui && bun install && cd ..
+```
 
-Sit commodi iste iure molestias qui amet voluptatem sed quaerat. Nostrum aut pariatur. Sint ipsa praesentium dolor error cumque velit tenetur quaerat exercitationem. Consequatur et cum atque mollitia qui quia necessitatibus.
+---
 
-Possimus saepe veritatis sint nobis et quam eos. Architecto consequatur odit perferendis fuga eveniet possimus rerum cumque. Ea deleniti voluptatum deserunt voluptatibus ut non iste. Provident nam asperiores vel laboriosam omnis ducimus enim nesciunt quaerat. Minus tempora cupiditate est quod.
+## Start development
 
-### Reprehenderit magni
+```shell
+make dev
+```
 
-Sit commodi iste iure molestias qui amet voluptatem sed quaerat. Nostrum aut pariatur. Sint ipsa praesentium dolor error cumque velit tenetur quaerat exercitationem. Consequatur et cum atque mollitia qui quia necessitatibus.
+This starts three processes with hot reload:
 
-Voluptas beatae omnis omnis voluptas. Cum architecto ab sit ad eaque quas quia distinctio. Molestiae aperiam qui quis deleniti soluta quia qui. Dolores nostrum blanditiis libero optio id. Mollitia ad et asperiores quas saepe alias.
+| Process | URL | What it does |
+|---------|-----|------|
+| API | `http://localhost:23710` | Go server with file watcher |
+| Admin | `http://localhost:23705` | Vite dev server (proxies `/api/*` to Go) |
+| UI | `http://localhost:23700` | Vite dev server (proxies `/api/*` to Go) |
+
+On first boot, the API server will:
+
+1. Create the data directory at `~/.stanza/`
+2. Create `database.sqlite` with WAL mode enabled
+3. Run all pending migrations
+4. Seed the default admin user: `admin@stanza.dev` / `admin`
+
+{% callout title="Secure cookies" %}
+For local development, set `STANZA_AUTH_SECURE_COOKIES=false` in your environment. Without this, auth cookies won't be sent over plain HTTP.
+{% /callout %}
+
+---
+
+## Build for production
+
+```shell
+make build
+```
+
+This produces a single binary (~7.5MB) with both frontends embedded:
+
+| Path | Serves |
+|------|--------|
+| `/*` | Embedded UI (SPA with client-side routing) |
+| `/admin/*` | Embedded admin panel |
+| `/api/*` | Go API handlers |
+
+---
+
+## Deploy
+
+The repo includes a multi-stage Dockerfile:
+
+```shell
+# Build the image
+docker build -t my-app -f Dockerfile ..
+
+# Run it
+docker run -p 23710:23710 -v app-data:/data my-app
+```
+
+The `DATA_DIR` environment variable controls where the database and logs are stored. Set it to your persistent volume mount point in production.
+
+---
+
+## Project structure
+
+### API (`api/`)
+
+```
+api/
+├── main.go              ← DI wiring, route registration, lifecycle
+├── module/
+│   ├── adminauth/       ← Admin login/logout/status
+│   ├── dashboard/       ← System stats endpoint
+│   ├── adminusers/      ← Admin user CRUD
+│   ├── adminsessions/   ← Session management
+│   ├── admincron/       ← Cron monitoring
+│   ├── adminqueue/      ← Queue monitoring
+│   ├── adminlogs/       ← Log viewer
+│   ├── admindb/         ← Database admin
+│   ├── adminsettings/   ← Settings management
+│   ├── usermgmt/        ← End-user management
+│   ├── apikeys/         ← API key CRUD + validator
+│   ├── userauth/        ← User register/login/logout
+│   ├── userprofile/     ← User profile endpoint
+│   └── health/          ← Health check
+├── migration/           ← Database migrations
+├── datadir/             ← Data directory resolver
+└── seed/                ← Default data seeding
+```
+
+Each module follows the same pattern: `api/module/{name}/{name}.go` with a `Register(group, deps...)` function. The AI reads existing modules as reference and creates new ones the same way.
+
+### Admin (`admin/`)
+
+A React + shadcn/ui app with pre-built pages for every admin feature. Modules are self-contained under `src/pages/`.
+
+### UI (`ui/`)
+
+A blank canvas — a single HTML file served by Vite. No framework, no opinions. Build whatever your idea demands.

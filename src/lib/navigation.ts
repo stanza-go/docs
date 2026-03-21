@@ -14,6 +14,7 @@ export const navigation = [
       { title: 'HTTP routing', href: '/docs/http' },
       { title: 'SQLite database', href: '/docs/sqlite' },
       { title: 'Authentication', href: '/docs/auth' },
+      { title: 'Validation', href: '/docs/validation' },
       { title: 'Email', href: '/docs/email' },
       { title: 'Logging', href: '/docs/logging' },
     ],

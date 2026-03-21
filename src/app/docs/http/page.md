@@ -164,9 +164,11 @@ The middleware chain should be ordered so that each middleware can access contex
 ```go
 router.Use(http.RequestID(http.RequestIDConfig{}))        // 1. assign request ID
 router.Use(http.RequestLogger(logger))                     // 2. log with request ID
-router.Use(http.SecureHeaders(http.SecureHeadersConfig{})) // 3. security headers
-router.Use(http.CORS(corsConfig))                          // 4. CORS
-router.Use(http.Recovery(onPanic))                         // 5. panic recovery
+router.Use(http.Compress(http.CompressConfig{}))           // 3. gzip compression
+router.Use(http.ETag(http.ETagConfig{}))                   // 4. conditional requests
+router.Use(http.SecureHeaders(http.SecureHeadersConfig{})) // 5. security headers
+router.Use(http.CORS(corsConfig))                          // 6. CORS
+router.Use(http.Recovery(onPanic))                         // 7. panic recovery
 ```
 
 ### Built-in middleware
@@ -206,6 +208,73 @@ router.Use(http.RequestLogger(logger))
 ```
 
 5xx responses are logged at Error level, everything else at Info. When `RequestID` middleware runs earlier in the chain, the `request_id` field is automatically included in each log entry.
+
+**Compression** — gzip-compresses responses to reduce transfer size:
+
+```go
+router.Use(http.Compress(http.CompressConfig{}))
+```
+
+Buffers the response body until it exceeds a minimum size threshold (default 1 KB), then checks the `Content-Type` to decide whether to compress. Only text-based content types are compressed — binary formats like images, video, and archives are already compressed and gain nothing from gzip.
+
+The client must advertise `Accept-Encoding: gzip` for compression to activate. When active, the middleware sets `Content-Encoding: gzip` and `Vary: Accept-Encoding`, and removes `Content-Length` since the final size is unknown until gzip finishes.
+
+Uses `sync.Pool` to reuse gzip writers — zero allocations in steady state.
+
+Configuration:
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `Level` | `6` (default compression) | Gzip level 1–9. Higher = smaller output, more CPU |
+| `MinSize` | `1024` | Minimum body size in bytes before compressing |
+| `ContentTypes` | See below | MIME type prefixes eligible for compression |
+
+Default content types compressed:
+
+- `text/*` (HTML, CSS, plain text)
+- `application/json`
+- `application/javascript`
+- `application/xml`
+- `application/xhtml+xml`
+- `image/svg+xml`
+
+Custom configuration example:
+
+```go
+router.Use(http.Compress(http.CompressConfig{
+    Level:   gzip.BestSpeed,       // level 1 — fastest
+    MinSize: 512,                  // compress responses > 512 bytes
+    ContentTypes: []string{        // only compress JSON
+        "application/json",
+    },
+}))
+```
+
+**ETag** — enables conditional requests with `304 Not Modified`:
+
+```go
+router.Use(http.ETag(http.ETagConfig{}))
+```
+
+Computes a CRC32 hash of the response body and sets it as the `ETag` header. When a client sends `If-None-Match` with a matching ETag, the middleware returns `304 Not Modified` with no body, saving bandwidth.
+
+Only applies to `GET` and `HEAD` requests with `2xx` responses that have a body. Responses that already carry an `ETag` header (e.g., from `net/http`'s file server) are passed through unchanged.
+
+Configuration:
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `Weak` | `false` | Produce weak ETags (`W/"..."`) instead of strong ETags |
+
+Weak ETags indicate semantic equivalence rather than byte-for-byte identity. Use them when responses may vary slightly (e.g., different whitespace) but are logically the same:
+
+```go
+router.Use(http.ETag(http.ETagConfig{Weak: true}))
+```
+
+ETag matching follows RFC 7232 §3.2 — weak comparison is used for `If-None-Match`, so `W/"abc"` matches `"abc"`. Comma-separated lists and the `*` wildcard are supported.
+
+**Chain position:** ETag should be placed after Compress so the hash is computed on uncompressed content. This ensures the ETag remains stable regardless of whether the client accepts gzip.
 
 **Security headers** — sets common security headers on all responses:
 

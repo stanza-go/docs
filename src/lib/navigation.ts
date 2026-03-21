@@ -38,6 +38,7 @@ export const navigation = [
       { title: 'Queue jobs', href: '/docs/recipes/queue-jobs' },
       { title: 'Roles & scopes', href: '/docs/recipes/roles-scopes' },
       { title: 'Audit logging', href: '/docs/recipes/audit-logging' },
+      { title: 'Testing', href: '/docs/recipes/testing' },
       { title: 'Deployment', href: '/docs/recipes/deployment' },
     ],
   },

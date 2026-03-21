@@ -36,6 +36,7 @@ export const navigation = [
       { title: 'File uploads', href: '/docs/recipes/file-uploads' },
       { title: 'Custom cron jobs', href: '/docs/recipes/cron-jobs' },
       { title: 'Queue jobs', href: '/docs/recipes/queue-jobs' },
+      { title: 'Roles & scopes', href: '/docs/recipes/roles-scopes' },
       { title: 'Audit logging', href: '/docs/recipes/audit-logging' },
     ],
   },

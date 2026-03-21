@@ -25,6 +25,17 @@ export const navigation = [
     ],
   },
   {
+    title: 'Recipes',
+    links: [
+      { title: 'Adding a module', href: '/docs/recipes/modules' },
+      { title: 'Database migrations', href: '/docs/recipes/migrations' },
+      { title: 'Input validation', href: '/docs/recipes/validation' },
+      { title: 'Custom cron jobs', href: '/docs/recipes/cron-jobs' },
+      { title: 'Queue jobs', href: '/docs/recipes/queue-jobs' },
+      { title: 'Audit logging', href: '/docs/recipes/audit-logging' },
+    ],
+  },
+  {
     title: 'Tooling',
     links: [
       { title: 'CLI commands', href: '/docs/cli' },

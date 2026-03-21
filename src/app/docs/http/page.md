@@ -157,7 +157,47 @@ router.Use(http.Recovery(onPanic))
 admin.Use(auth.RequireAuth())
 ```
 
+### Recommended middleware order
+
+The middleware chain should be ordered so that each middleware can access context set by earlier ones:
+
+```go
+router.Use(http.RequestID(http.RequestIDConfig{}))        // 1. assign request ID
+router.Use(http.RequestLogger(logger))                     // 2. log with request ID
+router.Use(http.SecureHeaders(http.SecureHeadersConfig{})) // 3. security headers
+router.Use(http.CORS(corsConfig))                          // 4. CORS
+router.Use(http.Recovery(onPanic))                         // 5. panic recovery
+```
+
 ### Built-in middleware
+
+**Request ID** — assigns a unique identifier to every request:
+
+```go
+router.Use(http.RequestID(http.RequestIDConfig{}))
+```
+
+Generates a UUID v4 per request and sets it as the `X-Request-ID` response header. If the incoming request already carries `X-Request-ID`, that value is reused (for distributed tracing with upstream proxies).
+
+Access the ID in handlers:
+
+```go
+id := http.GetRequestID(r)
+```
+
+Configuration:
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `Header` | `X-Request-ID` | Header name to read/write |
+| `Generator` | UUID v4 | Custom ID generator function |
+
+```go
+router.Use(http.RequestID(http.RequestIDConfig{
+    Header:    "X-Trace-ID",
+    Generator: func() string { return myCustomID() },
+}))
+```
 
 **Request logging** — logs method, path, status, duration, and response size:
 
@@ -165,7 +205,33 @@ admin.Use(auth.RequireAuth())
 router.Use(http.RequestLogger(logger))
 ```
 
-5xx responses are logged at Error level, everything else at Info.
+5xx responses are logged at Error level, everything else at Info. When `RequestID` middleware runs earlier in the chain, the `request_id` field is automatically included in each log entry.
+
+**Security headers** — sets common security headers on all responses:
+
+```go
+router.Use(http.SecureHeaders(http.SecureHeadersConfig{}))
+```
+
+With zero-value config, it applies safe defaults:
+
+| Header | Default Value |
+|--------|---------------|
+| `X-Content-Type-Options` | `nosniff` |
+| `X-Frame-Options` | `DENY` |
+| `Referrer-Policy` | `strict-origin-when-cross-origin` |
+| `X-XSS-Protection` | `0` (disabled — CSP replaces it) |
+| `Permissions-Policy` | `camera=(), microphone=(), geolocation=()` |
+
+Optional headers enabled via config:
+
+```go
+router.Use(http.SecureHeaders(http.SecureHeadersConfig{
+    HSTSMaxAge:            63072000,                      // 2 years, HTTPS only
+    ContentSecurityPolicy: "default-src 'self'",          // app-specific CSP
+    FrameOptions:          "SAMEORIGIN",                  // allow same-origin framing
+}))
+```
 
 **CORS** — handles cross-origin requests and preflight:
 
@@ -188,6 +254,77 @@ router.Use(http.Recovery(func(recovered any, stack []byte) {
 ```
 
 The callback is optional — pass `nil` to recover silently.
+
+---
+
+## Rate limiting
+
+The `RateLimit` middleware limits requests per key (default: client IP) using a fixed-window counter:
+
+```go
+authGroup.Use(http.RateLimit(http.RateLimitConfig{
+    Limit:  20,
+    Window: time.Minute,
+}))
+```
+
+When the limit is exceeded, it returns `429 Too Many Requests` with a `Retry-After` header.
+
+### Configuration
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `Limit` | `60` | Max requests per window |
+| `Window` | `1 minute` | Time window duration |
+| `KeyFunc` | Client IP | Function to extract the rate limit key |
+| `Message` | `"rate limit exceeded"` | Error message in 429 response |
+
+### Response headers
+
+Every response includes rate limit headers:
+
+| Header | Description |
+|--------|-------------|
+| `X-RateLimit-Limit` | Configured limit |
+| `X-RateLimit-Remaining` | Requests remaining in current window |
+| `X-RateLimit-Reset` | Unix timestamp when the window expires |
+| `Retry-After` | Seconds until retry (only on 429) |
+
+### Custom key function
+
+Rate limit by API key instead of IP:
+
+```go
+router.Use(http.RateLimit(http.RateLimitConfig{
+    Limit:   100,
+    Window:  time.Minute,
+    KeyFunc: func(r *http.Request) string { return r.Header.Get("X-API-Key") },
+}))
+```
+
+### Client IP extraction
+
+The `ClientIP` helper (used by default) extracts the real client IP behind proxies:
+
+```go
+ip := http.ClientIP(r)  // checks X-Forwarded-For, X-Real-IP, then RemoteAddr
+```
+
+### Group-level rate limiting
+
+Apply rate limits to specific route groups (e.g., auth endpoints):
+
+```go
+// Rate limit auth endpoints at 20 req/min per IP
+authGroup := api.Group("")
+authGroup.Use(http.RateLimit(http.RateLimitConfig{
+    Limit:  20,
+    Window: time.Minute,
+}))
+authGroup.HandleFunc("POST /auth/login", loginHandler)
+authGroup.HandleFunc("POST /auth/register", registerHandler)
+authGroup.HandleFunc("POST /auth/forgot-password", forgotHandler)
+```
 
 ---
 

@@ -470,3 +470,166 @@ The package re-exports common HTTP status codes as constants:
 | `StatusTooManyRequests` | 429 |
 | `StatusInternalServerError` | 500 |
 | `StatusServiceUnavailable` | 503 |
+
+---
+
+## WebSocket
+
+The `pkg/http` package includes a zero-dependency RFC 6455 WebSocket implementation for building real-time features.
+
+### Upgrading a connection
+
+Use `Upgrader` to upgrade an HTTP connection to WebSocket:
+
+```go
+upgrader := http.Upgrader{}
+
+func wsHandler(w http.ResponseWriter, r *http.Request) {
+    conn, err := upgrader.Upgrade(w, r)
+    if err != nil {
+        return // Upgrade writes the error response
+    }
+    defer conn.Close()
+
+    for {
+        msgType, data, err := conn.ReadMessage()
+        if err != nil {
+            break // Client disconnected or error
+        }
+        // Echo back
+        conn.WriteMessage(msgType, data)
+    }
+}
+```
+
+The upgrader validates the handshake (method, headers, `Sec-WebSocket-Key`) and writes the `101 Switching Protocols` response. By default, it checks that the `Origin` header matches the `Host` header. Non-browser clients that omit `Origin` are allowed.
+
+### Upgrader configuration
+
+| Field | Default | Description |
+|-------|---------|-------------|
+| `ReadBufferSize` | 4096 | Read buffer size in bytes |
+| `WriteBufferSize` | 4096 | Write buffer size in bytes |
+| `CheckOrigin` | Origin == Host | Function to validate the request origin |
+
+```go
+upgrader := http.Upgrader{
+    ReadBufferSize:  8192,
+    WriteBufferSize: 8192,
+    CheckOrigin: func(r *http.Request) bool {
+        return true // Allow all origins
+    },
+}
+```
+
+### Message types
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `TextMessage` | 1 | UTF-8 text data |
+| `BinaryMessage` | 2 | Binary data |
+
+```go
+// Send a JSON message
+data, _ := json.Marshal(map[string]string{"status": "ok"})
+conn.WriteMessage(http.TextMessage, data)
+
+// Read a message
+msgType, payload, err := conn.ReadMessage()
+if msgType == http.TextMessage {
+    // Handle text
+}
+```
+
+### Control frames
+
+Ping/pong frames are handled automatically — incoming pings are replied with pongs. You can also send them explicitly:
+
+```go
+conn.WritePing([]byte("heartbeat"))
+conn.WritePong([]byte("heartbeat"))
+```
+
+Custom handlers:
+
+```go
+conn.SetPingHandler(func(data []byte) error {
+    fmt.Println("ping received:", string(data))
+    return conn.WritePong(data)
+})
+```
+
+### Connection settings
+
+```go
+// Max incoming message size (default: 16 MB)
+conn.SetMaxMessageSize(1 << 20) // 1 MB
+
+// Timeouts
+conn.SetReadDeadline(time.Now().Add(60 * time.Second))
+conn.SetWriteDeadline(time.Now().Add(10 * time.Second))
+
+// Peer address
+addr := conn.RemoteAddr()
+```
+
+### Closing
+
+```go
+// Simple close
+conn.Close()
+
+// Close with status code and message
+conn.CloseWithMessage(http.CloseNormalClosure, "goodbye")
+```
+
+| Constant | Code | Description |
+|----------|------|-------------|
+| `CloseNormalClosure` | 1000 | Normal closure |
+| `CloseGoingAway` | 1001 | Server shutting down |
+| `CloseProtocolError` | 1002 | Protocol error |
+| `CloseUnsupportedData` | 1003 | Unsupported data type |
+| `CloseInvalidPayload` | 1007 | Invalid UTF-8 in text message |
+| `CloseMessageTooBig` | 1009 | Message exceeds size limit |
+
+### Middleware compatibility
+
+WebSocket connections work through the middleware stack. Each middleware wrapper (`responseRecorder`, `compressWriter`, `etagWriter`) implements `Unwrap() ResponseWriter`, allowing the upgrader to find the underlying `net/http.Hijacker` interface automatically. No special middleware ordering is needed.
+
+### Concurrency model
+
+One reader goroutine and one writer goroutine can operate on the same `Conn` concurrently. All writes (including control frames) are protected by a mutex. A typical pattern:
+
+```go
+conn, _ := upgrader.Upgrade(w, r)
+defer conn.Close()
+
+done := make(chan struct{})
+
+// Reader goroutine — detects disconnection
+go func() {
+    defer close(done)
+    for {
+        _, _, err := conn.ReadMessage()
+        if err != nil {
+            return
+        }
+    }
+}()
+
+// Writer — sends events until client disconnects
+ticker := time.NewTicker(30 * time.Second)
+defer ticker.Stop()
+
+for {
+    select {
+    case <-done:
+        return
+    case event := <-events:
+        data, _ := json.Marshal(event)
+        conn.WriteMessage(http.TextMessage, data)
+    case <-ticker.C:
+        conn.WritePing(nil)
+    }
+}
+```

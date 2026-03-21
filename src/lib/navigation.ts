@@ -37,6 +37,7 @@ export const navigation = [
       { title: 'Custom cron jobs', href: '/docs/recipes/cron-jobs' },
       { title: 'Queue jobs', href: '/docs/recipes/queue-jobs' },
       { title: 'Roles & scopes', href: '/docs/recipes/roles-scopes' },
+      { title: 'Real-time with WebSocket', href: '/docs/recipes/real-time' },
       { title: 'Audit logging', href: '/docs/recipes/audit-logging' },
       { title: 'Testing', href: '/docs/recipes/testing' },
       { title: 'Deployment', href: '/docs/recipes/deployment' },

@@ -127,6 +127,27 @@ c.Close()            // stop the background cleanup goroutine
 
 ---
 
+## Cache stats
+
+`Stats` returns a snapshot of cache performance counters — useful for monitoring hit rates and diagnosing sizing issues:
+
+```go
+s := c.Stats()
+fmt.Println(s.Hits, s.Misses, s.Evictions, s.Size)
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Size` | `int` | Current number of entries |
+| `MaxSize` | `int` | Configured maximum (0 = unlimited) |
+| `Hits` | `int64` | Total cache hits (key found and not expired) |
+| `Misses` | `int64` | Total cache misses (key not found or expired) |
+| `Evictions` | `int64` | Total involuntary removals (TTL expiry + LRU) |
+
+Counters are cumulative since the cache was created. They use `sync/atomic` so `Stats` can be called concurrently without affecting cache performance.
+
+---
+
 ## Thread safety
 
 All methods are safe for concurrent use. Reads use `sync.RWMutex` read locks; writes use full locks. One reader and one writer can operate concurrently on different keys without contention.
@@ -164,6 +185,7 @@ Or create the cache inside a module's `Register` function — it will be garbage
 | `Clear` | `()` | Remove all entries |
 | `Len` | `() int` | Entry count |
 | `Keys` | `() []string` | All keys |
+| `Stats` | `() CacheStats` | Performance counters (hits, misses, evictions, size) |
 | `Close` | `()` | Stop background cleanup |
 
 ---

@@ -22,9 +22,19 @@ q := queue.New(db,
     queue.WithPollInterval(1 * time.Second),   // how often workers check for jobs (default: 1s)
     queue.WithMaxAttempts(3),                   // default retry count (default: 3)
     queue.WithRetryDelay(30 * time.Second),    // base delay between retries (default: 30s)
+    queue.WithDefaultTimeout(5 * time.Minute), // max execution time per job (default: 0 = no timeout)
     queue.WithLogger(logger),
 )
 ```
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `WithWorkers(n)` | `1` | Number of concurrent worker goroutines |
+| `WithPollInterval(d)` | `1s` | How frequently workers check for new jobs |
+| `WithMaxAttempts(n)` | `3` | Default maximum retry count |
+| `WithRetryDelay(d)` | `30s` | Base delay between retries (multiplied by attempt number) |
+| `WithDefaultTimeout(d)` | `0` (none) | Maximum execution time per job before context cancellation |
+| `WithLogger(l)` | `nil` | Logger for queue events |
 
 ---
 
@@ -78,6 +88,16 @@ jobID, err := q.Enqueue(ctx, "send-email", payload,
 jobID, err := q.Enqueue(ctx, "generate-report", payload,
     queue.OnQueue("reports"),
 )
+
+// Enqueue with a per-job timeout (overrides default)
+jobID, err := q.Enqueue(ctx, "generate-report", payload,
+    queue.Timeout(10 * time.Minute),
+)
+
+// Enqueue with timeout explicitly disabled (even if default is set)
+jobID, err := q.Enqueue(ctx, "send-email", payload,
+    queue.Timeout(0),
+)
 ```
 
 ---
@@ -101,6 +121,49 @@ pending → cancelled
 | `cancelled` | Cancelled before execution |
 
 Failed jobs are automatically retried with linear backoff. After all attempts are exhausted, the job moves to `dead`.
+
+---
+
+## Timeouts
+
+Jobs can have a maximum execution time. If a handler does not complete within the timeout, its context is cancelled and the job fails with a timeout error. Timed-out jobs follow the normal retry flow — they are retried if attempts remain, or moved to `dead` if exhausted.
+
+Set a default timeout for all jobs on the queue:
+
+```go
+q := queue.New(db, queue.WithDefaultTimeout(5 * time.Minute))
+```
+
+Override the default for specific jobs at enqueue time:
+
+```go
+// Long-running report gets 30 minutes
+q.Enqueue(ctx, "generate-report", payload, queue.Timeout(30 * time.Minute))
+
+// Quick notification gets 30 seconds
+q.Enqueue(ctx, "send-notification", payload, queue.Timeout(30 * time.Second))
+
+// Explicitly disable timeout for this job (even if default is set)
+q.Enqueue(ctx, "stream-import", payload, queue.Timeout(0))
+```
+
+The timeout is stored per-job in the database and survives process restarts. Handlers should check `ctx.Done()` to detect cancellation — the context is cancelled when the timeout expires, when the queue is stopping, or when `Cancel(id)` is called.
+
+```go
+q.Register("generate-report", func(ctx context.Context, payload []byte) error {
+    for _, batch := range batches {
+        select {
+        case <-ctx.Done():
+            return ctx.Err() // timeout, shutdown, or cancel
+        default:
+        }
+        processBatch(batch)
+    }
+    return nil
+})
+```
+
+The `Job.Timeout` field reports the configured timeout as a `time.Duration`. Zero means no timeout.
 
 ---
 

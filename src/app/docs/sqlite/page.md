@@ -192,6 +192,29 @@ sql, args := sqlite.Insert("settings").
     Build()
 ```
 
+Use `OnConflict()` for upsert — insert a row, or update specific columns if it already exists:
+
+```go
+sql, args := sqlite.Insert("user_settings").
+    Set("user_id", uid).
+    Set("key", k).
+    Set("value", v).
+    Set("created_at", now).
+    Set("updated_at", now).
+    OnConflict(
+        []string{"user_id", "key"},          // conflict columns (unique constraint)
+        []string{"value", "updated_at"},     // columns to update on conflict
+    ).
+    Build()
+
+// Produces:
+// INSERT INTO user_settings (user_id, key, value, created_at, updated_at)
+// VALUES (?, ?, ?, ?, ?)
+// ON CONFLICT(user_id, key) DO UPDATE SET value = excluded.value, updated_at = excluded.updated_at
+```
+
+The first argument lists the columns that form the unique constraint. The second argument lists the columns to update from the attempted insert row (referenced via `excluded.<col>`). `created_at` is intentionally omitted from the update list — it keeps the original value.
+
 ### UPDATE
 
 ```go
@@ -273,6 +296,20 @@ sql, args := sqlite.Delete("items").
     Build()
 // → DELETE FROM items WHERE 1 = 0
 ```
+
+### EscapeLike
+
+`EscapeLike` escapes the special characters `%`, `_`, and `\` in a string so it can be used as a literal search term in a `LIKE` clause with `ESCAPE '\'`. This prevents user input from being interpreted as wildcards:
+
+```go
+search := r.URL.Query().Get("search")
+if search != "" {
+    like := "%" + sqlite.EscapeLike(search) + "%"
+    q.Where("(name LIKE ? ESCAPE '\\' OR email LIKE ? ESCAPE '\\')", like, like)
+}
+```
+
+Wrap the result with `%` for the matching style you need — `%term%` for contains, `term%` for prefix, `%term` for suffix. The function only escapes; it does not add wildcards.
 
 ---
 

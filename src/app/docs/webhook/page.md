@@ -183,6 +183,27 @@ Network errors and request creation failures are returned as wrapped errors. Non
 
 ---
 
+## Client stats
+
+The client tracks cumulative delivery counters using atomic operations. Call `Stats()` for a thread-safe snapshot:
+
+```go
+stats := client.Stats()
+fmt.Println(stats.Sends, stats.Successes, stats.Failures)
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Sends` | `int64` | Total `Send` or `SendWithRetry` calls |
+| `Successes` | `int64` | Deliveries that received a 2xx response |
+| `Failures` | `int64` | Deliveries that received a non-2xx response |
+| `Retries` | `int64` | Retry attempts (only from `SendWithRetry`) |
+| `Errors` | `int64` | Network or request-building errors |
+
+All counters are cumulative since the client was created. `Stats()` is safe to call concurrently from any goroutine.
+
+---
+
 ## API reference
 
 | Function/Method | Signature | Description |
@@ -190,6 +211,7 @@ Network errors and request creation failures are returned as wrapped errors. Non
 | `NewClient` | `(opts ...Option) *Client` | Create a client with options |
 | `Send` | `(ctx, *Delivery) (*Result, error)` | Single delivery attempt |
 | `SendWithRetry` | `(ctx, *Delivery) (*Result, error)` | Delivery with exponential backoff retry |
+| `Stats` | `() ClientStats` | Snapshot of cumulative delivery counters |
 | `Sign` | `(secret, id, timestamp string, body []byte) string` | Compute HMAC-SHA256 signature |
 | `Verify` | `(secret, id, timestamp, signature string, body []byte) bool` | Verify a signature (constant-time) |
 

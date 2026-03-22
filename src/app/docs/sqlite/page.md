@@ -35,6 +35,34 @@ In a Stanza app, the database is wired through the lifecycle — it starts first
 
 ---
 
+## Query logging
+
+Enable query instrumentation by passing a logger. Every query is logged at **Debug** level with its SQL and duration. Queries exceeding the slow threshold are logged at **Warn** level.
+
+```go
+db := sqlite.New("database.sqlite",
+    sqlite.WithLogger(logger.With(log.String("pkg", "sqlite"))),
+    sqlite.WithSlowThreshold(100 * time.Millisecond), // default: 200ms
+)
+```
+
+Output at Debug level:
+
+```json
+{"time":"...","level":"debug","msg":"query","pkg":"sqlite","sql":"SELECT * FROM users WHERE id = ?","duration":"42µs"}
+```
+
+Slow queries and failed queries are logged at Warn level:
+
+```json
+{"time":"...","level":"warn","msg":"slow query","pkg":"sqlite","sql":"SELECT * FROM users","duration":"312ms"}
+{"time":"...","level":"warn","msg":"query failed","pkg":"sqlite","sql":"INSERT INTO ...","duration":"1ms","error":"..."}
+```
+
+Duration includes mutex wait time, so it reflects total time from call to completion — useful for detecting contention. When no logger is configured, there is zero overhead.
+
+---
+
 ## Queries
 
 ### Execute (INSERT, UPDATE, DELETE)

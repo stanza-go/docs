@@ -153,6 +153,24 @@ func TestSendEmail(t *testing.T) {
 
 ---
 
+## Client stats
+
+The client tracks cumulative email delivery counters using atomic operations. Call `Stats()` for a thread-safe snapshot:
+
+```go
+stats := client.Stats()
+fmt.Println(stats.Sent, stats.Errors)
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Sent` | `int64` | Total emails successfully delivered to the API |
+| `Errors` | `int64` | Total failed send attempts (transport errors, non-2xx responses, or decode failures) |
+
+All counters are cumulative since the client was created. `Stats()` is safe to call concurrently from any goroutine.
+
+---
+
 ## Tips
 
 - **Always provide both HTML and Text.** Some email clients prefer plain text, and it improves deliverability.

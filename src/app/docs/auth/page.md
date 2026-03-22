@@ -235,3 +235,22 @@ if !ok {
 | `auth.ErrInvalidToken` | Malformed JWT, bad signature, decode failure |
 | `auth.ErrTokenExpired` | JWT `exp` claim is in the past |
 | `auth.ErrNoToken` | No cookie or Authorization header found |
+
+---
+
+## Auth stats
+
+The auth instance tracks cumulative token counters using atomic operations. Call `Stats()` for a thread-safe snapshot:
+
+```go
+stats := a.Stats()
+fmt.Println(stats.Issued, stats.Accepted, stats.Rejected)
+```
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Issued` | `int64` | Total access tokens successfully created |
+| `Accepted` | `int64` | Total tokens that passed validation |
+| `Rejected` | `int64` | Total tokens that failed validation (expired, malformed, or invalid signature) |
+
+All counters are cumulative since the auth instance was created. `Stats()` is safe to call concurrently from any goroutine.

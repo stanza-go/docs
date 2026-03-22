@@ -211,17 +211,20 @@ The deployment pattern is the same everywhere:
 Since everything is in one directory, backup is trivial:
 
 ```bash
-# Export (creates a zip of the data directory)
+# Database backup (consistent, compacted via VACUUM INTO)
+stanza backup
+
+# Compressed database backup (~10x smaller)
+stanza backup --compress
+
+# Full data directory export (database + logs + uploads + config)
 stanza export
 
-# Import (restores from a zip)
+# Restore from export
 stanza import backup.zip
-
-# Or just copy the directory
-cp -r /data /backup/data-$(date +%Y%m%d)
 ```
 
-The app also creates automatic SQLite backups in `{DATA_DIR}/backups/` before running migrations.
+The `stanza backup` command uses `VACUUM INTO` for a consistent, compacted copy of just the database — safe to run while the app is live. Use `stanza export` when you need everything (uploads, logs, config). The app also creates automatic SQLite backups before running migrations.
 
 ---
 

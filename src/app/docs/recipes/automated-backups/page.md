@@ -172,6 +172,25 @@ This is a separate safety mechanism from the daily cron backup. It ensures you c
 
 ---
 
+## CLI backup
+
+For ad-hoc backups from the command line (e.g., before a manual deploy or maintenance):
+
+```bash
+# Database backup to current directory
+stanza backup
+
+# Compressed (~10x smaller, ideal for offsite transfer)
+stanza backup --compress --output /backups/daily.sqlite.gz
+
+# Custom data directory
+stanza backup --data-dir /data
+```
+
+The `stanza backup` command uses the same `VACUUM INTO` mechanism as the cron job. See the [CLI documentation](/docs/cli#stanza-backup) for all options.
+
+---
+
 ## Monitoring
 
 Both cron jobs are automatically tracked in the `cron_runs` table via the scheduler's `OnComplete` hook. The admin panel's Cron page shows:

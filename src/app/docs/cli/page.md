@@ -275,6 +275,33 @@ The database is opened with `PRAGMA query_only = true` so the command never modi
 | `--no-color` | `false` | Disable colored output |
 | `--data-dir` | — | Override data directory |
 
+### stanza backup
+
+Create a consistent database backup using SQLite's `VACUUM INTO`:
+
+```shell
+stanza backup
+
+# Custom output path
+stanza backup --output /backups/daily.sqlite
+
+# Gzip-compressed backup
+stanza backup --compress
+
+# Both
+stanza backup --output /backups/daily.sqlite.gz --compress
+```
+
+Unlike `stanza export` (which zips the entire data directory), `stanza backup` creates a compacted, self-contained copy of just the database file. `VACUUM INTO` guarantees all WAL data is included — the backup is always consistent, even while the application is running.
+
+With `--compress`, the backup is gzip-compressed after compaction. SQLite databases compress extremely well (often 10x reduction).
+
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--output` | `stanza-backup-{timestamp}.sqlite` | Output file path |
+| `--compress` | `false` | Gzip-compress the backup |
+| `--data-dir` | — | Override data directory |
+
 ---
 
 ### Data directory resolution

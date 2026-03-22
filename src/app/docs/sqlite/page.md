@@ -232,6 +232,24 @@ db.QueryRow(countQ.Build()).Scan(&total)
 
 `CountFrom` copies the table name and all WHERE conditions. It excludes JOINs, ORDER BY, LIMIT, and OFFSET — for LEFT JOINs this is correct because they preserve all rows from the left table.
 
+### db.Count
+
+`db.Count` is a convenience method that combines `CountFrom`, `Build`, `QueryRow`, and `Scan` into a single call. Use it in paginated list handlers to get the total count alongside the query results:
+
+```go
+selectQ := sqlite.Select("id", "name", "email").
+    From("users").
+    Where("deleted_at IS NULL").
+    WhereSearch(search, "name", "email")
+
+total, err := db.Count(selectQ)
+
+sql, args := selectQ.OrderBy("id", "DESC").Limit(50).Offset(0).Build()
+rows, _ := db.Query(sql, args...)
+```
+
+`db.Count` calls `CountFrom` internally, so it inherits the same behavior — table and WHERE conditions are reused, ORDER BY/LIMIT/OFFSET are excluded.
+
 ### INSERT
 
 ```go

@@ -68,7 +68,6 @@ package products
 
 import (
     "strconv"
-    "strings"
     "time"
 
     "github.com/stanza-go/framework/pkg/http"
@@ -111,30 +110,25 @@ type productJSON struct {
 
 Each handler is a closure factory that captures dependencies:
 
-### List with search and pagination
+### List with search, pagination, and sorting
 
 ```go
 func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
-        limit := http.QueryParamInt(r, "limit", 50)
-        offset := http.QueryParamInt(r, "offset", 0)
-        search := r.URL.Query().Get("search")
+        pg := http.ParsePagination(r, 50, 100)
+        col, dir := http.QueryParamSort(r,
+            []string{"id", "name", "price_cents", "is_active", "created_at"},
+            "id", "DESC",
+        )
 
-        countQ := sqlite.Count("products").Where("deleted_at IS NULL")
         selectQ := sqlite.Select("id", "name", "description", "price_cents", "is_active", "created_at", "updated_at").
             From("products").
-            Where("deleted_at IS NULL")
-        if search != "" {
-            like := "%" + escapeLike(search) + "%"
-            countQ.Where("name LIKE ? ESCAPE '\\'", like)
-            selectQ.Where("name LIKE ? ESCAPE '\\'", like)
-        }
+            Where("deleted_at IS NULL").
+            WhereSearch(r.URL.Query().Get("search"), "name", "description")
 
-        var total int
-        sql, args := countQ.Build()
-        _ = db.QueryRow(sql, args...).Scan(&total)
+        total, _ := db.Count(selectQ)
 
-        sql, args = selectQ.OrderBy("id", "DESC").Limit(limit).Offset(offset).Build()
+        sql, args := selectQ.OrderBy(col, dir).Limit(pg.Limit).Offset(pg.Offset).Build()
         rows, err := db.Query(sql, args...)
         if err != nil {
             http.WriteError(w, http.StatusInternalServerError, "failed to list products")
@@ -154,17 +148,12 @@ func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             products = append(products, p)
         }
 
-        http.WriteJSON(w, http.StatusOK, map[string]any{
-            "products": products,
-            "total":    total,
-        })
+        http.PaginatedResponse(w, "products", products, total)
     }
 }
 ```
 
-{% callout title="LIKE injection" %}
-Always escape user input in LIKE clauses with `escapeLike()` and add `ESCAPE '\\'` to the query. This prevents `%` and `_` from being used as wildcards.
-{% /callout %}
+`WhereSearch` handles LIKE escaping automatically — no manual escape helper needed. When the search string is empty, it's a no-op. `db.Count` derives a COUNT query from the SelectBuilder, reusing the same WHERE conditions without duplication. For advanced filter patterns — multi-column search, OR conditions, subquery filters — see the [Search & filtering](/docs/recipes/search-filtering) recipe.
 
 ### Create with validation
 
@@ -377,19 +366,6 @@ func deleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 }
 ```
 
-### LIKE escape helper
-
-```go
-func escapeLike(s string) string {
-    s = strings.ReplaceAll(s, `\`, `\\`)
-    s = strings.ReplaceAll(s, `%`, `\%`)
-    s = strings.ReplaceAll(s, `_`, `\_`)
-    return s
-}
-```
-
----
-
 ## Step 5: Wire into main.go
 
 In `registerModules()`, import and mount the module:
@@ -444,6 +420,6 @@ Run with `go test -race ./module/products/`.
 | Closure-based handlers | Factory functions capture dependencies |
 | Soft deletes | `deleted_at` field, `WHERE deleted_at IS NULL` |
 | Booleans as integers | SQLite has no bool — use `INTEGER` with 0/1 |
-| Timestamps as text | `"2006-01-02T15:04:05Z"` format in UTC |
+| Timestamps as text | `time.RFC3339` format in UTC |
 | Pre-allocated empty slices | `make([]T, 0)` not `nil` — matters for JSON |
 | Audit logging | Call `adminaudit.Log()` after every mutation |

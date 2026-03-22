@@ -257,17 +257,17 @@ func exportHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         }
         defer rows.Close()
 
-        http.WriteCSV(w, "users", []string{"ID", "Name", "Email", "Created"}, rows,
-            func(rows *sqlite.Rows) []string {
-                var id int64
-                var name, email string
-                var createdAt int64
-                rows.Scan(&id, &name, &email, &createdAt)
-                return []string{
-                    strconv.FormatInt(id, 10), name, email,
-                    time.Unix(createdAt, 0).UTC().Format(time.RFC3339),
-                }
-            })
+        http.WriteCSV(w, "users", []string{"ID", "Name", "Email", "Created"}, func() []string {
+            if !rows.Next() {
+                return nil
+            }
+            var id int64
+            var name, email, createdAt string
+            if err := rows.Scan(&id, &name, &email, &createdAt); err != nil {
+                return nil
+            }
+            return []string{strconv.FormatInt(id, 10), name, email, createdAt}
+        })
     }
 }
 ```

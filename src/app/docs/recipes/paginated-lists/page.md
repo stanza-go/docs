@@ -163,28 +163,17 @@ func exportHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         }
         defer rows.Close()
 
-        w.Header().Set("Content-Type", "text/csv")
-        w.Header().Set("Content-Disposition",
-            fmt.Sprintf("attachment; filename=users-%s.csv",
-                time.Now().UTC().Format("20060102")))
-
-        cw := csv.NewWriter(w)
-        _ = cw.Write([]string{"ID", "Name", "Email", "Role", "Created At"})
-
-        for rows.Next() {
-            var id int64
-            var name, email, role string
-            var createdAt int64
-            if err := rows.Scan(&id, &name, &email, &role, &createdAt); err != nil {
-                break
+        http.WriteCSV(w, "users", []string{"ID", "Name", "Email", "Role", "Created At"}, func() []string {
+            if !rows.Next() {
+                return nil
             }
-            _ = cw.Write([]string{
-                strconv.FormatInt(id, 10),
-                name, email, role,
-                time.Unix(createdAt, 0).UTC().Format(time.RFC3339),
-            })
-        }
-        cw.Flush()
+            var id int64
+            var name, email, role, createdAt string
+            if err := rows.Scan(&id, &name, &email, &role, &createdAt); err != nil {
+                return nil
+            }
+            return []string{strconv.FormatInt(id, 10), name, email, role, createdAt}
+        })
     }
 }
 ```

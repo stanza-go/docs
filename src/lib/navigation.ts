@@ -51,6 +51,7 @@ export const navigation = [
       { title: 'User settings', href: '/docs/recipes/user-settings' },
       { title: 'User activity log', href: '/docs/recipes/user-activity' },
       { title: 'Paginated lists', href: '/docs/recipes/paginated-lists' },
+      { title: 'Bulk operations', href: '/docs/recipes/bulk-operations' },
       { title: 'Automated backups', href: '/docs/recipes/automated-backups' },
       { title: 'Audit logging', href: '/docs/recipes/audit-logging' },
       { title: 'Custom middleware', href: '/docs/recipes/custom-middleware' },

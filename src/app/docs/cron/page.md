@@ -130,6 +130,25 @@ Each `Entry` is a snapshot containing:
 | `NextRun` | `time.Time` | When the job will next run |
 | `LastErr` | `error` | Error from the last execution |
 
+### Scheduler stats
+
+```go
+stats := scheduler.Stats()
+fmt.Printf("completed=%d failed=%d skipped=%d\n",
+    stats.Completed, stats.Failed, stats.Skipped)
+```
+
+`SchedulerStats` holds cumulative counters since the scheduler was created:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Jobs` | `int` | Total registered jobs |
+| `Completed` | `int64` | Successful executions |
+| `Failed` | `int64` | Executions that returned an error or panicked |
+| `Skipped` | `int64` | Times a due job was skipped because it was still running |
+
+Counters use `sync/atomic` internally — `Stats()` is safe to call from any goroutine.
+
 ### Enable and disable jobs
 
 ```go

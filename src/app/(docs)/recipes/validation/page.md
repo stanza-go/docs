@@ -67,7 +67,9 @@ func createHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 | `MinLen(field, value, min)` | At least `min` characters (skips empty) |
 | `MaxLen(field, value, max)` | At most `max` characters |
 | `Email(field, value)` | Basic email format check (skips empty) |
+| `URL(field, value)` | Valid HTTP/HTTPS URL (skips empty) |
 | `OneOf(field, value, ...allowed)` | Value is one of the allowed strings (skips empty) |
+| `FutureDate(field, value)` | Valid RFC 3339 timestamp in the future (skips empty) |
 | `Positive(field, value)` | Integer greater than zero |
 | `InRange(field, value, min, max)` | Integer within `[min, max]` inclusive |
 | `Check(field, ok, message)` | Custom check — if `ok` is false, returns the message |
@@ -101,6 +103,21 @@ v := validate.Fields(
     validate.Check("quantity", req.Quantity <= stock, "exceeds available stock"),
 )
 ```
+
+---
+
+## Optional date fields
+
+Use `FutureDate` for optional expiration or scheduling fields. It validates the RFC 3339 format and rejects past dates in one call:
+
+```go
+v := validate.Fields(
+    validate.Required("name", req.Name),
+    validate.FutureDate("expires_at", req.ExpiresAt),
+)
+```
+
+If `expires_at` is empty, `FutureDate` passes (use `Required` if presence is mandatory). If provided, it must be parseable and in the future — otherwise the user sees `"must be a valid ISO 8601 date"` or `"must be a date in the future"`.
 
 ---
 

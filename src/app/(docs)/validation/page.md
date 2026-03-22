@@ -94,6 +94,16 @@ validate.OneOf("role", req.Role, "admin", "viewer", "editor")
 // → "must be one of: admin, viewer, editor"
 ```
 
+### FutureDate
+
+Checks that a string is a valid RFC 3339 timestamp in the future. Skips empty strings.
+
+```go
+validate.FutureDate("expires_at", req.ExpiresAt)
+// → "must be a valid ISO 8601 date" (if unparseable)
+// → "must be a date in the future" (if in the past)
+```
+
 ### Positive
 
 Checks that an integer is greater than zero.
@@ -133,6 +143,7 @@ validate.Check("quantity", req.Quantity <= stock, "exceeds available stock")
 | `Email` | `(field, value string)` | Yes | `must be a valid email address` |
 | `URL` | `(field, value string)` | Yes | `must be a valid URL` |
 | `OneOf` | `(field, value string, ...allowed)` | Yes | `must be one of: a, b, c` |
+| `FutureDate` | `(field, value string)` | Yes | `must be a valid ISO 8601 date` / `must be a date in the future` |
 | `Positive` | `(field string, value int)` | — | `must be a positive number` |
 | `InRange` | `(field string, value, min, max int)` | — | `must be between N and M` |
 | `Check` | `(field string, ok bool, message string)` | — | Custom message |

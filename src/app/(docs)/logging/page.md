@@ -86,6 +86,35 @@ Child loggers share the parent's writer and mutex, so writes are serialized.
 
 ---
 
+## Request-scoped logging
+
+Store a logger in a request's context so that handler-level log entries automatically include the request ID:
+
+```go
+// NewContext stores a logger in a context.
+ctx = log.NewContext(ctx, logger)
+
+// FromContext retrieves it. Returns nil if no logger is present.
+l := log.FromContext(ctx)
+```
+
+The `http.RequestLogger` middleware does this automatically — it creates a child logger with the `request_id` field and stores it in the request context. Handlers retrieve it with `log.FromContext`:
+
+```go
+func createUser(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        l := log.FromContext(r.Context())
+
+        // Every log entry from l includes {"request_id":"..."}
+        l.Error("create user failed", log.Err(err))
+    }
+}
+```
+
+This correlates handler errors with the specific HTTP request in the logs — essential for production debugging.
+
+---
+
 ## File rotation
 
 Write logs to files with automatic rotation by date or size:

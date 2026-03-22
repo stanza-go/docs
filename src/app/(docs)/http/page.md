@@ -272,6 +272,17 @@ router.Use(http.RequestLogger(logger))
 
 5xx responses are logged at Error level, everything else at Info. When `RequestID` middleware runs earlier in the chain, the `request_id` field is automatically included in each log entry.
 
+`RequestLogger` also stores a request-scoped child logger (with `request_id` pre-set) in the request context. Handlers retrieve it with `log.FromContext` so that every log entry from a handler is correlated with the HTTP request:
+
+```go
+func myHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        l := log.FromContext(r.Context())
+        // l.Error(...) automatically includes request_id
+    }
+}
+```
+
 **Compression** — gzip-compresses responses to reduce transfer size:
 
 ```go

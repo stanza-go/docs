@@ -257,12 +257,14 @@ http.WriteError(w, http.StatusInternalServerError, "failed to create user")
 http.WriteError(w, http.StatusInternalServerError, err.Error())
 ```
 
-For sensitive operations (token generation, encryption), log the real error and return a generic message:
+For sensitive operations (token generation, encryption), log the real error and return a generic message. Use `log.FromContext` so the error is automatically correlated with the HTTP request:
 
 ```go
+l := log.FromContext(r.Context())
+
 token, err := a.IssueAccessToken(uid, scopes)
 if err != nil {
-    logger.Error("issue access token", log.String("error", err.Error()))
+    l.Error("issue access token", log.String("error", err.Error()))
     http.WriteError(w, http.StatusInternalServerError, "internal error")
     return
 }

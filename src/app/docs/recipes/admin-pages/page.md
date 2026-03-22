@@ -8,7 +8,7 @@ nextjs:
 
 This recipe walks through creating a new admin page from scratch — a "Products" page with a data table, search, sort, pagination, CRUD modals, bulk actions, and CSV export. This is the frontend counterpart of the [Adding a module](/docs/recipes/modules) recipe.
 
-The admin panel lives in `admin-next/` and uses React, Mantine UI, and React Router.
+The admin panel lives in `admin/` and uses React, Mantine UI, and React Router.
 
 ---
 
@@ -26,7 +26,7 @@ Every admin page follows the same pattern:
 
 ## Step 1: Create the page component
 
-Create `admin-next/src/pages/products.tsx`:
+Create `admin/src/pages/products.tsx`:
 
 ```tsx
 import { useCallback, useEffect, useState } from "react";
@@ -354,7 +354,7 @@ Use Mantine `Modal` with `useForm` for create and edit. Use a simple confirmatio
 
 ## Step 5: Register the route
 
-In `admin-next/src/App.tsx`, add the lazy import and route:
+In `admin/src/App.tsx`, add the lazy import and route:
 
 ```tsx
 const ProductsPage = lazy(() => import("@/pages/products"));
@@ -363,7 +363,7 @@ const ProductsPage = lazy(() => import("@/pages/products"));
 <Route path="/products" element={<Suspense fallback={L}><ProductsPage /></Suspense>} />
 ```
 
-Then add a navigation entry in `admin-next/src/components/layout/shell.tsx`:
+Then add a navigation entry in `admin/src/components/layout/shell.tsx`:
 
 ```tsx
 { label: "Products", icon: IconPackage, href: "/products" }

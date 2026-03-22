@@ -319,16 +319,34 @@ sql, args := sqlite.Delete("items").
 // → DELETE FROM items WHERE 1 = 0
 ```
 
-### EscapeLike
+### WhereSearch
 
-`EscapeLike` escapes the special characters `%`, `_`, and `\` in a string so it can be used as a literal search term in a `LIKE` clause with `ESCAPE '\'`. This prevents user input from being interpreted as wildcards:
+`WhereSearch` adds a multi-column contains-search condition. It escapes the search term, wraps it in `%` for contains matching, and OR's across the specified columns. If the search string is empty, the condition is skipped (no-op). Available on all four query builders:
 
 ```go
 search := r.URL.Query().Get("search")
-if search != "" {
-    like := "%" + sqlite.EscapeLike(search) + "%"
-    q.Where("(name LIKE ? ESCAPE '\\' OR email LIKE ? ESCAPE '\\')", like, like)
-}
+
+q := sqlite.Select("id", "email", "name").
+    From("users").
+    Where("deleted_at IS NULL").
+    WhereSearch(search, "email", "name")
+// → WHERE deleted_at IS NULL AND (email LIKE '%term%' ESCAPE '\' OR name LIKE '%term%' ESCAPE '\')
+```
+
+Works with table-prefixed columns for JOIN queries:
+
+```go
+q.WhereSearch(search, "audit_log.details", "audit_log.action")
+```
+
+### EscapeLike
+
+`EscapeLike` escapes the special characters `%`, `_`, and `\` in a string so it can be used as a literal search term in a `LIKE` clause with `ESCAPE '\'`. This prevents user input from being interpreted as wildcards. For multi-column search, prefer `WhereSearch` which calls `EscapeLike` internally:
+
+```go
+// Single-column LIKE with custom pattern (prefix match):
+like := sqlite.EscapeLike(search) + "%"
+q.Where("name LIKE ? ESCAPE '\\'", like)
 ```
 
 Wrap the result with `%` for the matching style you need — `%term%` for contains, `term%` for prefix, `%term` for suffix. The function only escapes; it does not add wildcards.

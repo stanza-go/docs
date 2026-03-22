@@ -258,6 +258,28 @@ sql, args := sqlite.Delete("sessions").
 result, err := db.Exec(sql, args...)
 ```
 
+### WhereNull / WhereNotNull
+
+`WhereNull` and `WhereNotNull` add `IS NULL` and `IS NOT NULL` conditions. Available on all four query builders — `Select`, `Count`, `Update`, and `Delete`:
+
+```go
+// Find users who haven't been soft-deleted
+sql, args := sqlite.Select("id", "name", "email").
+    From("users").
+    WhereNull("deleted_at").
+    Build()
+// → SELECT id, name, email FROM users WHERE deleted_at IS NULL
+```
+
+```go
+// Purge read notifications older than 30 days
+sql, args := sqlite.Delete("notifications").
+    WhereNotNull("read_at").
+    Where("created_at < ?", cutoff).
+    Build()
+// → DELETE FROM notifications WHERE read_at IS NOT NULL AND created_at < ?
+```
+
 ### WhereIn
 
 `WhereIn` adds a type-safe `IN (?, ?, ...)` condition. It is available on all four query builders — `Select`, `Count`, `Update`, and `Delete`. It automatically generates the correct number of placeholders and can be mixed with regular `Where` calls:

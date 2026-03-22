@@ -266,6 +266,45 @@ sql, args := sqlite.Select(
 
 The helpers are simple string formatters — `Sum("amount")` returns `"SUM(amount)"`, `As(expr, alias)` returns `"expr AS alias"`. Use them directly in `Select` columns anywhere you'd write a raw aggregate expression.
 
+### COALESCE — handling NULL columns
+
+`Coalesce(column, fallback)` returns a `COALESCE(column, fallback)` expression. The fallback is a raw SQL literal:
+
+```go
+sql, args := sqlite.Select("id", sqlite.Coalesce("deleted_at", "''")).
+    From("users").
+    Build()
+// → SELECT id, COALESCE(deleted_at, '') FROM users
+```
+
+`CoalesceEmpty(column)` is a convenience for the most common pattern — converting `NULL` to an empty string. Use it when scanning nullable TEXT columns into Go strings:
+
+```go
+sql, args := sqlite.Select("id", "name",
+        sqlite.CoalesceEmpty("last_used_at"),
+        sqlite.CoalesceEmpty("expires_at"),
+        sqlite.CoalesceEmpty("revoked_at"),
+    ).
+    From("api_keys").
+    Build()
+// → SELECT id, name, COALESCE(last_used_at, ''), COALESCE(expires_at, ''), COALESCE(revoked_at, '') FROM api_keys
+```
+
+`CoalesceEmpty` works with table-qualified columns in JOINs:
+
+```go
+sqlite.Select("rt.id", sqlite.CoalesceEmpty("a.email"), sqlite.CoalesceEmpty("a.name")).
+    From("refresh_tokens rt").
+    LeftJoin("admins a", "rt.entity_id = CAST(a.id AS TEXT)")
+```
+
+For non-string fallbacks, use `Coalesce` directly:
+
+```go
+sqlite.Coalesce("score", "0")     // NULL → 0
+sqlite.Coalesce("name", "'N/A'")  // NULL → 'N/A'
+```
+
 ### COUNT
 
 ```go

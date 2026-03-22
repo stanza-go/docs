@@ -261,7 +261,7 @@ func recentHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
         sql, args := sqlite.Select(
             "audit_log.id", "audit_log.admin_id",
-            "COALESCE(admins.email, '')", "COALESCE(admins.name, '')",
+            sqlite.CoalesceEmpty("admins.email"), sqlite.CoalesceEmpty("admins.name"),
             "audit_log.action", "audit_log.entity_type", "audit_log.entity_id",
             "audit_log.details", "audit_log.ip_address", "audit_log.created_at",
         ).From("audit_log").
@@ -308,7 +308,7 @@ For domain-specific activity (e.g., "recent orders"), follow the same pattern wi
 admin.HandleFunc("GET /orders/recent", func(w http.ResponseWriter, r *http.Request) {
     sql, args := sqlite.Select(
         "orders.id", "orders.status",
-        "COALESCE(users.name, users.email)", "orders.total_cents",
+        sqlite.Coalesce("users.name", "users.email"), "orders.total_cents",
         "orders.created_at",
     ).From("orders").
         LeftJoin("users", "users.id = orders.user_id").
@@ -708,6 +708,6 @@ The key design: only the main stats endpoint failure shows an error state. Chart
 - **Cache by TTL, not by invalidation.** Don't try to invalidate the dashboard cache when data changes. A 30-second TTL means the dashboard is at most 30 seconds stale — good enough for monitoring. Cache invalidation adds complexity for no practical benefit here.
 - **Format on the frontend, not the API.** Return raw values (bytes, cents, seconds) from the API. Let the frontend format them (`formatBytes`, currency formatting, `timeAgo`). This keeps the API clean and the frontend flexible.
 - **Charts are non-critical.** If a chart query fails or returns empty data, the dashboard still works. Don't let chart errors block the main stats render.
-- **Use `COALESCE` in joins.** When joining tables for display (e.g., `audit_log` → `admins`), always `COALESCE` nullable fields to empty strings. This prevents `null` values from leaking into your JSON response.
+- **Use `CoalesceEmpty` in joins.** When joining tables for display (e.g., `audit_log` → `admins`), always wrap nullable fields with `sqlite.CoalesceEmpty("col")` to convert NULL to empty strings. This prevents `null` values from leaking into your JSON response.
 - **Limit activity feeds.** Hard-limit to 10 entries. Don't paginate. The dashboard shows a snapshot — link to the full audit log page for historical data.
 - **Keep chart rendering minimal.** Disable axes (`withXAxis={false}`, `withYAxis={false}`), dots, and grid lines for dashboard-sized charts. These decorations make sense in full-page chart views but add visual noise in small dashboard cards.

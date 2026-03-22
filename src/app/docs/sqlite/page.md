@@ -30,7 +30,7 @@ if err := db.Start(ctx); err != nil {
 defer db.Stop(ctx)
 ```
 
-`Start` opens **1 write connection** and a **pool of read connections** (default 4), applying default PRAGMAs to all (WAL mode, memory-mapped I/O, optimized cache). The read pool lets multiple HTTP requests query the database simultaneously — each `Query` takes a connection from the pool, and `Rows.Close` returns it. Writes (`Exec`, transactions) use the dedicated write connection. `Stop` drains and closes all pool connections, then the write connection.
+`Start` opens **1 write connection** and a **pool of read connections** (default 4), applying default PRAGMAs to all (WAL mode, memory-mapped I/O, optimized cache). The read pool lets multiple HTTP requests query the database simultaneously — each `Query` takes a connection from the pool, and `Rows.Close` returns it. Writes (`Exec`, transactions) use the dedicated write connection. `Stop` signals pool operations to stop, waits for all checked-out connections to be returned, then drains and closes everything — safe even if queries are still in-flight during shutdown.
 
 Use `WithReadPoolSize(n)` to tune the pool size. The default of 4 handles typical web workloads well. Increase it if profiling shows read contention under high concurrency.
 

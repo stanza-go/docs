@@ -196,6 +196,36 @@ sql, args := sqlite.Select("status", "type", "COUNT(*) AS total", "AVG(duration)
     Build()
 ```
 
+`Distinct` eliminates duplicate rows from the result set:
+
+```go
+sql, args := sqlite.Select("role").
+    From("users").
+    Distinct().
+    Where("active = ?", true).
+    Build()
+// → SELECT DISTINCT role FROM users WHERE active = ?
+```
+
+Aggregate column helpers — `Sum`, `Avg`, `Min`, `Max` — return formatted SQL expressions for use in `Select` columns. Combine with `As` for aliased columns:
+
+```go
+sql, args := sqlite.Select(
+        "status",
+        sqlite.As(sqlite.Sum("amount"), "total"),
+        sqlite.As(sqlite.Avg("duration"), "avg_dur"),
+        sqlite.As(sqlite.Min("created_at"), "earliest"),
+        sqlite.As(sqlite.Max("created_at"), "latest"),
+    ).
+    From("orders").
+    Where("created_at > ?", since).
+    GroupBy("status").
+    Having("SUM(amount) > ?", 100).
+    Build()
+```
+
+The helpers are simple string formatters — `Sum("amount")` returns `"SUM(amount)"`, `As(expr, alias)` returns `"expr AS alias"`. Use them directly in `Select` columns anywhere you'd write a raw aggregate expression.
+
 ### COUNT
 
 ```go

@@ -109,6 +109,29 @@ sql, args := sqlite.Select("u.id", "u.name", "r.name AS role").
     Build()
 ```
 
+Aggregation with `GroupBy` and `Having`:
+
+```go
+sql, args := sqlite.Select("DATE(created_at, 'unixepoch') AS day", "COUNT(*) AS count").
+    From("users").
+    Where("created_at > ?", since).
+    GroupBy("day").
+    Having("COUNT(*) > ?", 10).
+    OrderBy("day", "ASC").
+    Build()
+```
+
+`GroupBy` accepts variadic columns — pass multiple at once or chain calls. Multiple `Having` calls are joined with AND:
+
+```go
+sql, args := sqlite.Select("status", "type", "COUNT(*) AS total", "AVG(duration) AS avg_dur").
+    From("jobs").
+    GroupBy("status", "type").
+    Having("COUNT(*) > ?", 5).
+    Having("AVG(duration) < ?", 1000).
+    Build()
+```
+
 ### COUNT
 
 ```go
@@ -181,6 +204,27 @@ sql, args := sqlite.Update("users").
 result, err := db.Exec(sql, args...)
 ```
 
+Use `SetExpr` for computed assignments that use raw SQL expressions:
+
+```go
+// Increment a counter
+sql, args := sqlite.Update("api_keys").
+    SetExpr("request_count", "request_count + 1").
+    Set("last_used_at", time.Now().Unix()).
+    Where("id = ?", keyID).
+    Build()
+```
+
+```go
+// Add a parameterized value
+sql, args := sqlite.Update("wallets").
+    SetExpr("balance", "balance + ?", amount).
+    Where("id = ?", walletID).
+    Build()
+```
+
+`Set` and `SetExpr` can be mixed freely in the same builder. `Set` is for literal values, `SetExpr` is for expressions.
+
 ### DELETE
 
 ```go
@@ -189,6 +233,45 @@ sql, args := sqlite.Delete("sessions").
     Build()
 
 result, err := db.Exec(sql, args...)
+```
+
+### WhereIn
+
+`WhereIn` adds a type-safe `IN (?, ?, ...)` condition. It is available on all four query builders — `Select`, `Count`, `Update`, and `Delete`. It automatically generates the correct number of placeholders and can be mixed with regular `Where` calls:
+
+```go
+// Select by multiple IDs
+sql, args := sqlite.Select("id", "name", "email").
+    From("users").
+    WhereIn("id", 1, 2, 3).
+    Build()
+// → SELECT id, name, email FROM users WHERE id IN (?, ?, ?)
+```
+
+```go
+// Bulk delete with additional filter
+sql, args := sqlite.Delete("sessions").
+    Where("entity_type = ?", "admin").
+    WhereIn("id", sessionIDs...).
+    Build()
+```
+
+```go
+// Bulk update
+sql, args := sqlite.Update("notifications").
+    Set("read_at", time.Now().Unix()).
+    WhereIn("id", ids...).
+    Build()
+```
+
+If `values` is empty, `WhereIn` produces `1 = 0` (always false) instead of invalid SQL. This is safe to use without checking the slice length first:
+
+```go
+// Empty slice → WHERE 1 = 0 → zero rows affected
+sql, args := sqlite.Delete("items").
+    WhereIn("id").  // no values
+    Build()
+// → DELETE FROM items WHERE 1 = 0
 ```
 
 ---

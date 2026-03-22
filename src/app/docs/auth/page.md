@@ -230,6 +230,9 @@ claims.Valid()
 
 // Check for a specific scope
 claims.HasScope("admin")
+
+// Parse UID as int64 (returns 0 if invalid)
+userID := claims.IntUID()
 ```
 
 Extract claims from request context (set by middleware):

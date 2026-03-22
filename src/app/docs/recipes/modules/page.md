@@ -229,9 +229,8 @@ func createHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 ```go
 func getHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
-        id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-        if err != nil {
-            http.WriteError(w, http.StatusBadRequest, "invalid product id")
+        id, ok := http.PathParamInt64(w, r, "id")
+        if !ok {
             return
         }
 
@@ -265,9 +264,8 @@ type updateRequest struct {
 
 func updateHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
-        id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-        if err != nil {
-            http.WriteError(w, http.StatusBadRequest, "invalid product id")
+        id, ok := http.PathParamInt64(w, r, "id")
+        if !ok {
             return
         }
 
@@ -349,9 +347,8 @@ func updateHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 ```go
 func deleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
-        id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-        if err != nil {
-            http.WriteError(w, http.StatusBadRequest, "invalid product id")
+        id, ok := http.PathParamInt64(w, r, "id")
+        if !ok {
             return
         }
 

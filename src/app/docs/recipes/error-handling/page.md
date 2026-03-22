@@ -76,10 +76,9 @@ if err := http.ReadJSON(r, &req); err != nil {
     return
 }
 
-// Bad path parameter
-id, err := strconv.ParseInt(r.PathValue("id"), 10, 64)
-if err != nil {
-    http.WriteError(w, http.StatusBadRequest, "invalid user id")
+// Bad path parameter — writes 400 and returns false if invalid
+id, ok := http.PathParamInt64(w, r, "id")
+if !ok {
     return
 }
 ```

@@ -43,6 +43,18 @@ router.HandleFunc("GET /api/users/{id}", func(w http.ResponseWriter, r *http.Req
 })
 ```
 
+For integer path parameters, `PathParamInt64` parses the value and writes a 400 error if invalid:
+
+```go
+router.HandleFunc("GET /api/users/{id}", func(w http.ResponseWriter, r *http.Request) {
+    id, ok := http.PathParamInt64(w, r, "id")
+    if !ok {
+        return // 400 response already written
+    }
+    // id is int64
+})
+```
+
 ---
 
 ## Query parameters

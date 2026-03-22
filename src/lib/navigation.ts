@@ -38,6 +38,7 @@ export const navigation = [
       { title: 'Database migrations', href: '/docs/recipes/migrations' },
       { title: 'Database schema design', href: '/docs/recipes/schema-design' },
       { title: 'Database transactions', href: '/docs/recipes/transactions' },
+      { title: 'Data encryption', href: '/docs/recipes/data-encryption' },
       { title: 'Input validation', href: '/docs/recipes/validation' },
       { title: 'Password reset', href: '/docs/recipes/password-reset' },
       { title: 'Sending emails', href: '/docs/recipes/sending-emails' },

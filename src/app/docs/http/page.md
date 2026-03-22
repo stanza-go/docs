@@ -662,6 +662,36 @@ All counters are atomic — safe to read from any goroutine without synchronizat
 
 ---
 
+## Prometheus metrics
+
+`PrometheusHandler` returns a handler that renders metrics in [Prometheus text exposition format](https://prometheus.io/docs/instrumenting/exposition_formats/#text-based-format). Pass a collector function that gathers metrics on each scrape:
+
+```go
+router.HandleFunc("GET /metrics", http.PrometheusHandler(func() []http.PrometheusMetric {
+    dbStats := db.Stats()
+    httpStats := metrics.Stats()
+    return []http.PrometheusMetric{
+        {Name: "myapp_db_reads_total", Help: "Total read queries", Type: "counter", Value: float64(dbStats.TotalReads)},
+        {Name: "myapp_db_writes_total", Help: "Total write queries", Type: "counter", Value: float64(dbStats.TotalWrites)},
+        {Name: "myapp_http_requests_total", Help: "Total HTTP requests", Type: "counter", Value: float64(httpStats.TotalRequests)},
+        {Name: "myapp_http_requests_active", Help: "In-flight requests", Type: "gauge", Value: float64(httpStats.ActiveRequests)},
+    }
+}))
+```
+
+Each `PrometheusMetric` has four fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Name` | `string` | Metric name (e.g. `myapp_http_requests_total`) |
+| `Help` | `string` | One-line description |
+| `Type` | `string` | `"counter"` (monotonically increasing) or `"gauge"` (point-in-time) |
+| `Value` | `float64` | Current value |
+
+The handler sets `Content-Type: text/plain; version=0.0.4` as required by the Prometheus scrape protocol. See the [observability recipe](/docs/recipes/observability) for a complete example wiring all framework Stats() into a single `/api/metrics` endpoint.
+
+---
+
 ## Status codes
 
 The package re-exports common HTTP status codes as constants:

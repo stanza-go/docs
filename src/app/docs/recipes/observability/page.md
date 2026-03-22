@@ -432,6 +432,124 @@ func registerModules(router *http.Router, db *sqlite.DB, q *queue.Queue,
 
 ---
 
+## Prometheus metrics endpoint
+
+For external monitoring tools (Prometheus, Grafana, Datadog), expose all framework Stats() in Prometheus text exposition format using `http.PrometheusHandler`. This is a public endpoint — register it alongside the health check:
+
+```go
+api.HandleFunc("GET /metrics", http.PrometheusHandler(
+    collectPrometheus(db, m, q, s, whDispatcher, a, emailClient),
+))
+```
+
+The collector function gathers metrics from all framework packages on each scrape:
+
+```go
+func collectPrometheus(db *sqlite.DB, m *http.Metrics, q *queue.Queue,
+    s *cron.Scheduler, wh *webhooks.Dispatcher, a *auth.Auth,
+    ec *email.Client) func() []http.PrometheusMetric {
+
+    return func() []http.PrometheusMetric {
+        var out []http.PrometheusMetric
+
+        // SQLite — pool and query counters.
+        ds := db.Stats()
+        out = append(out,
+            http.PrometheusMetric{Name: "stanza_sqlite_reads_total", Help: "Total read queries", Type: "counter", Value: float64(ds.TotalReads)},
+            http.PrometheusMetric{Name: "stanza_sqlite_writes_total", Help: "Total write queries", Type: "counter", Value: float64(ds.TotalWrites)},
+            http.PrometheusMetric{Name: "stanza_sqlite_pool_waits_total", Help: "Read pool wait events", Type: "counter", Value: float64(ds.PoolWaits)},
+            http.PrometheusMetric{Name: "stanza_sqlite_read_pool_in_use", Help: "Read pool connections in use", Type: "gauge", Value: float64(ds.ReadPoolInUse)},
+        )
+
+        // HTTP — request counters and latency.
+        hs := m.Stats()
+        out = append(out,
+            http.PrometheusMetric{Name: "stanza_http_requests_total", Help: "Total requests processed", Type: "counter", Value: float64(hs.TotalRequests)},
+            http.PrometheusMetric{Name: "stanza_http_requests_active", Help: "Requests in flight", Type: "gauge", Value: float64(hs.ActiveRequests)},
+            http.PrometheusMetric{Name: "stanza_http_responses_2xx_total", Help: "2xx responses", Type: "counter", Value: float64(hs.Status2xx)},
+            http.PrometheusMetric{Name: "stanza_http_responses_4xx_total", Help: "4xx responses", Type: "counter", Value: float64(hs.Status4xx)},
+            http.PrometheusMetric{Name: "stanza_http_responses_5xx_total", Help: "5xx responses", Type: "counter", Value: float64(hs.Status5xx)},
+        )
+
+        // Queue — job state counts.
+        if qs, err := q.Stats(); err == nil {
+            out = append(out,
+                http.PrometheusMetric{Name: "stanza_queue_pending", Help: "Pending jobs", Type: "gauge", Value: float64(qs.Pending)},
+                http.PrometheusMetric{Name: "stanza_queue_completed_total", Help: "Completed jobs", Type: "counter", Value: float64(qs.Completed)},
+                http.PrometheusMetric{Name: "stanza_queue_failed_total", Help: "Failed jobs", Type: "counter", Value: float64(qs.Failed)},
+                http.PrometheusMetric{Name: "stanza_queue_dead_total", Help: "Dead-lettered jobs", Type: "counter", Value: float64(qs.Dead)},
+            )
+        }
+
+        // Cron, webhook, auth, email — same pattern.
+        cs := s.Stats()
+        out = append(out,
+            http.PrometheusMetric{Name: "stanza_cron_completed_total", Help: "Cron runs completed", Type: "counter", Value: float64(cs.Completed)},
+            http.PrometheusMetric{Name: "stanza_cron_failed_total", Help: "Cron runs failed", Type: "counter", Value: float64(cs.Failed)},
+        )
+
+        ws := wh.Stats()
+        out = append(out,
+            http.PrometheusMetric{Name: "stanza_webhook_sends_total", Help: "Webhook deliveries attempted", Type: "counter", Value: float64(ws.Sends)},
+            http.PrometheusMetric{Name: "stanza_webhook_failures_total", Help: "Webhook deliveries failed", Type: "counter", Value: float64(ws.Failures)},
+        )
+
+        as := a.Stats()
+        out = append(out,
+            http.PrometheusMetric{Name: "stanza_auth_tokens_issued_total", Help: "Tokens issued", Type: "counter", Value: float64(as.Issued)},
+            http.PrometheusMetric{Name: "stanza_auth_tokens_rejected_total", Help: "Tokens rejected", Type: "counter", Value: float64(as.Rejected)},
+        )
+
+        es := ec.Stats()
+        out = append(out,
+            http.PrometheusMetric{Name: "stanza_email_sent_total", Help: "Emails sent", Type: "counter", Value: float64(es.Sent)},
+            http.PrometheusMetric{Name: "stanza_email_errors_total", Help: "Email errors", Type: "counter", Value: float64(es.Errors)},
+        )
+
+        return out
+    }
+}
+```
+
+Test it:
+
+```bash
+curl -s http://localhost:23710/api/metrics
+```
+
+```text
+# HELP stanza_sqlite_reads_total Total read queries
+# TYPE stanza_sqlite_reads_total counter
+stanza_sqlite_reads_total 1247
+# HELP stanza_http_requests_total Total requests processed
+# TYPE stanza_http_requests_total counter
+stanza_http_requests_total 892
+# HELP stanza_queue_pending Pending jobs
+# TYPE stanza_queue_pending gauge
+stanza_queue_pending 0
+...
+```
+
+### Prometheus scrape config
+
+Point Prometheus at your app's metrics endpoint:
+
+```yaml
+scrape_configs:
+  - job_name: stanza
+    scrape_interval: 30s
+    static_configs:
+      - targets: ["your-app.up.railway.app"]
+    scheme: https
+    metrics_path: /api/metrics
+```
+
+{% callout title="Counters vs gauges" %}
+Use `counter` for values that only go up (requests, errors, bytes). Use `gauge` for values that go up and down (active connections, queue depth, pool usage). Prometheus calculates rates from counters automatically — `rate(stanza_http_requests_total[5m])` gives you requests per second.
+{% /callout %}
+
+---
+
 ## Adding observability to a new module
 
 When you add a framework package or standalone service that maintains runtime state, follow this pattern:

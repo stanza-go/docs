@@ -431,6 +431,59 @@ sql, args := sqlite.Select("id").
 // → WHERE deleted_at IS NULL AND (used_at IS NOT NULL OR expires_at < ?)
 ```
 
+### WhereInSelect / WhereNotInSelect
+
+`WhereInSelect` adds a `column IN (SELECT ...)` condition using a subquery built from another `SelectBuilder`. The subquery's SQL and arguments are merged into the outer query. `WhereNotInSelect` adds the negated `NOT IN` form. Available on all four query builders:
+
+```go
+// Find users who have at least one active session:
+sub := sqlite.Select("user_id").From("sessions").Where("expires_at > ?", now)
+
+sql, args := sqlite.Select("*").From("users").
+    WhereInSelect("id", sub).
+    Build()
+// → SELECT * FROM users WHERE id IN (SELECT user_id FROM sessions WHERE expires_at > ?)
+```
+
+Use `WhereNotInSelect` to exclude rows matching a subquery:
+
+```go
+// Delete notifications for inactive admins:
+activeSub := sqlite.Select("id").From("admins").Where("is_active = 1")
+
+sql, args := sqlite.Delete("notifications").
+    Where("entity_type = ?", "admin").
+    WhereNotInSelect("entity_id", activeSub).
+    Build()
+// → DELETE FROM notifications WHERE entity_type = ? AND entity_id NOT IN (SELECT id FROM admins WHERE is_active = 1)
+```
+
+### WhereExists / WhereNotExists
+
+`WhereExists` adds an `EXISTS (SELECT ...)` condition. The subquery typically uses `SELECT 1` and correlates with the outer query via a column reference. `WhereNotExists` adds the negated form. Available on all four query builders:
+
+```go
+// Find users who have placed at least one order:
+sub := sqlite.Select("1").From("orders o").Where("o.user_id = u.id")
+
+sql, args := sqlite.Select("*").From("users u").
+    WhereExists(sub).
+    Build()
+// → SELECT * FROM users u WHERE EXISTS (SELECT 1 FROM orders o WHERE o.user_id = u.id)
+```
+
+Use `WhereNotExists` to find rows without matching related records:
+
+```go
+// Find users who have never logged in:
+sub := sqlite.Select("1").From("sessions s").Where("s.user_id = u.id")
+
+sql, args := sqlite.Select("*").From("users u").
+    WhereNotExists(sub).
+    Build()
+// → SELECT * FROM users u WHERE NOT EXISTS (SELECT 1 FROM sessions s WHERE s.user_id = u.id)
+```
+
 ### EscapeLike
 
 `EscapeLike` escapes the special characters `%`, `_`, and `\` in a string so it can be used as a literal search term in a `LIKE` clause with `ESCAPE '\'`. This prevents user input from being interpreted as wildcards. For multi-column search, prefer `WhereSearch` which calls `EscapeLike` internally:

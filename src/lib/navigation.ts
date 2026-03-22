@@ -39,6 +39,7 @@ export const navigation = [
       { title: 'Database transactions', href: '/docs/recipes/transactions' },
       { title: 'Input validation', href: '/docs/recipes/validation' },
       { title: 'Password reset', href: '/docs/recipes/password-reset' },
+      { title: 'Sending emails', href: '/docs/recipes/sending-emails' },
       { title: 'Session management', href: '/docs/recipes/session-management' },
       { title: 'Notifications', href: '/docs/recipes/notifications' },
       { title: 'File uploads', href: '/docs/recipes/file-uploads' },

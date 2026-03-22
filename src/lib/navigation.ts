@@ -59,6 +59,7 @@ export const navigation = [
       { title: 'Automated backups', href: '/docs/recipes/automated-backups' },
       { title: 'Audit logging', href: '/docs/recipes/audit-logging' },
       { title: 'Custom middleware', href: '/docs/recipes/custom-middleware' },
+      { title: 'Rate limiting', href: '/docs/recipes/rate-limiting' },
       { title: 'Error handling', href: '/docs/recipes/error-handling' },
       { title: 'Performance tuning', href: '/docs/recipes/performance-tuning' },
       { title: 'Observability & health checks', href: '/docs/recipes/observability' },

@@ -50,6 +50,8 @@ export const navigation = [
       { title: 'Paginated lists', href: '/docs/recipes/paginated-lists' },
       { title: 'Automated backups', href: '/docs/recipes/automated-backups' },
       { title: 'Audit logging', href: '/docs/recipes/audit-logging' },
+      { title: 'Custom middleware', href: '/docs/recipes/custom-middleware' },
+      { title: 'Error handling', href: '/docs/recipes/error-handling' },
       { title: 'Testing', href: '/docs/recipes/testing' },
       { title: 'Deployment', href: '/docs/recipes/deployment' },
     ],

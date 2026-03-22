@@ -108,6 +108,56 @@ http.WriteError(w, http.StatusUnauthorized, "invalid credentials")
 
 ---
 
+## CSV export
+
+Write CSV file responses with automatic Content-Type and Content-Disposition headers:
+
+```go
+rows, err := db.Query(sql, args...)
+if err != nil {
+    http.WriteError(w, http.StatusInternalServerError, "failed to export")
+    return
+}
+defer rows.Close()
+
+http.WriteCSV(w, "users", []string{"ID", "Email", "Name"}, func() []string {
+    if !rows.Next() {
+        return nil
+    }
+    var id int64
+    var email, name string
+    if err := rows.Scan(&id, &email, &name); err != nil {
+        return nil
+    }
+    return []string{strconv.FormatInt(id, 10), email, name}
+})
+```
+
+The `entity` parameter controls the filename: `users` produces `users-20260322.csv`. The callback is called repeatedly until it returns nil.
+
+---
+
+## Bulk ID validation
+
+Validate ID slices for bulk operations (bulk delete, bulk update):
+
+```go
+var req struct {
+    IDs []int64 `json:"ids"`
+}
+if err := http.ReadJSON(r, &req); err != nil {
+    http.WriteError(w, http.StatusBadRequest, "invalid request body")
+    return
+}
+if !http.CheckBulkIDs(w, req.IDs, 100) {
+    return // 400 response already written
+}
+```
+
+`CheckBulkIDs` writes a 400 error and returns false if the slice is empty or exceeds the maximum count.
+
+---
+
 ## Route groups
 
 Groups share a path prefix and middleware. They can be nested:

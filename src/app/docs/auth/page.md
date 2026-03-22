@@ -118,6 +118,21 @@ hash := auth.HashToken(token)
 
 ---
 
+## API keys
+
+Generate prefixed API keys for programmatic access. The key is returned once; only the SHA-256 hash is stored:
+
+```go
+key, err := auth.GenerateAPIKey("sk")
+// key.DisplayPrefix = "sk_a1b2c3d4" (first 8 chars, safe to show in UI)
+// key.Raw           = "sk_a1b2c3d4e5f6..." (full key, returned once)
+// key.Hash          = "sha256$..." (store this in the database)
+```
+
+The prefix parameter (e.g., `"sk"`) is prepended with an underscore separator. Use `DisplayPrefix` for listing keys in the admin panel without exposing the full secret.
+
+---
+
 ## Cookie management
 
 Set and clear auth cookies on HTTP responses:

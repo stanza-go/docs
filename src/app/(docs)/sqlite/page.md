@@ -63,9 +63,11 @@ fmt.Println(stats.TotalReads)        // cumulative read queries since Start
 fmt.Println(stats.TotalWrites)       // cumulative write operations since Start
 fmt.Println(stats.PoolWaits)         // times a read had to wait for a free connection
 fmt.Println(stats.PoolWaitTime)      // cumulative time spent waiting
+fmt.Println(stats.FileSize)          // main database file size in bytes
+fmt.Println(stats.WALSize)           // WAL file size in bytes (0 if no WAL)
 ```
 
-Use `PoolWaits` and `PoolWaitTime` to detect pool exhaustion — if waits are frequent, increase the pool size with `WithReadPoolSize`. The counters are atomic and safe to call from any goroutine. Pool availability is a point-in-time snapshot.
+Use `PoolWaits` and `PoolWaitTime` to detect pool exhaustion — if waits are frequent, increase the pool size with `WithReadPoolSize`. Use `FileSize` and `WALSize` for monitoring database growth — a large WAL relative to the main file may indicate long-running read transactions blocking checkpoints. The counters are atomic and safe to call from any goroutine. Pool availability and file sizes are point-in-time snapshots.
 
 ---
 
@@ -657,6 +659,14 @@ err := db.Backup("/path/to/backup.sqlite")
 ```
 
 `Backup` uses `VACUUM INTO` to create a complete, consistent copy of the database. Unlike a raw file copy, it includes all WAL data and produces a compacted, defragmented file. Safe to call while the database is in use. If the destination file already exists, it is removed first.
+
+### Optimize
+
+```go
+err := db.Optimize()
+```
+
+`Optimize` runs `PRAGMA optimize`, which updates query planner statistics for tables that SQLite has identified as needing them. Call this before closing a long-running database connection — it keeps the query planner accurate with minimal overhead (typically a few milliseconds). In the standalone app, this runs automatically during graceful shutdown.
 
 ---
 

@@ -452,13 +452,15 @@ func collectPrometheus(db *sqlite.DB, m *http.Metrics, q *queue.Queue,
     return func() []http.PrometheusMetric {
         var out []http.PrometheusMetric
 
-        // SQLite — pool and query counters.
+        // SQLite — pool, query counters, and file sizes.
         ds := db.Stats()
         out = append(out,
             http.PrometheusMetric{Name: "stanza_sqlite_reads_total", Help: "Total read queries", Type: "counter", Value: float64(ds.TotalReads)},
             http.PrometheusMetric{Name: "stanza_sqlite_writes_total", Help: "Total write queries", Type: "counter", Value: float64(ds.TotalWrites)},
             http.PrometheusMetric{Name: "stanza_sqlite_pool_waits_total", Help: "Read pool wait events", Type: "counter", Value: float64(ds.PoolWaits)},
             http.PrometheusMetric{Name: "stanza_sqlite_read_pool_in_use", Help: "Read pool connections in use", Type: "gauge", Value: float64(ds.ReadPoolInUse)},
+            http.PrometheusMetric{Name: "stanza_sqlite_file_size_bytes", Help: "Main database file size", Type: "gauge", Value: float64(ds.FileSize)},
+            http.PrometheusMetric{Name: "stanza_sqlite_wal_size_bytes", Help: "WAL file size", Type: "gauge", Value: float64(ds.WALSize)},
         )
 
         // HTTP — request counters and latency.
@@ -632,6 +634,7 @@ Railway will restart your service if the health endpoint returns non-200.
 | Queue backlog | `queue.Stats()` → `Pending` | Growing over time |
 | Dead jobs | `queue.Stats()` → `Dead` | Any increase |
 | Pool waits | `db.Stats()` → `PoolWaits` | Sustained growth |
+| WAL size | `db.Stats()` → `WALSize` | > 100 MB (checkpoint blocked) |
 | Auth rejections | `auth.Stats()` → `Rejected` | Sudden spike |
 | Email failures | `email.Stats()` → `Errors` | Any increase |
 | Webhook failures | `webhook.Stats()` → `Failures / Sends` | > 5% |

@@ -24,9 +24,16 @@ This runs three steps in sequence:
 2. `make build-admin` — builds the admin panel with Vite/Bun
 3. `make build-api` — compiles Go with `CGO_ENABLED=1` and `-tags prod`
 
-Output: `api/bin/standalone` (~7.7MB, boots in <100ms).
+Output: `api/bin/standalone` (~17MB with embedded admin panel, boots in <100ms).
 
 The `-tags prod` flag activates `//go:embed` directives that bundle the frontend `dist/` directories into the binary. In development mode (without the tag), the frontends are served by their own Vite dev servers.
+
+The build also injects metadata via `-ldflags`: version (from `git describe`), commit SHA, and build timestamp. The health endpoint reports these fields so you can verify which build is deployed:
+
+```bash
+curl https://your-app.up.railway.app/api/health
+# {"status":"ok","version":"v0.1.0","commit":"abc1234","build_time":"2026-03-22T08:28:42Z",...}
+```
 
 ---
 
@@ -75,10 +82,10 @@ docker build -t stanza -f standalone/Dockerfile .
 
 The Dockerfile uses a 3-stage build:
 1. **Frontend stage** (bun) — builds UI and admin dist bundles
-2. **Backend stage** (golang) — compiles Go binary with CGO for SQLite
-3. **Runtime stage** (debian:bookworm-slim) — minimal image with the binary
+2. **Backend stage** (golang:alpine) — compiles Go binary with CGO for SQLite, injects build metadata
+3. **Runtime stage** (alpine:3.21) — minimal image with the binary
 
-The runtime image is ~160MB, runs as a non-root `stanza` user via `gosu`, and sets `DATA_DIR=/data`.
+The runtime image is ~12MB, runs as a non-root `stanza` user via `su-exec`, and sets `DATA_DIR=/data`.
 
 ### Run locally
 
@@ -93,7 +100,7 @@ docker run -p 23710:23710 \
 ### What happens on startup
 
 1. The entrypoint `chown`s `/data` to the `stanza` user (handles volume permission issues)
-2. Drops privileges via `gosu` to run the binary as `stanza`
+2. Drops privileges via `su-exec` to run the binary as `stanza`
 3. The app resolves `DATA_DIR`, creates subdirectories if needed
 4. Migrations run automatically (with auto-backup of the SQLite file)
 5. Cron scheduler and job queue workers start
@@ -226,3 +233,4 @@ The app also creates automatic SQLite backups in `{DATA_DIR}/backups/` before ru
 - **Migrations are automatic.** No manual migration step needed. The app runs pending migrations on every boot with an auto-backup beforehand.
 - **Default admin credentials.** The seed creates `admin@stanza.dev` / `admin`. Change the password immediately after first deploy.
 - **HTTPS.** Railway and Cloud Run provide HTTPS automatically. The app sets `Secure` and `SameSite=Lax` on auth cookies by default — this requires HTTPS. For local Docker testing without HTTPS, set `STANZA_AUTH_SECURE_COOKIES=false`.
+- **HSTS.** When the `PORT` environment variable is set (Railway, Cloud Run), the app automatically enables `Strict-Transport-Security` headers. This tells browsers to always use HTTPS. Not set in local development.

@@ -167,8 +167,9 @@ router.Use(http.RequestLogger(logger))                     // 2. log with reques
 router.Use(http.Compress(http.CompressConfig{}))           // 3. gzip compression
 router.Use(http.ETag(http.ETagConfig{}))                   // 4. conditional requests
 router.Use(http.SecureHeaders(http.SecureHeadersConfig{})) // 5. security headers
-router.Use(http.CORS(corsConfig))                          // 6. CORS
-router.Use(http.Recovery(onPanic))                         // 7. panic recovery
+router.Use(http.MaxBody(2 << 20))                          // 6. request body limit (2 MB)
+router.Use(http.CORS(corsConfig))                          // 7. CORS
+router.Use(http.Recovery(onPanic))                         // 8. panic recovery
 ```
 
 ### Built-in middleware
@@ -323,6 +324,20 @@ router.Use(http.Recovery(func(recovered any, stack []byte) {
 ```
 
 The callback is optional — pass `nil` to recover silently.
+
+**Request body limit** — caps how much data handlers can read:
+
+```go
+router.Use(http.MaxBody(2 << 20)) // 2 MB
+```
+
+Wraps request bodies with `MaxBytesReader`. When a handler reads beyond the limit, the read returns an error and the server closes the connection. This protects JSON and form endpoints from abuse without affecting file uploads.
+
+Multipart requests (`Content-Type: multipart/*`) are exempt — upload handlers should enforce their own limits directly. This lets you set a tight global limit (e.g., 2 MB) while allowing specific upload endpoints to accept larger payloads (e.g., 50 MB).
+
+When the limit is exceeded, `ReadJSON` returns `ErrBodyTooLarge` which is automatically translated to a `400 Bad Request` response.
+
+**Chain position:** Place after `SecureHeaders` and before `CORS`. This ensures security headers are always set, even on oversized requests.
 
 ---
 

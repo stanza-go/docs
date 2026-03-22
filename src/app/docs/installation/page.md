@@ -121,20 +121,34 @@ The `DATA_DIR` environment variable controls where the database and logs are sto
 api/
 ├── main.go              ← DI wiring, route registration, lifecycle
 ├── module/
+│   ├── health/          ← Health check (version, uptime, memory)
+│   ├── dashboard/       ← System stats and charts
 │   ├── adminauth/       ← Admin login/logout/status
-│   ├── dashboard/       ← System stats endpoint
 │   ├── adminusers/      ← Admin user CRUD
+│   ├── adminroles/      ← Roles and scopes management
 │   ├── adminsessions/   ← Session management
+│   ├── adminaudit/      ← Audit log viewer
 │   ├── admincron/       ← Cron monitoring
 │   ├── adminqueue/      ← Queue monitoring
 │   ├── adminlogs/       ← Log viewer
-│   ├── admindb/         ← Database admin
+│   ├── admindb/         ← Database admin and backups
 │   ├── adminsettings/   ← Settings management
+│   ├── adminprofile/    ← Admin profile and password
+│   ├── adminuploads/    ← Upload management
+│   ├── adminwebhooks/   ← Webhook management
+│   ├── adminnotifications/ ← Admin notification management
 │   ├── usermgmt/        ← End-user management
-│   ├── apikeys/         ← API key CRUD + validator
 │   ├── userauth/        ← User register/login/logout
 │   ├── userprofile/     ← User profile endpoint
-│   └── health/          ← Health check
+│   ├── userreset/       ← Password reset flow
+│   ├── usersettings/    ← User settings key-value store
+│   ├── useractivity/    ← User activity log
+│   ├── userapikeys/     ← User API key management
+│   ├── useruploads/     ← User file uploads
+│   ├── usernotifications/ ← User notification endpoints
+│   ├── apikeys/         ← API key CRUD + validator
+│   ├── webhooks/        ← Webhook delivery engine
+│   └── notifications/   ← Notification system
 ├── migration/           ← Database migrations
 ├── datadir/             ← Data directory resolver
 └── seed/                ← Default data seeding

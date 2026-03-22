@@ -465,6 +465,45 @@ sql, args := sqlite.Delete("items").
 // → DELETE FROM items WHERE 1 = 0
 ```
 
+### WhereNotIn
+
+`WhereNotIn` adds a `NOT IN (?, ?, ...)` condition — the negation of `WhereIn`. It is available on all four query builders — `Select`, `Count`, `Update`, and `Delete`:
+
+```go
+// Select users who are NOT admins or superadmins
+sql, args := sqlite.Select("id", "name").
+    From("users").
+    WhereNotIn("role", "admin", "superadmin").
+    Build()
+// → SELECT id, name FROM users WHERE role NOT IN (?, ?)
+```
+
+```go
+// Delete sessions for users NOT in the keep list
+sql, args := sqlite.Delete("sessions").
+    WhereNotIn("user_id", keepIDs...).
+    Build()
+```
+
+```go
+// Update users excluding specific IDs
+sql, args := sqlite.Update("users").
+    Set("newsletter", false).
+    WhereNotIn("id", optOutIDs...).
+    Build()
+```
+
+If `values` is empty, `WhereNotIn` produces `1 = 1` (always true) — everything is NOT IN an empty set. This is the semantic counterpart to `WhereIn`'s `1 = 0`:
+
+```go
+// Empty slice → WHERE 1 = 1 → all rows match
+sql, args := sqlite.Select("id").
+    From("users").
+    WhereNotIn("id").  // no values
+    Build()
+// → SELECT id FROM users WHERE 1 = 1
+```
+
 ### WhereSearch
 
 `WhereSearch` adds a multi-column contains-search condition. It escapes the search term, wraps it in `%` for contains matching, and OR's across the specified columns. If the search string is empty, the condition is skipped (no-op). Available on all four query builders:

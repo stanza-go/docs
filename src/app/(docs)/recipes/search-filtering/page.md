@@ -108,6 +108,7 @@ The pattern: each `.Where()` call adds an AND condition. `WhereSearch` adds a pa
 | Date range | `Where("col >= ?", from)` | Created after, updated before |
 | NULL check | `WhereNull("col")` / `WhereNotNull("col")` | Soft-deleted, has value |
 | Set membership | `WhereIn("col", vals...)` | Multiple statuses, ID lists |
+| Set exclusion | `WhereNotIn("col", vals...)` | Exclude statuses, skip IDs |
 | Negation | `Where("col != ?", val)` | Exclude a status |
 
 All filters compose with AND. For OR logic between different filters, use `WhereOr`.

@@ -29,7 +29,9 @@ if err := db.Start(ctx); err != nil {
 defer db.Stop(ctx)
 ```
 
-`Start` opens the connection and applies default PRAGMAs for performance (WAL mode, memory-mapped I/O, optimized cache). `Stop` closes the connection gracefully.
+`Start` opens **two connections** — one for writes (`Exec`, transactions) and one for reads (`Query`, `QueryRow`) — and applies default PRAGMAs to both (WAL mode, memory-mapped I/O, optimized cache). This read/write separation lets HTTP reads proceed concurrently with cron or queue writes in WAL mode, instead of serializing all operations through a single mutex. `Stop` closes both connections gracefully (read first, then write).
+
+For in-memory databases (`:memory:`), a single connection is used because each open creates a separate database.
 
 In a Stanza app, the database is wired through the lifecycle — it starts first and stops last.
 

@@ -652,6 +652,38 @@ if err != nil {
 }
 ```
 
+### Structured errors
+
+All SQLite errors are returned as `*sqlite.Error` with the result code and extended result code from SQLite. Use the helper functions for common checks:
+
+```go
+_, err := db.Exec("INSERT INTO users (email, ...) VALUES (?, ...)", email, ...)
+if sqlite.IsUniqueConstraintError(err) {
+    http.WriteError(w, http.StatusConflict, "email already exists")
+    return
+}
+if err != nil {
+    http.WriteError(w, http.StatusInternalServerError, "database error")
+    return
+}
+```
+
+| Function | Matches |
+|----------|---------|
+| `IsConstraintError(err)` | Any constraint violation (UNIQUE, FOREIGN KEY, NOT NULL, CHECK, PRIMARY KEY) |
+| `IsUniqueConstraintError(err)` | UNIQUE constraint — duplicate value in a unique column |
+| `IsForeignKeyConstraintError(err)` | FOREIGN KEY constraint — referenced row missing |
+| `IsNotNullConstraintError(err)` | NOT NULL constraint — required column is NULL |
+
+For advanced cases, extract the full error with `errors.As`:
+
+```go
+var sqlErr *sqlite.Error
+if errors.As(err, &sqlErr) {
+    log.Info("sqlite error", "code", sqlErr.Code, "extended", sqlErr.ExtendedCode)
+}
+```
+
 ---
 
 ## Scan types

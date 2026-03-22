@@ -56,6 +56,7 @@ export const navigation = [
       { title: 'Custom middleware', href: '/docs/recipes/custom-middleware' },
       { title: 'Error handling', href: '/docs/recipes/error-handling' },
       { title: 'Performance tuning', href: '/docs/recipes/performance-tuning' },
+      { title: 'Observability & health checks', href: '/docs/recipes/observability' },
       { title: 'Testing', href: '/docs/recipes/testing' },
       { title: 'Deployment', href: '/docs/recipes/deployment' },
     ],

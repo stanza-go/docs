@@ -6,13 +6,13 @@ nextjs:
     description: Schedule daily SQLite backups with automatic retention using the cron scheduler.
 ---
 
-Since Stanza uses a single SQLite file for all data, backups are trivially simple — copy the file. This recipe sets up automated daily backups with a retention policy using the built-in cron scheduler.
+Since Stanza uses a single SQLite file for all data, backups are trivially simple — use `db.Backup()` which calls `VACUUM INTO` to create a complete, consistent copy including all WAL data. This recipe sets up automated daily backups with a retention policy using the built-in cron scheduler.
 
 ---
 
 ## Daily backup cron job
 
-Register a cron job that copies the database file to the backups directory every day at 2:00 AM:
+Register a cron job that backs up the database to the backups directory every day at 2:00 AM:
 
 ```go
 if err := scheduler.Add("daily-backup", "0 2 * * *", func(ctx context.Context) error {
@@ -20,27 +20,18 @@ if err := scheduler.Add("daily-backup", "0 2 * * *", func(ctx context.Context) e
     backupName := fmt.Sprintf("database.sqlite.%s.bak", ts)
     backupPath := filepath.Join(dir.Backups, backupName)
 
-    src, err := os.Open(db.Path())
-    if err != nil {
-        return fmt.Errorf("open database: %w", err)
+    if err := db.Backup(backupPath); err != nil {
+        return fmt.Errorf("backup database: %w", err)
     }
-    defer src.Close()
 
-    dst, err := os.Create(backupPath)
+    info, err := os.Stat(backupPath)
     if err != nil {
-        return fmt.Errorf("create backup file: %w", err)
-    }
-    defer dst.Close()
-
-    written, err := io.Copy(dst, src)
-    if err != nil {
-        _ = os.Remove(backupPath) // clean up incomplete file
-        return fmt.Errorf("copy database: %w", err)
+        return fmt.Errorf("stat backup: %w", err)
     }
 
     logger.Info("daily backup completed",
         log.String("file", backupName),
-        log.Int64("size_bytes", written),
+        log.Int64("size_bytes", info.Size()),
     )
     return nil
 }); err != nil {
@@ -49,9 +40,9 @@ if err := scheduler.Add("daily-backup", "0 2 * * *", func(ctx context.Context) e
 ```
 
 Key details:
+- **VACUUM INTO:** `db.Backup()` uses `VACUUM INTO` internally — produces a complete, compacted copy including all WAL data, safe to call while the database is in use
 - **Timestamp format:** `20060102T150405Z` — UTC, sortable, human-readable
 - **File naming:** `database.sqlite.{timestamp}.bak` — easy to identify and sort
-- **Error recovery:** If `io.Copy` fails, the incomplete backup file is removed
 - **Logging:** File name and size are logged on success for monitoring
 
 ---
@@ -98,44 +89,29 @@ The purge runs 30 minutes after the backup to ensure the new backup is complete 
 
 ## Manual backup endpoint
 
-Add an admin endpoint for on-demand backups — same logic, triggered via API:
+Add an admin endpoint for on-demand backups — same `db.Backup()` call, triggered via API:
 
 ```go
-func backupHandler(db *sqlite.DB, backupsDir string, logger *log.Logger) func(http.ResponseWriter, *http.Request) {
+func backupHandler(db *sqlite.DB, backupsDir string) func(http.ResponseWriter, *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
         ts := time.Now().UTC().Format("20060102T150405Z")
         backupName := fmt.Sprintf("database.sqlite.%s.bak", ts)
         backupPath := filepath.Join(backupsDir, backupName)
 
-        src, err := os.Open(db.Path())
-        if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to open database")
-            return
-        }
-        defer src.Close()
-
-        dst, err := os.Create(backupPath)
-        if err != nil {
+        if err := db.Backup(backupPath); err != nil {
             http.WriteError(w, http.StatusInternalServerError, "failed to create backup")
             return
         }
-        defer dst.Close()
 
-        written, err := io.Copy(dst, src)
+        info, err := os.Stat(backupPath)
         if err != nil {
-            _ = os.Remove(backupPath)
-            http.WriteError(w, http.StatusInternalServerError, "failed to copy database")
+            http.WriteError(w, http.StatusInternalServerError, "failed to stat backup")
             return
         }
 
-        logger.Info("manual backup created",
-            log.String("file", backupName),
-            log.Int64("size_bytes", written),
-        )
-
         http.WriteJSON(w, http.StatusOK, map[string]any{
             "file": backupName,
-            "size": written,
+            "size": info.Size(),
         })
     }
 }

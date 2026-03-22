@@ -376,6 +376,14 @@ version, err := db.Rollback()
 
 Rollback reverses the last applied migration using its `Down` function.
 
+### Backup
+
+```go
+err := db.Backup("/path/to/backup.sqlite")
+```
+
+`Backup` uses `VACUUM INTO` to create a complete, consistent copy of the database. Unlike a raw file copy, it includes all WAL data and produces a compacted, defragmented file. Safe to call while the database is in use. If the destination file already exists, it is removed first.
+
 ---
 
 ## Error handling

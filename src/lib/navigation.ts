@@ -32,6 +32,7 @@ export const navigation = [
     title: 'Recipes',
     links: [
       { title: 'Adding a module', href: '/docs/recipes/modules' },
+      { title: 'Adding an admin page', href: '/docs/recipes/admin-pages' },
       { title: 'Database migrations', href: '/docs/recipes/migrations' },
       { title: 'Input validation', href: '/docs/recipes/validation' },
       { title: 'Password reset', href: '/docs/recipes/password-reset' },

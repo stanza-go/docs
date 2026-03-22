@@ -373,6 +373,36 @@ Works with table-prefixed columns for JOIN queries:
 q.WhereSearch(search, "audit_log.details", "audit_log.action")
 ```
 
+### WhereOr
+
+`WhereOr` groups conditions with OR. Each `Cond` is OR'd together and the group is parenthesized so it composes correctly with other AND conditions. Requires at least 2 conditions (fewer is a no-op). Available on all four query builders:
+
+```go
+cutoff := time.Now().UTC().Add(-30 * 24 * time.Hour).Format(time.RFC3339)
+
+sql, args := sqlite.Delete("api_keys").
+    WhereOr(
+        sqlite.Cond("revoked_at IS NOT NULL AND revoked_at < ?", cutoff),
+        sqlite.Cond("expires_at IS NOT NULL AND expires_at < ?", cutoff),
+    ).
+    Build()
+// → DELETE FROM api_keys WHERE (revoked_at IS NOT NULL AND revoked_at < ? OR expires_at IS NOT NULL AND expires_at < ?)
+```
+
+Combines with regular `Where` for mixed AND/OR logic:
+
+```go
+sql, args := sqlite.Select("id").
+    From("tokens").
+    Where("deleted_at IS NULL").
+    WhereOr(
+        sqlite.Cond("used_at IS NOT NULL"),
+        sqlite.Cond("expires_at < ?", cutoff),
+    ).
+    Build()
+// → WHERE deleted_at IS NULL AND (used_at IS NOT NULL OR expires_at < ?)
+```
+
 ### EscapeLike
 
 `EscapeLike` escapes the special characters `%`, `_`, and `\` in a string so it can be used as a literal search term in a `LIKE` clause with `ESCAPE '\'`. This prevents user input from being interpreted as wildcards. For multi-column search, prefer `WhereSearch` which calls `EscapeLike` internally:

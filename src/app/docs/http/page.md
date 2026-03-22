@@ -569,6 +569,37 @@ func provideServer(lc *lifecycle.Lifecycle, router *http.Router) *http.Server {
 
 ---
 
+## Request metrics
+
+Track request counts, status code distribution, and average latency with `Metrics`:
+
+```go
+m := http.NewMetrics()
+router.Use(m.Middleware())
+
+// In a handler (e.g. dashboard):
+stats := m.Stats()
+```
+
+Add the middleware early in the chain — after `RequestID` but before `RequestLogger` — so it captures the full request lifecycle.
+
+`Stats()` returns a `MetricsStats` snapshot:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `TotalRequests` | `int64` | Cumulative requests processed |
+| `ActiveRequests` | `int64` | Currently in-flight requests |
+| `Status2xx` | `int64` | Successful responses |
+| `Status3xx` | `int64` | Redirects |
+| `Status4xx` | `int64` | Client errors |
+| `Status5xx` | `int64` | Server errors |
+| `BytesWritten` | `int64` | Total response bytes |
+| `AvgDurationMs` | `float64` | Mean request duration (ms) |
+
+All counters are atomic — safe to read from any goroutine without synchronization.
+
+---
+
 ## Status codes
 
 The package re-exports common HTTP status codes as constants:

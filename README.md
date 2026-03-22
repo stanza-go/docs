@@ -1,44 +1,40 @@
-# Syntax
+# Stanza Documentation
 
-Syntax is a [Tailwind Plus](https://tailwindcss.com/plus) site template built using [Tailwind CSS](https://tailwindcss.com) and [Next.js](https://nextjs.org).
+[![CI](https://github.com/stanza-go/docs/actions/workflows/ci.yml/badge.svg)](https://github.com/stanza-go/docs/actions/workflows/ci.yml)
 
-## Getting started
+Documentation site for [Stanza Framework](https://github.com/stanza-go/framework). Built with Next.js, Markdoc, and Tailwind CSS.
 
-To get started with this template, first install the npm dependencies:
+## Content
+
+- **Framework reference** — all 13 packages documented with types, functions, and options
+- **30 recipes** — step-by-step guides covering common patterns and use cases
+- **Installation guide** — getting started with Stanza
+
+## Development
+
+Requires Bun.
 
 ```bash
-npm install
+bun install
+bun run dev
 ```
 
-Next, run the development server:
+Open [http://localhost:3000](http://localhost:3000).
+
+## Build
 
 ```bash
-npm run dev
+bun run build
 ```
 
-Finally, open [http://localhost:3000](http://localhost:3000) in your browser to view the website.
+## Structure
 
-## Customizing
+Documentation pages live in `src/app/docs/` as Markdoc files. Navigation is configured in `src/lib/navigation.ts`.
 
-You can start editing this template by modifying the files in the `/src` folder. The site will auto-update as you edit these files.
+## Related Repos
 
-## Global search
-
-This template includes a global search that's powered by the [FlexSearch](https://github.com/nextapps-de/flexsearch) library. It's available by clicking the search input or by using the `⌘K` shortcut.
-
-This feature requires no configuration, and works out of the box by automatically scanning your documentation pages to build its index. You can adjust the search parameters by editing the `/src/markdoc/search.mjs` file.
-
-## License
-
-This site template is a commercial product and is licensed under the [Tailwind Plus license](https://tailwindcss.com/plus/license).
-
-## Learn more
-
-To learn more about the technologies used in this site template, see the following resources:
-
-- [Tailwind CSS](https://tailwindcss.com/docs) - the official Tailwind CSS documentation
-- [Next.js](https://nextjs.org/docs) - the official Next.js documentation
-- [Headless UI](https://headlessui.dev) - the official Headless UI documentation
-- [Markdoc](https://markdoc.io) - the official Markdoc documentation
-- [Algolia Autocomplete](https://www.algolia.com/doc/ui-libraries/autocomplete/introduction/what-is-autocomplete/) - the official Algolia Autocomplete documentation
-- [FlexSearch](https://github.com/nextapps-de/flexsearch) - the official FlexSearch documentation
+| Repo | Description |
+|------|-------------|
+| [framework](https://github.com/stanza-go/framework) | The engine — Go packages with zero external deps |
+| [standalone](https://github.com/stanza-go/standalone) | Fork-and-build application boilerplate |
+| [cli](https://github.com/stanza-go/cli) | CLI tool for backup, restore, inspect |

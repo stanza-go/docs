@@ -215,6 +215,40 @@ sql, args := sqlite.Insert("user_settings").
 
 The first argument lists the columns that form the unique constraint. The second argument lists the columns to update from the attempted insert row (referenced via `excluded.<col>`). `created_at` is intentionally omitted from the update list — it keeps the original value.
 
+### INSERT BATCH
+
+Use `InsertBatch` to insert multiple rows in a single statement. This is more efficient than looping with individual `Insert` calls — one round trip instead of N.
+
+```go
+sql, args := sqlite.InsertBatch("settings").
+    Columns("key", "value", "group_name").
+    Row("app.name", "Stanza", "general").
+    Row("app.url", "https://stanza.dev", "general").
+    Row("app.timezone", "UTC", "general").
+    OrIgnore().
+    Build()
+
+_, err := db.Exec(sql, args...)
+
+// Produces:
+// INSERT OR IGNORE INTO settings (key, value, group_name)
+// VALUES (?, ?, ?), (?, ?, ?), (?, ?, ?)
+```
+
+`InsertBatch` supports the same `OrIgnore()` and `OnConflict()` modifiers as `Insert`. Use `OnConflict` for batch upserts:
+
+```go
+sql, args := sqlite.InsertBatch("user_settings").
+    Columns("user_id", "key", "value", "updated_at").
+    Row(uid, "theme", "dark", now).
+    Row(uid, "lang", "en", now).
+    OnConflict(
+        []string{"user_id", "key"},
+        []string{"value", "updated_at"},
+    ).
+    Build()
+```
+
 ### UPDATE
 
 ```go

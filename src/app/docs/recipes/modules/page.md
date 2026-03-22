@@ -193,7 +193,7 @@ func createHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             return
         }
 
-        now := time.Now().UTC().Format("2006-01-02T15:04:05Z")
+        now := time.Now().UTC().Format(time.RFC3339)
         sql, args := sqlite.Insert("products").
             Set("name", req.Name).
             Set("description", req.Description).
@@ -312,7 +312,7 @@ func updateHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             }
         }
 
-        now := time.Now().UTC().Format("2006-01-02T15:04:05Z")
+        now := time.Now().UTC().Format(time.RFC3339)
         sql, args = sqlite.Update("products").
             Set("name", name).
             Set("description", desc).
@@ -355,7 +355,7 @@ func deleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             return
         }
 
-        now := time.Now().UTC().Format("2006-01-02T15:04:05Z")
+        now := time.Now().UTC().Format(time.RFC3339)
         sql, args := sqlite.Update("products").
             Set("deleted_at", now).
             Set("is_active", 0).

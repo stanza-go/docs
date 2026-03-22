@@ -32,9 +32,19 @@ defer db.Stop(ctx)
 
 `Start` opens **1 write connection** and a **pool of read connections** (default 4), applying default PRAGMAs to all (WAL mode, memory-mapped I/O, optimized cache). The read pool lets multiple HTTP requests query the database simultaneously — each `Query` takes a connection from the pool, and `Rows.Close` returns it. Writes (`Exec`, transactions) use the dedicated write connection. `Stop` signals pool operations to stop, waits for all checked-out connections to be returned, then drains and closes everything — safe even if queries are still in-flight during shutdown.
 
-Use `WithReadPoolSize(n)` to tune the pool size. The default of 4 handles typical web workloads well. Increase it if profiling shows read contention under high concurrency.
+### Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `WithBusyTimeout(ms)` | 5000 | Milliseconds to wait when the database is locked before returning `SQLITE_BUSY` |
+| `WithReadPoolSize(n)` | 4 | Number of read connections in the pool. Increase if profiling shows read contention under high concurrency |
+| `WithPragma(stmt)` | — | Add a custom PRAGMA applied to all connections on open (e.g. `"cache_size=-20000"`) |
+| `WithLogger(l)` | nil | Enable query logging — see [Query logging](#query-logging) below |
+| `WithSlowThreshold(d)` | 200ms | Queries exceeding this duration are logged at Warn level. Requires a logger |
 
 For in-memory databases (`:memory:`), a single connection is used because each open creates a separate database.
+
+`db.Path()` returns the database file path passed to `New`.
 
 In a Stanza app, the database is wired through the lifecycle — it starts first and stops last.
 

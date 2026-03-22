@@ -153,6 +153,16 @@ for _, j := range jobs {
 
 Filter by queue name, job type, or status. Default limit is 50.
 
+### Count jobs
+
+`JobCount` returns the total number of jobs matching a filter, ignoring `Limit` and `Offset`. Useful for pagination totals:
+
+```go
+total, err := q.JobCount(queue.Filter{
+    Status: queue.StatusFailed,
+})
+```
+
 ### Get a single job
 
 ```go

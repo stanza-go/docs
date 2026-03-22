@@ -659,11 +659,14 @@ The package re-exports common HTTP status codes as constants:
 | `StatusOK` | 200 |
 | `StatusCreated` | 201 |
 | `StatusNoContent` | 204 |
+| `StatusNotModified` | 304 |
 | `StatusBadRequest` | 400 |
 | `StatusUnauthorized` | 401 |
 | `StatusForbidden` | 403 |
 | `StatusNotFound` | 404 |
+| `StatusMethodNotAllowed` | 405 |
 | `StatusConflict` | 409 |
+| `StatusRequestEntityTooLarge` | 413 |
 | `StatusUnprocessableEntity` | 422 |
 | `StatusTooManyRequests` | 429 |
 | `StatusInternalServerError` | 500 |
@@ -787,8 +790,23 @@ conn.CloseWithMessage(http.CloseNormalClosure, "goodbye")
 | `CloseGoingAway` | 1001 | Server shutting down |
 | `CloseProtocolError` | 1002 | Protocol error |
 | `CloseUnsupportedData` | 1003 | Unsupported data type |
+| `CloseNoStatusReceived` | 1005 | No close code in frame (not sent by application) |
+| `CloseAbnormalClosure` | 1006 | Connection dropped without close frame (not sent by application) |
 | `CloseInvalidPayload` | 1007 | Invalid UTF-8 in text message |
+| `ClosePolicyViolation` | 1008 | Message violates server policy |
 | `CloseMessageTooBig` | 1009 | Message exceeds size limit |
+
+When the peer sends a close frame, `ReadMessage` returns a `*CloseError` with the code and text:
+
+```go
+_, _, err := conn.ReadMessage()
+if err != nil {
+    var closeErr *http.CloseError
+    if errors.As(err, &closeErr) {
+        fmt.Printf("closed with code %d: %s\n", closeErr.Code, closeErr.Text)
+    }
+}
+```
 
 ### Middleware compatibility
 

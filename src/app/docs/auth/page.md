@@ -241,6 +241,16 @@ if !ok {
 }
 ```
 
+For tests that bypass the middleware stack, inject claims directly into the context:
+
+```go
+ctx := auth.WithClaimsForTest(r.Context(), auth.Claims{
+    UID:    "42",
+    Scopes: []string{"admin"},
+})
+r = r.WithContext(ctx)
+```
+
 ---
 
 ## Errors

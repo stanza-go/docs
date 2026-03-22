@@ -19,6 +19,7 @@ import "github.com/stanza-go/framework/pkg/sqlite"
 ```go
 db := sqlite.New("path/to/database.sqlite",
     sqlite.WithBusyTimeout(5000),         // ms, default: 5000
+    sqlite.WithReadPoolSize(4),           // read connections, default: 4
     sqlite.WithPragma("cache_size=-20000"), // custom PRAGMA
 )
 
@@ -29,7 +30,9 @@ if err := db.Start(ctx); err != nil {
 defer db.Stop(ctx)
 ```
 
-`Start` opens **two connections** — one for writes (`Exec`, transactions) and one for reads (`Query`, `QueryRow`) — and applies default PRAGMAs to both (WAL mode, memory-mapped I/O, optimized cache). This read/write separation lets HTTP reads proceed concurrently with cron or queue writes in WAL mode, instead of serializing all operations through a single mutex. `Stop` closes both connections gracefully (read first, then write).
+`Start` opens **1 write connection** and a **pool of read connections** (default 4), applying default PRAGMAs to all (WAL mode, memory-mapped I/O, optimized cache). The read pool lets multiple HTTP requests query the database simultaneously — each `Query` takes a connection from the pool, and `Rows.Close` returns it. Writes (`Exec`, transactions) use the dedicated write connection. `Stop` drains and closes all pool connections, then the write connection.
+
+Use `WithReadPoolSize(n)` to tune the pool size. The default of 4 handles typical web workloads well. Increase it if profiling shows read contention under high concurrency.
 
 For in-memory databases (`:memory:`), a single connection is used because each open creates a separate database.
 

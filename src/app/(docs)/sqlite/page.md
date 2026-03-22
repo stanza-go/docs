@@ -181,6 +181,50 @@ users, err := sqlite.QueryAll(db, sql, args, func(rows *sqlite.Rows) (UserJSON, 
 
 `QueryAll` always returns a non-nil slice — when no rows match, it returns `[]T{}` instead of `nil`. This means the result serializes to `[]` in JSON, not `null`, avoiding frontend crashes on empty result sets.
 
+### QueryOne — scan a single row
+
+`QueryOne` is the single-row counterpart to `QueryAll`. It executes a query, scans the first row using the provided function, and returns a single typed value. If the query returns no rows, it returns `ErrNoRows`.
+
+```go
+sql, args := sqlite.Select("id", "email", "name").
+    From("users").
+    Where("id = ?", id).
+    Build()
+
+user, err := sqlite.QueryOne(db, sql, args, func(rows *sqlite.Rows) (User, error) {
+    var u User
+    err := rows.Scan(&u.ID, &u.Email, &u.Name)
+    return u, err
+})
+if errors.Is(err, sqlite.ErrNoRows) {
+    http.WriteError(w, http.StatusNotFound, "user not found")
+    return
+}
+```
+
+`QueryOne` uses the same `func(*Rows) (T, error)` scan function signature as `QueryAll`. This means you can define a scan function once and use it for both list and detail handlers:
+
+```go
+// Define once per module:
+func scanUser(rows *sqlite.Rows) (UserJSON, error) {
+    var u UserJSON
+    var isActive int
+    if err := rows.Scan(&u.ID, &u.Email, &u.Name, &isActive); err != nil {
+        return u, err
+    }
+    u.IsActive = isActive == 1
+    return u, nil
+}
+
+// List handler — multiple rows:
+users, err := sqlite.QueryAll(db, sql, args, scanUser)
+
+// Detail handler — single row:
+user, err := sqlite.QueryOne(db, sql, args, scanUser)
+```
+
+Extra rows beyond the first are ignored. For simple scalar queries (`COUNT`, existence checks), `db.QueryRow().Scan()` remains the more concise choice.
+
 ---
 
 ## Query builder

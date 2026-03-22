@@ -108,7 +108,19 @@ type productJSON struct {
 
 ## Step 4: Implement handlers
 
-Each handler is a closure factory that captures dependencies:
+Each handler is a closure factory that captures dependencies. Start by extracting a scan function for the module's JSON type — this function works with both `QueryAll` (lists) and `QueryOne` (details):
+
+```go
+func scanProduct(rows *sqlite.Rows) (productJSON, error) {
+    var p productJSON
+    var isActive int
+    if err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.PriceCents, &isActive, &p.CreatedAt, &p.UpdatedAt); err != nil {
+        return p, err
+    }
+    p.IsActive = isActive == 1
+    return p, nil
+}
+```
 
 ### List with search, pagination, and sorting
 
@@ -129,15 +141,7 @@ func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         total, _ := db.Count(selectQ)
 
         sql, args := selectQ.OrderBy(col, dir).Limit(pg.Limit).Offset(pg.Offset).Build()
-        products, err := sqlite.QueryAll(db, sql, args, func(rows *sqlite.Rows) (productJSON, error) {
-            var p productJSON
-            var isActive int
-            if err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.PriceCents, &isActive, &p.CreatedAt, &p.UpdatedAt); err != nil {
-                return p, err
-            }
-            p.IsActive = isActive == 1
-            return p, nil
-        })
+        products, err := sqlite.QueryAll(db, sql, args, scanProduct)
         if err != nil {
             http.WriteError(w, http.StatusInternalServerError, "failed to list products")
             return
@@ -218,18 +222,16 @@ func getHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             return
         }
 
-        var p productJSON
-        var isActive int
         sql, args := sqlite.Select("id", "name", "description", "price_cents", "is_active", "created_at", "updated_at").
             From("products").
             Where("id = ?", id).
             Where("deleted_at IS NULL").
             Build()
-        if err := db.QueryRow(sql, args...).Scan(&p.ID, &p.Name, &p.Description, &p.PriceCents, &isActive, &p.CreatedAt, &p.UpdatedAt); err != nil {
+        p, err := sqlite.QueryOne(db, sql, args, scanProduct)
+        if err != nil {
             http.WriteError(w, http.StatusNotFound, "product not found")
             return
         }
-        p.IsActive = isActive == 1
 
         http.WriteJSON(w, http.StatusOK, map[string]any{"product": p})
     }

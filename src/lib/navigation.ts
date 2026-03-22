@@ -46,6 +46,8 @@ export const navigation = [
       { title: 'User API keys', href: '/docs/recipes/user-api-keys' },
       { title: 'User settings', href: '/docs/recipes/user-settings' },
       { title: 'User activity log', href: '/docs/recipes/user-activity' },
+      { title: 'Paginated lists', href: '/docs/recipes/paginated-lists' },
+      { title: 'Automated backups', href: '/docs/recipes/automated-backups' },
       { title: 'Audit logging', href: '/docs/recipes/audit-logging' },
       { title: 'Testing', href: '/docs/recipes/testing' },
       { title: 'Deployment', href: '/docs/recipes/deployment' },

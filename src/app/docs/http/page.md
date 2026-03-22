@@ -397,6 +397,108 @@ authGroup.HandleFunc("POST /auth/forgot-password", forgotHandler)
 
 ---
 
+## Pagination
+
+`ParsePagination` extracts `limit` and `offset` query parameters from the request with validation and clamping:
+
+```go
+// Parse with default limit 50, max limit 100
+pg := http.ParsePagination(r, 50, 100)
+
+// Use with query builder
+sql, args := sqlite.Select("id", "name", "email").
+    From("users").
+    Limit(pg.Limit).
+    Offset(pg.Offset).
+    Build()
+```
+
+The limit is clamped between 1 and `maxLimit`. The offset is clamped to non-negative. Invalid or missing values fall back to the defaults.
+
+### Paginated response
+
+`PaginatedResponse` writes a standardized JSON response with items and total count:
+
+```go
+http.PaginatedResponse(w, "users", users, total)
+// Response: {"users": [...], "total": 42}
+```
+
+The items are written under the given key. For endpoints that need additional fields (e.g., unread counts), use `ParsePagination` for input and write the response manually with `WriteJSON`.
+
+### Full example
+
+```go
+func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        pg := http.ParsePagination(r, 50, 100)
+
+        selectQ := sqlite.Select("id", "name", "email").
+            From("users").
+            Where("deleted_at IS NULL").
+            Limit(pg.Limit).
+            Offset(pg.Offset)
+
+        countQ := sqlite.CountFrom(selectQ)
+
+        // ... execute queries, scan rows ...
+
+        http.PaginatedResponse(w, "users", users, total)
+    }
+}
+```
+
+---
+
+## Sorting
+
+`QueryParamSort` reads `sort` and `order` query parameters and validates them against a whitelist of allowed columns:
+
+```go
+col, dir := http.QueryParamSort(r,
+    []string{"id", "email", "name", "created_at"},
+    "id", "DESC",  // defaults
+)
+
+selectQ.OrderBy(col, dir)
+```
+
+- The `sort` parameter is matched case-insensitively against the allowed list
+- The `order` parameter accepts `"asc"` or `"desc"` (case-insensitive), normalized to uppercase
+- If `sort` is missing or not in the allowed list, the default column is used
+- If `order` is invalid, the default direction is used
+
+This prevents SQL injection by only allowing pre-approved column names.
+
+### Combined with pagination
+
+```go
+func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        pg := http.ParsePagination(r, 50, 100)
+        col, dir := http.QueryParamSort(r,
+            []string{"id", "email", "name", "created_at"},
+            "id", "DESC",
+        )
+
+        selectQ := sqlite.Select("id", "name", "email", "created_at").
+            From("users").
+            Where("deleted_at IS NULL").
+            OrderBy(col, dir).
+            Limit(pg.Limit).
+            Offset(pg.Offset)
+
+        countQ := sqlite.CountFrom(selectQ)
+
+        // ... execute and respond ...
+    }
+}
+```
+
+The client requests: `GET /api/admin/users?sort=name&order=asc&limit=20&offset=40`
+
+---
+
 ## Static file serving
 
 Serve embedded SPAs with client-side routing support:

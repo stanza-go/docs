@@ -120,6 +120,33 @@ var count int64
 db.QueryRow(sql, args...).Scan(&count)
 ```
 
+### CountFrom
+
+`CountFrom` creates a COUNT query by reusing the table and WHERE clauses from an existing `SelectBuilder`. This eliminates duplicated filter logic when building both a SELECT and a COUNT for paginated endpoints:
+
+```go
+// Build the SELECT with all filters
+selectQ := sqlite.Select("id", "name", "email").
+    From("users").
+    Where("active = ?", true).
+    Where("role = ?", "admin").
+    OrderBy("created_at", "DESC").
+    Limit(50).
+    Offset(0)
+
+// Derive the COUNT — same table and WHERE, no duplication
+countQ := sqlite.CountFrom(selectQ)
+
+// Execute both
+rows, _ := db.Query(selectQ.Build())
+// ... scan rows ...
+
+var total int64
+db.QueryRow(countQ.Build()).Scan(&total)
+```
+
+`CountFrom` copies the table name and all WHERE conditions. It excludes JOINs, ORDER BY, LIMIT, and OFFSET — for LEFT JOINs this is correct because they preserve all rows from the left table.
+
 ### INSERT
 
 ```go

@@ -139,7 +139,7 @@ auth:
   secure_cookies: false
 
 cors:
-  origins: "http://localhost:23705,http://localhost:23700"
+  origins: "http://localhost:23706,http://localhost:23700"
 ```
 
 If the YAML file does not exist, it is silently skipped — the app works with defaults and environment variables only. This is intentional: the file is optional, the environment is always available.
@@ -156,7 +156,7 @@ func provideConfig(dir *datadir.Dir) *config.Config {
         config.WithDefaults(map[string]string{
             "server.addr":  ":23710",
             "log.level":    "info",
-            "cors.origins": "http://localhost:23705,http://localhost:23700",
+            "cors.origins": "http://localhost:23706,http://localhost:23700",
         }),
         config.WithEnvPrefix("STANZA"),
     )

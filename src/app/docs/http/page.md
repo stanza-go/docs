@@ -306,7 +306,7 @@ router.Use(http.SecureHeaders(http.SecureHeadersConfig{
 
 ```go
 router.Use(http.CORS(http.CORSConfig{
-    AllowOrigins:     []string{"http://localhost:23705", "http://localhost:23700"},
+    AllowOrigins:     []string{"http://localhost:23706", "http://localhost:23700"},
     AllowCredentials: true,
     MaxAge:           86400,
 }))

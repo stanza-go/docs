@@ -45,7 +45,7 @@ The `standalone` repo contains three projects:
 |---------|----------|-------|
 | `api/` | 23710 | Go + Stanza framework |
 | `ui/` | 23700 | Vite + Bun — blank canvas for your frontend |
-| `admin/` | 23705 | Vite + Bun + React + shadcn/ui — pre-built admin panel |
+| `admin/` | 23706 | Vite + Bun + React + Mantine — pre-built admin panel |
 
 In production, both frontends are embedded into the Go binary via `//go:embed`. One binary serves everything.
 

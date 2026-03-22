@@ -33,7 +33,7 @@ The standalone repo contains three projects:
 ```
 standalone/
 ├── api/        ← Go backend (port 23710)
-├── admin/      ← React admin panel (port 23705)
+├── admin/      ← React admin panel (port 23706)
 ├── ui/         ← Blank frontend canvas (port 23700)
 ├── Makefile
 └── Dockerfile
@@ -65,7 +65,7 @@ This starts three processes with hot reload:
 | Process | URL | What it does |
 |---------|-----|------|
 | API | `http://localhost:23710` | Go server with file watcher |
-| Admin | `http://localhost:23705` | Vite dev server (proxies `/api/*` to Go) |
+| Admin | `http://localhost:23706` | Vite dev server (proxies `/api/*` to Go) |
 | UI | `http://localhost:23700` | Vite dev server (proxies `/api/*` to Go) |
 
 On first boot, the API server will:
@@ -87,7 +87,7 @@ For local development, set `STANZA_AUTH_SECURE_COOKIES=false` in your environmen
 make build
 ```
 
-This produces a single binary (~7.5MB) with both frontends embedded:
+This produces a single binary (~15MB) with both frontends embedded:
 
 | Path | Serves |
 |------|--------|
@@ -144,7 +144,7 @@ Each module follows the same pattern: `api/module/{name}/{name}.go` with a `Regi
 
 ### Admin (`admin/`)
 
-A React + shadcn/ui app with pre-built pages for every admin feature. Modules are self-contained under `src/pages/`.
+A React + Mantine app with pre-built pages for every admin feature. Modules are self-contained under `src/pages/`.
 
 ### UI (`ui/`)
 

@@ -204,39 +204,34 @@ group.HandleFunc("GET /users/export", exportHandler(db))
 
 ## Bulk actions
 
-Bulk actions receive an array of IDs in the JSON body, validate them, and execute a single query:
+Bulk actions receive an array of IDs in the JSON body. Validate with `http.CheckBulkIDs`, then use the query builder with `WhereIn`:
 
 ```go
 func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
     return func(w http.ResponseWriter, r *http.Request) {
         var req struct {
-            IDs []string `json:"ids"`
+            IDs []int64 `json:"ids"`
         }
         if err := http.ReadJSON(r, &req); err != nil {
             http.WriteError(w, http.StatusBadRequest, "invalid request body")
             return
         }
-        if len(req.IDs) == 0 {
-            http.WriteError(w, http.StatusBadRequest, "ids required")
-            return
-        }
-        if len(req.IDs) > 100 {
-            http.WriteError(w, http.StatusBadRequest, "maximum 100 ids per request")
+        if !http.CheckBulkIDs(w, req.IDs, 100) {
             return
         }
 
-        // Build parameterized IN clause
-        placeholders := make([]string, len(req.IDs))
-        args := make([]any, len(req.IDs))
+        now := time.Now().UTC().Format(time.RFC3339)
+        ids := make([]any, len(req.IDs))
         for i, id := range req.IDs {
-            placeholders[i] = "?"
-            args[i] = id
+            ids[i] = id
         }
 
-        query := fmt.Sprintf(
-            "UPDATE users SET deleted_at = unixepoch() WHERE id IN (%s) AND deleted_at IS NULL",
-            strings.Join(placeholders, ","),
-        )
+        query, args := sqlite.Update("users").
+            Set("deleted_at", now).
+            Set("updated_at", now).
+            Where("deleted_at IS NULL").
+            WhereIn("id", ids...).
+            Build()
         result, err := db.Exec(query, args...)
         if err != nil {
             http.WriteError(w, http.StatusInternalServerError, "failed to delete users")
@@ -251,17 +246,13 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 }
 ```
 
-Register on a `DELETE` route:
+Register on a POST route (bulk operations carry a JSON body):
 
 ```go
-group.HandleFunc("DELETE /users/bulk", bulkDeleteHandler(db))
+group.HandleFunc("POST /users/bulk-delete", bulkDeleteHandler(db))
 ```
 
-Key points:
-- Always cap the number of IDs (e.g., 100) to prevent oversized queries
-- Use parameterized placeholders (`?`) — never interpolate IDs directly into SQL
-- Return `RowsAffected` so the client knows how many rows were actually modified
-- For soft-delete, use `UPDATE ... SET deleted_at` instead of `DELETE`
+For the complete set of bulk patterns — hard-delete with FK cleanup, bulk state changes, loop-based service calls, batch upserts, audit logging, and webhook dispatch — see the [Bulk operations](/docs/recipes/bulk-operations) recipe.
 
 ---
 
@@ -273,7 +264,7 @@ Register all endpoints in your module:
 func Register(group *http.Group, db *sqlite.DB) {
     group.HandleFunc("GET /users", listHandler(db))
     group.HandleFunc("GET /users/export", exportHandler(db))
-    group.HandleFunc("DELETE /users/bulk", bulkDeleteHandler(db))
+    group.HandleFunc("POST /users/bulk-delete", bulkDeleteHandler(db))
     group.HandleFunc("GET /users/{id}", getHandler(db))
     group.HandleFunc("POST /users", createHandler(db))
     group.HandleFunc("PUT /users/{id}", updateHandler(db))

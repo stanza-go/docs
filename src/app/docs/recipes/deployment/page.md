@@ -24,7 +24,7 @@ This runs three steps in sequence:
 2. `make build-admin` — builds the admin panel with Vite/Bun
 3. `make build-api` — compiles Go with `CGO_ENABLED=1` and `-tags prod`
 
-Output: `api/bin/standalone` (~17MB with embedded admin panel, boots in <100ms).
+Output: `api/bin/standalone` (~10MB with embedded admin panel, boots in <100ms).
 
 The `-tags prod` flag activates `//go:embed` directives that bundle the frontend `dist/` directories into the binary. In development mode (without the tag), the frontends are served by their own Vite dev servers.
 

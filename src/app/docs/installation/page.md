@@ -87,7 +87,7 @@ For local development, set `STANZA_AUTH_SECURE_COOKIES=false` in your environmen
 make build
 ```
 
-This produces a single binary (~15MB) with both frontends embedded:
+This produces a single binary (~10MB) with both frontends embedded:
 
 | Path | Serves |
 |------|--------|

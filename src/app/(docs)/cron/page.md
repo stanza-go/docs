@@ -18,16 +18,26 @@ import "github.com/stanza-go/framework/pkg/cron"
 
 ```go
 scheduler := cron.NewScheduler(
-    cron.WithLocation(time.UTC),    // timezone for schedule evaluation (default: UTC)
-    cron.WithLogger(logger),        // optional logger
+    cron.WithLocation(time.UTC),              // timezone for schedule evaluation (default: UTC)
+    cron.WithLogger(logger),                  // optional logger
+    cron.WithDefaultTimeout(10 * time.Minute), // default job timeout
 )
 ```
+
+### Options
+
+| Option | Default | Description |
+|--------|---------|-------------|
+| `WithLocation(loc)` | `time.UTC` | Timezone for evaluating cron expressions |
+| `WithLogger(l)` | `nil` | Logger for job start/complete/error messages |
+| `WithOnComplete(fn)` | `nil` | Callback invoked after each job execution |
+| `WithDefaultTimeout(d)` | `0` (none) | Maximum execution time for all jobs |
 
 ---
 
 ## Adding jobs
 
-Register jobs before starting the scheduler. Each job has a unique name, a cron expression, and a function:
+Register jobs before starting the scheduler. Each job has a unique name, a cron expression, and a function. Optional `JobOption` values configure per-job settings:
 
 ```go
 scheduler.Add("cleanup-sessions", "0 * * * *", func(ctx context.Context) error {
@@ -46,7 +56,63 @@ scheduler.Add("every-five-minutes", "*/5 * * * *", func(ctx context.Context) err
 })
 ```
 
-The context is cancelled when the scheduler stops, allowing jobs to clean up gracefully.
+The context is cancelled when the scheduler stops (or when a timeout is reached), allowing jobs to clean up gracefully.
+
+---
+
+## Timeouts
+
+When a job exceeds its timeout, the context is cancelled and the job fails with a `"job timed out after Xs"` error. Timed-out jobs follow normal completion flow — they are recorded in stats, trigger the `OnComplete` callback, and appear in run history.
+
+### Default timeout
+
+Set a scheduler-level default that applies to all jobs:
+
+```go
+scheduler := cron.NewScheduler(
+    cron.WithDefaultTimeout(10 * time.Minute),
+)
+```
+
+### Per-job timeout
+
+Override the default for a specific job:
+
+```go
+// Long-running backup gets a longer timeout
+scheduler.Add("daily-backup", "0 2 * * *", backupFn, cron.Timeout(30*time.Minute))
+
+// Quick health check gets a shorter timeout
+scheduler.Add("health-check", "*/5 * * * *", healthFn, cron.Timeout(30*time.Second))
+```
+
+### Disabling timeout for a job
+
+`Timeout(0)` explicitly disables the timeout for a job, even when a scheduler default is set:
+
+```go
+scheduler := cron.NewScheduler(
+    cron.WithDefaultTimeout(10 * time.Minute),
+)
+
+// This job can run indefinitely
+scheduler.Add("long-running", "0 0 * * *", longFn, cron.Timeout(0))
+```
+
+### Checking context in handlers
+
+Jobs should check their context for cancellation, especially in loops:
+
+```go
+scheduler.Add("batch-process", "0 * * * *", func(ctx context.Context) error {
+    for _, item := range items {
+        if ctx.Err() != nil {
+            return ctx.Err() // timeout or shutdown
+        }
+        process(item)
+    }
+    return nil
+})
 
 ---
 
@@ -129,6 +195,7 @@ Each `Entry` is a snapshot containing:
 | `LastRun` | `time.Time` | When the job last ran |
 | `NextRun` | `time.Time` | When the job will next run |
 | `LastErr` | `error` | Error from the last execution |
+| `Timeout` | `time.Duration` | Maximum execution time (0 = no limit) |
 
 ### Scheduler stats
 

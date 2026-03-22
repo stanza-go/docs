@@ -18,6 +18,7 @@ All cron jobs are registered in the `provideCron` function in `api/main.go`. Thi
 func provideCron(lc *lifecycle.Lifecycle, db *sqlite.DB, q *queue.Queue, logger *log.Logger) (*cron.Scheduler, error) {
     s := cron.NewScheduler(
         cron.WithLogger(logger),
+        cron.WithDefaultTimeout(10 * time.Minute), // prevent hung jobs
         cron.WithOnComplete(func(r cron.CompletedRun) {
             // persist run history to cron_runs table
         }),
@@ -122,17 +123,37 @@ GET  /api/admin/cron/{name}/runs    — view execution history
 
 ## Built-in cron jobs
 
-The standalone app ships with five maintenance cron jobs:
+The standalone app ships with maintenance cron jobs. All use the 10-minute default timeout except `daily-backup` (30 minutes):
 
-| Name | Schedule | Purpose |
-|------|----------|---------|
-| `purge-completed-jobs` | `0 * * * *` | Remove completed queue jobs older than 24h |
-| `purge-expired-tokens` | `30 * * * *` | Delete expired refresh tokens |
-| `purge-stale-api-keys` | `0 3 * * *` | Remove revoked API keys older than 30 days |
-| `purge-old-cron-runs` | `30 3 * * *` | Delete run history older than 7 days |
-| `purge-old-audit-log` | `0 4 * * *` | Archive audit entries older than 90 days |
+| Name | Schedule | Timeout | Purpose |
+|------|----------|---------|---------|
+| `purge-completed-jobs` | `0 * * * *` | 10m | Remove completed queue jobs older than 24h |
+| `purge-expired-tokens` | `30 * * * *` | 10m | Delete expired refresh tokens |
+| `purge-stale-api-keys` | `0 3 * * *` | 10m | Remove revoked API keys older than 30 days |
+| `purge-old-cron-runs` | `30 3 * * *` | 10m | Delete run history older than 7 days |
+| `purge-old-audit-log` | `0 4 * * *` | 10m | Archive audit entries older than 90 days |
+| `purge-old-reset-tokens` | `30 4 * * *` | 10m | Delete used/expired password reset tokens |
+| `purge-old-notifications` | `0 5 * * *` | 10m | Remove read notifications older than 30 days |
+| `daily-backup` | `0 2 * * *` | 30m | VACUUM INTO backup of database |
+| `purge-old-backups` | `30 2 * * *` | 10m | Remove backups older than 7 days |
 
 These keep the SQLite database lean. Add your own jobs following the same pattern.
+
+---
+
+## Job timeouts
+
+The standalone app uses `WithDefaultTimeout(10 * time.Minute)` as a safety net. Override per-job when needed:
+
+```go
+// Backup can be slow on large databases
+s.Add("daily-backup", "0 2 * * *", backupFn, cron.Timeout(30*time.Minute))
+
+// Disable timeout for a specific job
+s.Add("long-running-sync", "0 0 * * *", syncFn, cron.Timeout(0))
+```
+
+When a job exceeds its timeout, the context is cancelled and the job fails with a `"job timed out after Xs"` error. The error appears in run history and the admin panel.
 
 ---
 
@@ -140,6 +161,7 @@ These keep the SQLite database lean. Add your own jobs following the same patter
 
 - Jobs must be added **before** `s.Start()` is called.
 - Each job name must be unique — duplicates are rejected.
-- The `ctx` passed to your job function is cancelled when the scheduler stops, so respect context cancellation for graceful shutdown.
+- The `ctx` passed to your job function is cancelled when the scheduler stops or when a timeout is reached, so respect context cancellation for graceful shutdown.
 - A job that's already running won't be triggered again by the scheduler until it finishes.
 - Log important outcomes — cron jobs run silently. Use `logger.Info()` or `logger.Error()` to make them observable.
+- Always set a default timeout (`WithDefaultTimeout`) to prevent hung jobs from blocking shutdown.

@@ -76,6 +76,15 @@ validate.Email("email", req.Email)
 // → "must be a valid email address"
 ```
 
+### URL
+
+Checks that a string is a valid HTTP or HTTPS URL — correct scheme, parseable, and has a host. Skips empty strings.
+
+```go
+validate.URL("callback_url", req.CallbackURL)
+// → "must be a valid URL"
+```
+
 ### OneOf
 
 Checks that a string is one of the allowed values. Skips empty strings.
@@ -122,6 +131,7 @@ validate.Check("quantity", req.Quantity <= stock, "exceeds available stock")
 | `MinLen` | `(field, value string, min int)` | Yes | `must be at least N characters` |
 | `MaxLen` | `(field, value string, max int)` | No | `must be at most N characters` |
 | `Email` | `(field, value string)` | Yes | `must be a valid email address` |
+| `URL` | `(field, value string)` | Yes | `must be a valid URL` |
 | `OneOf` | `(field, value string, ...allowed)` | Yes | `must be one of: a, b, c` |
 | `Positive` | `(field string, value int)` | — | `must be a positive number` |
 | `InRange` | `(field string, value, min, max int)` | — | `must be between N and M` |

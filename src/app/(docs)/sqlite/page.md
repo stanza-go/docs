@@ -141,6 +141,46 @@ if err == sqlite.ErrNoRows {
 }
 ```
 
+### QueryAll — scan rows into a slice
+
+`QueryAll` is a generic helper that executes a query, scans every row using a provided function, and returns a typed slice. It handles the full lifecycle: query execution, iteration, scanning, error checking (`rows.Err()`), and cleanup (`rows.Close()`).
+
+```go
+type User struct {
+    ID    int64
+    Email string
+    Name  string
+}
+
+sql, args := sqlite.Select("id", "email", "name").
+    From("users").
+    Where("deleted_at IS NULL").
+    OrderBy("id", "ASC").
+    Build()
+
+users, err := sqlite.QueryAll(db, sql, args, func(rows *sqlite.Rows) (User, error) {
+    var u User
+    err := rows.Scan(&u.ID, &u.Email, &u.Name)
+    return u, err
+})
+```
+
+The scan function is called once per row. It receives `*Rows` and should only call `rows.Scan(...)` to read columns into the returned value. Post-processing (e.g., boolean conversion) happens inside the scan function:
+
+```go
+users, err := sqlite.QueryAll(db, sql, args, func(rows *sqlite.Rows) (UserJSON, error) {
+    var u UserJSON
+    var isActive int
+    if err := rows.Scan(&u.ID, &u.Email, &u.Name, &isActive); err != nil {
+        return u, err
+    }
+    u.IsActive = isActive == 1
+    return u, nil
+})
+```
+
+`QueryAll` always returns a non-nil slice — when no rows match, it returns `[]T{}` instead of `nil`. This means the result serializes to `[]` in JSON, not `null`, avoiding frontend crashes on empty result sets.
+
 ---
 
 ## Query builder

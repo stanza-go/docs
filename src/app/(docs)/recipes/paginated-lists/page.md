@@ -42,35 +42,22 @@ func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         }
 
         // COUNT reuses table + WHERE from selectQ
-        countQ := sqlite.CountFrom(selectQ)
+        total, _ := db.Count(selectQ)
 
         // Execute the SELECT
         sql, args := selectQ.Build()
-        rows, err := db.Query(sql, args...)
-        if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to list users")
-            return
-        }
-        defer rows.Close()
-
-        var users []map[string]any
-        for rows.Next() {
+        users, err := sqlite.QueryAll(db, sql, args, func(rows *sqlite.Rows) (map[string]any, error) {
             var id, createdAt int64
             var name, email string
             if err := rows.Scan(&id, &name, &email, &createdAt); err != nil {
-                http.WriteError(w, http.StatusInternalServerError, "failed to scan user")
-                return
+                return nil, err
             }
-            users = append(users, map[string]any{
+            return map[string]any{
                 "id": id, "name": name, "email": email, "created_at": createdAt,
-            })
-        }
-
-        // Execute the COUNT
-        sql, args = countQ.Build()
-        var total int
-        if err := db.QueryRow(sql, args...).Scan(&total); err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to count users")
+            }, nil
+        })
+        if err != nil {
+            http.WriteError(w, http.StatusInternalServerError, "failed to list users")
             return
         }
 

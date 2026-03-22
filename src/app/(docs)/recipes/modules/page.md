@@ -129,23 +129,18 @@ func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         total, _ := db.Count(selectQ)
 
         sql, args := selectQ.OrderBy(col, dir).Limit(pg.Limit).Offset(pg.Offset).Build()
-        rows, err := db.Query(sql, args...)
-        if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to list products")
-            return
-        }
-        defer rows.Close()
-
-        products := make([]productJSON, 0)
-        for rows.Next() {
+        products, err := sqlite.QueryAll(db, sql, args, func(rows *sqlite.Rows) (productJSON, error) {
             var p productJSON
             var isActive int
             if err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.PriceCents, &isActive, &p.CreatedAt, &p.UpdatedAt); err != nil {
-                http.WriteError(w, http.StatusInternalServerError, "failed to scan product")
-                return
+                return p, err
             }
             p.IsActive = isActive == 1
-            products = append(products, p)
+            return p, nil
+        })
+        if err != nil {
+            http.WriteError(w, http.StatusInternalServerError, "failed to list products")
+            return
         }
 
         http.PaginatedResponse(w, "products", products, total)

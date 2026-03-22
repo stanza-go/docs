@@ -6,13 +6,13 @@ One binary. One SQLite file. One data dir. Four hours to production. {% .lead %}
 
 {% quick-links %}
 
-{% quick-link title="Installation" icon="installation" href="/docs/installation" description="Fork the standalone repo, install dependencies, and start building in minutes." /%}
+{% quick-link title="Installation" icon="installation" href="/installation" description="Fork the standalone repo, install dependencies, and start building in minutes." /%}
 
-{% quick-link title="Lifecycle & DI" icon="presets" href="/docs/lifecycle" description="Dependency injection, startup/shutdown orchestration, and service wiring." /%}
+{% quick-link title="Lifecycle & DI" icon="presets" href="/lifecycle" description="Dependency injection, startup/shutdown orchestration, and service wiring." /%}
 
-{% quick-link title="HTTP routing" icon="plugins" href="/docs/http" description="Router, middleware, route groups, request parsing, and JSON responses." /%}
+{% quick-link title="HTTP routing" icon="plugins" href="/http" description="Router, middleware, route groups, request parsing, and JSON responses." /%}
 
-{% quick-link title="SQLite database" icon="theming" href="/docs/sqlite" description="Vendored SQLite with CGo bindings, query builder, migrations, and transactions." /%}
+{% quick-link title="SQLite database" icon="theming" href="/sqlite" description="Vendored SQLite with CGo bindings, query builder, migrations, and transactions." /%}
 
 {% /quick-links %}
 

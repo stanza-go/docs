@@ -59,7 +59,7 @@ export function Hero() {
                 framework for ideas that need to be live by tonight.
               </p>
               <div className="mt-8 flex gap-4 md:justify-center lg:justify-start">
-                <Button href="/docs/installation">Get started</Button>
+                <Button href="/installation">Get started</Button>
                 <Button href="https://github.com/stanza-go" variant="secondary">
                   View on GitHub
                 </Button>

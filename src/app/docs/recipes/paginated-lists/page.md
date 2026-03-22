@@ -6,7 +6,7 @@ nextjs:
     description: Build paginated, sortable list endpoints with bulk actions and CSV export.
 ---
 
-This recipe shows how to build a complete list endpoint with pagination, sorting, filtering, bulk actions, and CSV export — the pattern used by every admin module in the standalone app.
+This recipe shows how to build a complete list endpoint with pagination, sorting, filtering, bulk actions, and CSV export — the pattern used by every admin module in the standalone app. For advanced filter patterns — multi-column search, OR conditions, subquery filters, and custom LIKE — see [Search & filtering](/docs/recipes/search-filtering).
 
 ---
 
@@ -31,15 +31,13 @@ func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         selectQ := sqlite.Select("id", "name", "email", "created_at").
             From("users").
             Where("deleted_at IS NULL").
+            WhereSearch(r.URL.Query().Get("search"), "name", "email").
             OrderBy(col, dir).
             Limit(pg.Limit).
             Offset(pg.Offset)
 
         // Apply optional filters from query params
-        if search := http.QueryParam(r, "search"); search != "" {
-            selectQ.Where("(name LIKE ? OR email LIKE ?)", "%"+search+"%", "%"+search+"%")
-        }
-        if role := http.QueryParam(r, "role"); role != "" {
+        if role := r.URL.Query().Get("role"); role != "" {
             selectQ.Where("role = ?", role)
         }
 
@@ -104,12 +102,10 @@ When both the list handler and export handler need the same filters, extract the
 func buildUserSelect(r *http.Request) *sqlite.SelectBuilder {
     selectQ := sqlite.Select("id", "name", "email", "role", "created_at").
         From("users").
-        Where("deleted_at IS NULL")
+        Where("deleted_at IS NULL").
+        WhereSearch(r.URL.Query().Get("search"), "name", "email")
 
-    if search := http.QueryParam(r, "search"); search != "" {
-        selectQ.Where("(name LIKE ? OR email LIKE ?)", "%"+search+"%", "%"+search+"%")
-    }
-    if role := http.QueryParam(r, "role"); role != "" {
+    if role := r.URL.Query().Get("role"); role != "" {
         selectQ.Where("role = ?", role)
     }
 

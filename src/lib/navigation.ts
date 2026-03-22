@@ -33,6 +33,7 @@ export const navigation = [
     links: [
       { title: 'Adding a module', href: '/docs/recipes/modules' },
       { title: 'Adding an admin page', href: '/docs/recipes/admin-pages' },
+      { title: 'Admin dashboard patterns', href: '/docs/recipes/dashboard-patterns' },
       { title: 'Configuration management', href: '/docs/recipes/configuration' },
       { title: 'Database migrations', href: '/docs/recipes/migrations' },
       { title: 'Database schema design', href: '/docs/recipes/schema-design' },

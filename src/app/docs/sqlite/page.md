@@ -40,6 +40,25 @@ In a Stanza app, the database is wired through the lifecycle — it starts first
 
 ---
 
+## Pool stats
+
+Call `db.Stats()` for a snapshot of connection pool utilization and query counters:
+
+```go
+stats := db.Stats()
+fmt.Println(stats.ReadPoolSize)      // configured pool size (e.g. 4)
+fmt.Println(stats.ReadPoolAvailable) // idle connections right now
+fmt.Println(stats.ReadPoolInUse)     // checked-out connections right now
+fmt.Println(stats.TotalReads)        // cumulative read queries since Start
+fmt.Println(stats.TotalWrites)       // cumulative write operations since Start
+fmt.Println(stats.PoolWaits)         // times a read had to wait for a free connection
+fmt.Println(stats.PoolWaitTime)      // cumulative time spent waiting
+```
+
+Use `PoolWaits` and `PoolWaitTime` to detect pool exhaustion — if waits are frequent, increase the pool size with `WithReadPoolSize`. The counters are atomic and safe to call from any goroutine. Pool availability is a point-in-time snapshot.
+
+---
+
 ## Query logging
 
 Enable query instrumentation by passing a logger. Every query is logged at **Debug** level with its SQL and duration. Queries exceeding the slow threshold are logged at **Warn** level.

@@ -381,6 +381,19 @@ func (db *DB) Migrate() (int, error)
 func (db *DB) Rollback() (int64, error)
 ```
 
+### Execution interfaces
+
+```go
+// Satisfied by DB and Tx — accepted by builder execution methods.
+type Execer interface {
+    Exec(sql string, args ...any) (Result, error)
+}
+type Querier interface {
+    Query(sql string, args ...any) (*Rows, error)
+    QueryRow(sql string, args ...any) *Row
+}
+```
+
 ### SelectBuilder
 
 ```go
@@ -406,6 +419,8 @@ func (b *SelectBuilder) OrderBy(column, dir string) *SelectBuilder
 func (b *SelectBuilder) Limit(n int) *SelectBuilder
 func (b *SelectBuilder) Offset(n int) *SelectBuilder
 func (b *SelectBuilder) Build() (string, []any)
+func (b *SelectBuilder) Query(q Querier) (*Rows, error)
+func (b *SelectBuilder) QueryRow(q Querier) *Row
 ```
 
 ### CountBuilder
@@ -425,6 +440,7 @@ func (b *CountBuilder) WhereNotInSelect(column string, sub *SelectBuilder) *Coun
 func (b *CountBuilder) WhereExists(sub *SelectBuilder) *CountBuilder
 func (b *CountBuilder) WhereNotExists(sub *SelectBuilder) *CountBuilder
 func (b *CountBuilder) Build() (string, []any)
+func (b *CountBuilder) Count(q Querier) (int, error)
 ```
 
 ### InsertBuilder
@@ -435,6 +451,7 @@ func (b *InsertBuilder) Set(column string, value any) *InsertBuilder
 func (b *InsertBuilder) OrIgnore() *InsertBuilder
 func (b *InsertBuilder) OnConflict(conflictColumns, updateColumns []string) *InsertBuilder
 func (b *InsertBuilder) Build() (string, []any)
+func (b *InsertBuilder) Exec(e Execer) (int64, error)
 ```
 
 ### InsertBatchBuilder
@@ -446,6 +463,7 @@ func (b *InsertBatchBuilder) Row(values ...any) *InsertBatchBuilder
 func (b *InsertBatchBuilder) OrIgnore() *InsertBatchBuilder
 func (b *InsertBatchBuilder) OnConflict(conflictColumns, updateColumns []string) *InsertBatchBuilder
 func (b *InsertBatchBuilder) Build() (string, []any)
+func (b *InsertBatchBuilder) Exec(e Execer) (int64, error)
 ```
 
 ### UpdateBuilder
@@ -466,6 +484,7 @@ func (b *UpdateBuilder) WhereNotInSelect(column string, sub *SelectBuilder) *Upd
 func (b *UpdateBuilder) WhereExists(sub *SelectBuilder) *UpdateBuilder
 func (b *UpdateBuilder) WhereNotExists(sub *SelectBuilder) *UpdateBuilder
 func (b *UpdateBuilder) Build() (string, []any)
+func (b *UpdateBuilder) Exec(e Execer) (int64, error)
 ```
 
 ### DeleteBuilder
@@ -484,6 +503,7 @@ func (b *DeleteBuilder) WhereNotInSelect(column string, sub *SelectBuilder) *Del
 func (b *DeleteBuilder) WhereExists(sub *SelectBuilder) *DeleteBuilder
 func (b *DeleteBuilder) WhereNotExists(sub *SelectBuilder) *DeleteBuilder
 func (b *DeleteBuilder) Build() (string, []any)
+func (b *DeleteBuilder) Exec(e Execer) (int64, error)
 ```
 
 ### Condition (for WhereOr)

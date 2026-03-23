@@ -277,21 +277,52 @@ For comparing a parsed path parameter against `claims.UID`, prefer `claims.IntUI
 
 ## Query builder
 
-The fluent query builder generates parameterized SQL. Every builder method returns the builder for chaining, and `.Build()` produces the SQL string and argument slice.
+The fluent query builder generates parameterized SQL. Every builder method returns the builder for chaining.
+
+Builders have execution methods that accept `db` or `tx` directly — this is the recommended way to run builder queries:
+
+```go
+// SELECT — chain .Query(db) or .QueryRow(db)
+rows, err := sqlite.Select("id", "name").From("users").
+    Where("active = ?", true).Query(db)
+
+// INSERT — chain .Exec(db), returns last insert ID
+id, err := sqlite.Insert("users").Set("name", "Alice").Exec(db)
+
+// UPDATE — chain .Exec(db), returns rows affected
+n, err := sqlite.Update("users").Set("name", "Bob").Where("id = ?", id).Exec(db)
+
+// DELETE — chain .Exec(db), returns rows affected
+n, err := sqlite.Delete("users").Where("id = ?", id).Exec(db)
+
+// COUNT — chain .Count(db)
+total, err := sqlite.Count("users").Where("active = ?", true).Count(db)
+```
+
+The convenience methods `db.Insert()`, `db.Update()`, `db.Delete()`, and `db.Count()` also work — see below.
+
+You can also call `.Build()` to get the SQL string and argument slice for manual execution:
+
+```go
+sql, args := builder.Build()
+rows, err := db.Query(sql, args...)
+```
+
+{% callout type="warning" title="Do not pass Build() directly to db.Exec or db.Query" %}
+`db.Exec(builder.Build())` **silently loses query parameters**. Go's multi-return-to-variadic forwarding wraps the `[]any` as a single element instead of spreading it. The query runs with wrong parameters and affects zero rows with no error. Always use `builder.Exec(db)`, `builder.Query(db)`, or the `db.Update(builder)` convenience methods.
+{% /callout %}
 
 ### SELECT
 
 ```go
-sql, args := sqlite.Select("id", "name", "email").
+rows, err := sqlite.Select("id", "name", "email").
     From("users").
     Where("active = ?", true).
     Where("role = ?", "admin").      // multiple Where = AND
     OrderBy("created_at", "DESC").
     Limit(20).
     Offset(0).
-    Build()
-
-rows, err := db.Query(sql, args...)
+    Query(db)
 ```
 
 Joins are supported:
@@ -451,21 +482,33 @@ selectQ := sqlite.Select("id", "name", "email").
 
 total, err := db.Count(selectQ)
 
-sql, args := selectQ.OrderBy("id", "DESC").Limit(50).Offset(0).Build()
-rows, _ := db.Query(sql, args...)
+rows, err := selectQ.OrderBy("id", "DESC").Limit(50).Offset(0).Query(db)
 ```
 
 `db.Count` calls `CountFrom` internally, so it inherits the same behavior — table and WHERE conditions are reused, ORDER BY/LIMIT/OFFSET are excluded.
 
+You can also call `.Count(db)` directly on a `CountBuilder`:
+
+```go
+total, err := sqlite.Count("users").Where("active = ?", true).Count(db)
+```
+
 ### db.Insert / db.Update / db.Delete
 
-Convenience methods that combine `Build` and `Exec` into a single call, returning the most commonly needed value:
+Two equivalent ways to execute write builders — use whichever reads better:
 
-| Method | Takes | Returns | Value |
-|--------|-------|---------|-------|
-| `db.Insert(ib)` | `*InsertBuilder` | `(int64, error)` | Last inserted row ID |
-| `db.Update(ub)` | `*UpdateBuilder` | `(int64, error)` | Number of affected rows |
-| `db.Delete(d)` | `*DeleteBuilder` | `(int64, error)` | Number of deleted rows |
+| Style | Example |
+|-------|---------|
+| Builder method | `sqlite.Insert("users").Set("name", "Alice").Exec(db)` |
+| DB convenience | `db.Insert(sqlite.Insert("users").Set("name", "Alice"))` |
+
+Both return the same values:
+
+| Builder | Returns | Value |
+|---------|---------|-------|
+| `InsertBuilder.Exec(db)` / `db.Insert(ib)` | `(int64, error)` | Last inserted row ID |
+| `UpdateBuilder.Exec(db)` / `db.Update(ub)` | `(int64, error)` | Number of affected rows |
+| `DeleteBuilder.Exec(db)` / `db.Delete(d)` | `(int64, error)` | Number of deleted rows |
 
 ```go
 // Create — returns the new row ID
@@ -489,33 +532,31 @@ n, err := db.Delete(sqlite.Delete("refresh_tokens").
     Where("expires_at < ?", cutoff))
 ```
 
-Use `db.Exec` directly when you need `OrIgnore`, `OnConflict`, `InsertBatch`, or raw SQL.
-
 ### INSERT
 
 ```go
-id, err := db.Insert(sqlite.Insert("users").
+id, err := sqlite.Insert("users").
     Set("name", "Alice").
     Set("email", "alice@example.com").
-    Set("created_at", sqlite.Now()))
+    Set("created_at", sqlite.Now()).
+    Exec(db)
 // id is the last inserted row ID (int64)
 ```
 
 Use `OrIgnore()` to skip on conflict:
 
 ```go
-sql, args := sqlite.Insert("settings").
+_, err := sqlite.Insert("settings").
     OrIgnore().
     Set("key", "site_name").
     Set("value", "My App").
-    Build()
-_, _ = db.Exec(sql, args...) // OrIgnore — use Exec directly
+    Exec(db)
 ```
 
 Use `OnConflict()` for upsert — insert a row, or update specific columns if it already exists:
 
 ```go
-sql, args := sqlite.Insert("user_settings").
+_, err := sqlite.Insert("user_settings").
     Set("user_id", uid).
     Set("key", k).
     Set("value", v).
@@ -525,7 +566,7 @@ sql, args := sqlite.Insert("user_settings").
         []string{"user_id", "key"},          // conflict columns (unique constraint)
         []string{"value", "updated_at"},     // columns to update on conflict
     ).
-    Build()
+    Exec(db)
 
 // Produces:
 // INSERT INTO user_settings (user_id, key, value, created_at, updated_at)
@@ -540,15 +581,13 @@ The first argument lists the columns that form the unique constraint. The second
 Use `InsertBatch` to insert multiple rows in a single statement. This is more efficient than looping with individual `Insert` calls — one round trip instead of N.
 
 ```go
-sql, args := sqlite.InsertBatch("settings").
+_, err := sqlite.InsertBatch("settings").
     Columns("key", "value", "group_name").
     Row("app.name", "Stanza", "general").
     Row("app.url", "https://stanza.dev", "general").
     Row("app.timezone", "UTC", "general").
     OrIgnore().
-    Build()
-
-_, err := db.Exec(sql, args...)
+    Exec(db)
 
 // Produces:
 // INSERT OR IGNORE INTO settings (key, value, group_name)

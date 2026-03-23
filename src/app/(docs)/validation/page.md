@@ -132,6 +132,16 @@ validate.InRange("age", req.Age, 18, 120)
 // → "must be between 18 and 120"
 ```
 
+### Slug
+
+Checks that a string is a valid URL slug: lowercase alphanumeric characters and hyphens, starting and ending with an alphanumeric character. Skips empty strings.
+
+```go
+validate.Slug("code", req.Code)
+// → "must contain only lowercase letters, numbers, and hyphens"
+// → "must start and end with a letter or number"
+```
+
 ### Check
 
 Generic validator for custom logic. If `ok` is false, the message is returned.
@@ -157,6 +167,7 @@ validate.Check("quantity", req.Quantity <= stock, "exceeds available stock")
 | `FutureDate` | `(field, value string)` | Yes | `must be a valid ISO 8601 date` / `must be a date in the future` |
 | `Positive` | `(field string, value int)` | — | `must be a positive number` |
 | `InRange` | `(field string, value, min, max int)` | — | `must be between N and M` |
+| `Slug` | `(field, value string)` | Yes | `must contain only lowercase letters, numbers, and hyphens` |
 | `Check` | `(field string, ok bool, message string)` | — | Custom message |
 
 ---
@@ -178,14 +189,34 @@ If email is empty, the user sees `"is required"` — not `"must be a valid email
 
 ## Validator type
 
-The `Validator` returned by `Fields` exposes three methods:
+The `Validator` returned by `Fields` exposes four methods:
 
 ```go
 v := validate.Fields(...)
 
+v.Add(checks ...*FieldError)    // append additional checks
 v.HasErrors() bool              // true if any check failed
 v.Errors() map[string]string    // field → message map (read-only)
 v.WriteError(w)                 // write 422 JSON response
+```
+
+Use `Add` to conditionally append validators after construction:
+
+```go
+v := validate.Fields(
+    validate.Required("url", req.URL),
+    validate.URL("url", req.URL),
+)
+if req.Code != "" {
+    v.Add(
+        validate.MinLen("code", req.Code, 3),
+        validate.Slug("code", req.Code),
+    )
+}
+if v.HasErrors() {
+    v.WriteError(w)
+    return
+}
 ```
 
 The `FieldError` type is public for advanced use cases:
@@ -197,7 +228,7 @@ type FieldError struct {
 }
 ```
 
-Each validator function returns `*FieldError` (nil on success). You can use this to build conditional validation:
+Each validator function returns `*FieldError` (nil on success). You can also build the full list upfront:
 
 ```go
 var checks []*validate.FieldError

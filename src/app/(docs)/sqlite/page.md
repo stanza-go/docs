@@ -237,6 +237,23 @@ sql, args := sqlite.Insert("users").
 
 This is the canonical format for `created_at`, `updated_at`, `deleted_at`, and similar columns throughout the application.
 
+### FormatTime — convert any time.Time for database storage
+
+`sqlite.FormatTime(t)` converts an arbitrary `time.Time` to a UTC RFC 3339 string. Use it when the timestamp is not "now" — future expiry dates, past cutoffs, or times from other sources:
+
+```go
+// Future timestamp — token expiry
+expiresAt := sqlite.FormatTime(time.Now().Add(24 * time.Hour))
+
+// Past timestamp — purge cutoff
+cutoff := sqlite.FormatTime(time.Now().Add(-30 * 24 * time.Hour))
+
+// Arbitrary time — from a struct field
+startedAt := sqlite.FormatTime(job.StartedAt)
+```
+
+`sqlite.Now()` delegates to `FormatTime(time.Now())` internally, so both produce the same canonical format.
+
 ---
 
 ## Query builder
@@ -664,7 +681,7 @@ q.WhereSearch(search, "audit_log.details", "audit_log.action")
 `WhereOr` groups conditions with OR. Each `Cond` is OR'd together and the group is parenthesized so it composes correctly with other AND conditions. Requires at least 2 conditions (fewer is a no-op). Available on all four query builders:
 
 ```go
-cutoff := time.Now().UTC().Add(-30 * 24 * time.Hour).Format(time.RFC3339)
+cutoff := sqlite.FormatTime(time.Now().Add(-30 * 24 * time.Hour))
 
 sql, args := sqlite.Delete("api_keys").
     WhereOr(

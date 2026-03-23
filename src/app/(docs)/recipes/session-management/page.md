@@ -113,8 +113,7 @@ func loginHandler(db *sqlite.DB, a *auth.Auth) func(http.ResponseWriter, *http.R
             return
         }
         tokenHash := auth.HashToken(refreshToken)
-        now := time.Now().UTC()
-        expiresAt := now.Add(a.RefreshTokenTTL()).Format(time.RFC3339)
+        expiresAt := sqlite.FormatTime(time.Now().Add(a.RefreshTokenTTL()))
 
         sql, args = sqlite.Insert("refresh_tokens").
             Set("id", randomID()).

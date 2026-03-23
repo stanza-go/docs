@@ -155,6 +155,8 @@ POST   /api/admin/webhooks/{id}/test    — send a test event
 
 All endpoints require the `admin:webhooks` scope.
 
+Webhook URLs are validated with `validate.PublicURL` to prevent SSRF — URLs pointing to localhost, private networks (10.x, 172.16-31.x, 192.168.x), or other reserved addresses are rejected.
+
 ### Creating a webhook
 
 ```bash

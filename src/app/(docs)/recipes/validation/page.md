@@ -67,6 +67,7 @@ func createHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 | `MaxLen(field, value, max)` | At most `max` characters |
 | `Email(field, value)` | Basic email format check (skips empty) |
 | `URL(field, value)` | Valid HTTP/HTTPS URL (skips empty) |
+| `PublicURL(field, value)` | Valid HTTP/HTTPS URL that doesn't point to private/reserved addresses (skips empty) |
 | `OneOf(field, value, ...allowed)` | Value is one of the allowed strings (skips empty) |
 | `FutureDate(field, value)` | Valid RFC 3339 timestamp in the future (skips empty) |
 | `Positive(field, value)` | Integer greater than zero |

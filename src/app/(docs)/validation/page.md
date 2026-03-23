@@ -85,6 +85,16 @@ validate.URL("callback_url", req.CallbackURL)
 // → "must be a valid URL"
 ```
 
+### PublicURL
+
+Like `URL`, but also rejects URLs pointing to private or reserved addresses — loopback (127.x, ::1), private networks (10.x, 172.16-31.x, 192.168.x), link-local (169.254.x), and reserved hostnames (localhost, *.local, *.internal). Use this for webhook URLs and other cases where the server makes outbound requests to user-supplied URLs, to prevent SSRF attacks. Skips empty strings.
+
+```go
+validate.PublicURL("webhook_url", req.URL)
+// → "must be a valid URL" (if malformed)
+// → "must not point to a private or reserved address" (if internal)
+```
+
 ### OneOf
 
 Checks that a string is one of the allowed values. Skips empty strings.
@@ -142,6 +152,7 @@ validate.Check("quantity", req.Quantity <= stock, "exceeds available stock")
 | `MaxLen` | `(field, value string, max int)` | No | `must be at most N characters` |
 | `Email` | `(field, value string)` | Yes | `must be a valid email address` |
 | `URL` | `(field, value string)` | Yes | `must be a valid URL` |
+| `PublicURL` | `(field, value string)` | Yes | `must be a valid URL` / `must not point to a private or reserved address` |
 | `OneOf` | `(field, value string, ...allowed)` | Yes | `must be one of: a, b, c` |
 | `FutureDate` | `(field, value string)` | Yes | `must be a valid ISO 8601 date` / `must be a date in the future` |
 | `Positive` | `(field string, value int)` | — | `must be a positive number` |

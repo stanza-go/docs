@@ -93,6 +93,7 @@ func QueryParam(r *Request, name string) string
 func QueryParamOr(r *Request, name, fallback string) string
 func QueryParamInt(r *Request, name string, fallback int) int
 func QueryParamSort(r *Request, allowed []string, defaultCol, defaultDir string) (string, string)
+    // Reads ?sort=col&order=ASC|DESC from query string. Validates col against allowed list.
 
 // Request body
 func ReadJSON(r *Request, v any) error

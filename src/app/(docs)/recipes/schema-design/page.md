@@ -394,6 +394,93 @@ This pattern is used for the admin settings page. Group by `group_name` for cate
 
 ---
 
+## Querying with JOINs
+
+When a module queries across related tables, use `Join` or `LeftJoin` on the `SelectBuilder`. Two important patterns to know:
+
+### List with aggregation (LEFT JOIN + GROUP BY)
+
+A common pattern: list parent rows with a count of child rows. For example, contacts with their note count:
+
+```go
+selectQ := sqlite.Select(
+    "c.id", "c.name", "c.email",
+    "COUNT(cn.id) AS note_count",
+    "c.created_at",
+).
+    From("contacts c").
+    LeftJoin("contact_notes cn", "cn.contact_id = c.id").
+    Where("c.deleted_at IS NULL").
+    GroupBy("c.id")
+```
+
+Use `LeftJoin` (not `Join`) so parent rows with zero children still appear. The `Where` method accepts arbitrary SQL expressions — `Where("c.deleted_at IS NULL")` works the same as `WhereNull("deleted_at")` but supports table-qualified column names.
+
+{% callout title="Qualify column names in JOINed queries" %}
+When two tables share a column name (e.g., `id`, `created_at`), you **must** qualify with the table alias. This is especially important for `OrderBy` — the column name from `QueryParamSort` is unqualified, so prefix it manually:
+
+```go
+col, dir := http.QueryParamSort(r,
+    []string{"id", "name", "created_at"},
+    "id", "DESC",
+)
+// Prefix with table alias for JOINed queries.
+col = "c." + col
+
+sql, args := selectQ.OrderBy(col, dir).Limit(pg.Limit).Offset(pg.Offset).Build()
+```
+
+Without the prefix, SQLite returns "ambiguous column name" when both tables have a column with that name.
+{% /callout %}
+
+### Count with JOINed queries
+
+`db.Count(selectQ)` derives a `SELECT COUNT(*)` from the builder, but it does not account for `GROUP BY` — it would return the number of groups, not the total row count. For JOINed queries with `GROUP BY`, build the count query separately on the base table:
+
+```go
+countSQL, countArgs := sqlite.Select("COUNT(*)").
+    From("contacts c").
+    Where("c.deleted_at IS NULL").
+    Build()
+var total int
+db.QueryRow(countSQL, countArgs...).Scan(&total)
+```
+
+### Multi-column search with table aliases
+
+`WhereSearch` does not support table-qualified columns. For JOINed queries, build the search condition manually:
+
+```go
+search := r.URL.Query().Get("search")
+if search != "" {
+    like := "%" + search + "%"
+    selectQ = selectQ.Where(
+        "(c.name LIKE ? OR c.email LIKE ? OR c.company LIKE ?)",
+        like, like, like,
+    )
+}
+```
+
+### Detail view with related records
+
+For a detail view that loads a parent and its children, use two separate queries instead of a JOIN — this avoids the N+1 problem in the opposite direction (duplicating parent columns across every child row):
+
+```go
+// Load contact.
+sql, args := sqlite.Select("id", "name", "email", "created_at").
+    From("contacts").Where("id = ?", id).WhereNull("deleted_at").Build()
+db.QueryRow(sql, args...).Scan(&c.ID, &c.Name, &c.Email, &c.CreatedAt)
+
+// Load notes for this contact.
+noteSQL, noteArgs := sqlite.Select("id", "body", "created_at").
+    From("contact_notes").Where("contact_id = ?", id).
+    OrderBy("created_at", "DESC").Build()
+notes, _ := sqlite.QueryAll(db, noteSQL, noteArgs, scanNote)
+c.Notes = notes
+```
+
+---
+
 ## The rules
 
 1. **Every column is `NOT NULL` with a default** unless NULL carries meaning.

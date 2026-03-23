@@ -66,39 +66,33 @@ When multiple writes must be atomic, use `db.InTx()`. It begins a transaction, c
 ```go
 err := db.InTx(func(tx *sqlite.Tx) error {
     // Debit the source account.
-    sql, args := sqlite.Update("accounts").
-        Set("balance", sqlite.Raw("balance - ?", amount)).
-        Where("id = ?", fromID).
-        Build()
-    result, err := tx.Exec(sql, args...)
+    n, err := tx.Update(sqlite.Update("accounts").
+        SetExpr("balance", "balance - ?", amount).
+        Where("id = ?", fromID))
     if err != nil {
         return err
     }
-    if result.RowsAffected == 0 {
+    if n == 0 {
         return errors.New("source account not found")
     }
 
     // Credit the destination account.
-    sql, args = sqlite.Update("accounts").
-        Set("balance", sqlite.Raw("balance + ?", amount)).
-        Where("id = ?", toID).
-        Build()
-    result, err = tx.Exec(sql, args...)
+    n, err = tx.Update(sqlite.Update("accounts").
+        SetExpr("balance", "balance + ?", amount).
+        Where("id = ?", toID))
     if err != nil {
         return err
     }
-    if result.RowsAffected == 0 {
+    if n == 0 {
         return errors.New("destination account not found")
     }
 
     // Record the transfer.
-    sql, args = sqlite.Insert("transfers").
+    _, err = tx.Insert(sqlite.Insert("transfers").
         Set("from_id", fromID).
         Set("to_id", toID).
         Set("amount", amount).
-        Set("created_at", sqlite.Now()).
-        Build()
-    _, err = tx.Exec(sql, args...)
+        Set("created_at", sqlite.Now()))
     return err
 })
 if err != nil {
@@ -123,27 +117,21 @@ if err != nil {
 }
 defer tx.Rollback() // Safe to call after Commit — it's a no-op.
 
-sql, args := sqlite.Insert("orders").
+orderID, err := tx.Insert(sqlite.Insert("orders").
     Set("user_id", userID).
     Set("total_cents", total).
-    Set("created_at", sqlite.Now()).
-    Build()
-result, err := tx.Exec(sql, args...)
+    Set("created_at", sqlite.Now()))
 if err != nil {
     http.WriteServerError(w, r, "failed to create order", err)
     return
 }
 
-orderID := result.LastInsertID
-
 for _, item := range items {
-    sql, args = sqlite.Insert("order_items").
+    if _, err := tx.Insert(sqlite.Insert("order_items").
         Set("order_id", orderID).
         Set("product_id", item.ProductID).
         Set("quantity", item.Quantity).
-        Set("price_cents", item.Price).
-        Build()
-    if _, err := tx.Exec(sql, args...); err != nil {
+        Set("price_cents", item.Price)); err != nil {
         http.WriteServerError(w, r, "failed to add order item", err)
         return
     }
@@ -216,11 +204,9 @@ err := db.InTx(func(tx *sqlite.Tx) error {
 
     // Now write based on what we read.
     for _, it := range items {
-        sql, args = sqlite.Update("pending_items").
+        if _, err := tx.Update(sqlite.Update("pending_items").
             Set("status", "processed").
-            Where("id = ?", it.ID).
-            Build()
-        if _, err := tx.Exec(sql, args...); err != nil {
+            Where("id = ?", it.ID)); err != nil {
             return err
         }
     }
@@ -265,11 +251,9 @@ Errors from `tx.Exec` and `tx.Query` are the same `*sqlite.Error` type used outs
 
 ```go
 err := db.InTx(func(tx *sqlite.Tx) error {
-    sql, args := sqlite.Insert("users").
+    _, err := tx.Insert(sqlite.Insert("users").
         Set("email", email).
-        Set("name", name).
-        Build()
-    _, err := tx.Exec(sql, args...)
+        Set("name", name))
     return err
 })
 if err != nil {

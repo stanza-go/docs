@@ -861,6 +861,36 @@ err := db.InTx(func(tx *sqlite.Tx) error {
 })
 ```
 
+### Builder methods on Tx
+
+`Tx` supports the same `Insert`, `Update`, and `Delete` convenience methods as `DB` — no need to call `Build()` + `Exec()` manually:
+
+```go
+err := db.InTx(func(tx *sqlite.Tx) error {
+    // Insert returns the last inserted row ID.
+    orderID, err := tx.Insert(sqlite.Insert("orders").
+        Set("user_id", userID).
+        Set("total_cents", total).
+        Set("created_at", sqlite.Now()))
+    if err != nil {
+        return err
+    }
+
+    // Update returns the number of affected rows.
+    _, err = tx.Update(sqlite.Update("orders").
+        SetExpr("total_cents", "total_cents + ?", extra).
+        Where("id = ?", orderID))
+    if err != nil {
+        return err
+    }
+
+    // Delete returns the number of affected rows.
+    _, err = tx.Delete(sqlite.Delete("temp_items").
+        Where("session_id = ?", sessionID))
+    return err
+})
+```
+
 ### Batch operations
 
 `ExecMany` prepares a statement once and executes it for each set of arguments:

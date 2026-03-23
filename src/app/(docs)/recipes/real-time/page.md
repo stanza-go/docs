@@ -295,6 +295,321 @@ Each event includes the updated `unread_count` so the client never needs a separ
 
 ---
 
+## Pattern 3: Chat room
+
+A chat room demonstrates true bidirectional messaging — clients send messages that are broadcast to everyone in the room. This pattern applies to any multi-user interactive feature (collaborative editing, live comments, game lobbies).
+
+### Message protocol
+
+Define explicit message types for both directions:
+
+```go
+// Client → server
+type clientMsg struct {
+    Type string `json:"type"` // "join", "message"
+    Name string `json:"name,omitempty"`
+    Text string `json:"text,omitempty"`
+}
+
+// Server → client
+type serverMsg struct {
+    Type   string `json:"type"` // "joined", "left", "message", "members"
+    Name   string `json:"name,omitempty"`
+    Text   string `json:"text,omitempty"`
+    Count  int    `json:"count,omitempty"`
+}
+```
+
+### Room with broadcast
+
+```go
+type Room struct {
+    mu      sync.Mutex
+    members map[*http.Conn]string // conn → name
+}
+
+func NewRoom() *Room {
+    return &Room{members: make(map[*http.Conn]string)}
+}
+
+func (r *Room) Join(conn *http.Conn, name string) {
+    r.mu.Lock()
+    r.members[conn] = name
+    count := len(r.members)
+    r.mu.Unlock()
+
+    r.broadcast(serverMsg{Type: "joined", Name: name, Count: count})
+}
+
+func (r *Room) Leave(conn *http.Conn) {
+    r.mu.Lock()
+    name := r.members[conn]
+    delete(r.members, conn)
+    count := len(r.members)
+    r.mu.Unlock()
+
+    if name != "" {
+        r.broadcast(serverMsg{Type: "left", Name: name, Count: count})
+    }
+}
+
+func (r *Room) Broadcast(name, text string) {
+    r.broadcast(serverMsg{Type: "message", Name: name, Text: text})
+}
+
+func (r *Room) broadcast(msg serverMsg) {
+    data, _ := json.Marshal(msg)
+
+    r.mu.Lock()
+    targets := make([]*http.Conn, 0, len(r.members))
+    for conn := range r.members {
+        targets = append(targets, conn)
+    }
+    r.mu.Unlock()
+
+    // Write outside the lock to avoid blocking other operations.
+    for _, conn := range targets {
+        _ = conn.WriteMessage(http.TextMessage, data)
+    }
+}
+```
+
+{% callout title="Write outside the lock" %}
+Collect connections under the lock, then write after releasing it. Network writes can block or be slow — holding the mutex during writes would block joins, leaves, and other broadcasts.
+{% /callout %}
+
+### WebSocket handler
+
+```go
+func chatHandler(room *Room) func(http.ResponseWriter, *http.Request) {
+    upgrader := http.Upgrader{}
+
+    return func(w http.ResponseWriter, r *http.Request) {
+        conn, err := upgrader.Upgrade(w, r)
+        if err != nil {
+            return
+        }
+        defer conn.Close()
+
+        conn.SetMaxMessageSize(4096)
+
+        // First message must be a join.
+        _, data, err := conn.ReadMessage()
+        if err != nil {
+            return
+        }
+        var join clientMsg
+        if json.Unmarshal(data, &join) != nil || join.Type != "join" {
+            return
+        }
+        name := join.Name
+        if name == "" {
+            name = "Anonymous"
+        }
+        if len(name) > 30 {
+            name = name[:30]
+        }
+
+        room.Join(conn, name)
+        defer room.Leave(conn)
+
+        // Read loop — process messages until disconnect.
+        for {
+            _, data, err := conn.ReadMessage()
+            if err != nil {
+                return
+            }
+            var msg clientMsg
+            if json.Unmarshal(data, &msg) != nil {
+                continue
+            }
+            if msg.Type == "message" && msg.Text != "" {
+                if len(msg.Text) > 500 {
+                    msg.Text = msg.Text[:500]
+                }
+                room.Broadcast(name, msg.Text)
+            }
+        }
+    }
+}
+```
+
+Register the endpoint:
+
+```go
+room := NewRoom()
+api.HandleFunc("GET /chat/ws", chatHandler(room))
+```
+
+### Key differences from server-push patterns
+
+| | Log streaming / Notifications | Chat room / Game |
+|---|---|---|
+| **Flow** | Mostly server → client | Bidirectional |
+| **Reader goroutine** | Detects disconnection (or filter updates) | Processes client commands |
+| **Shared state** | Per-user (Hub subscriber) | Multi-user (Room, Game) |
+| **First message** | Optional | Join/handshake required |
+| **Broadcast** | To one subscriber | To all members |
+
+---
+
+## Client-side patterns
+
+### Basic WebSocket client
+
+```js
+const ws = new WebSocket(`ws://${location.host}/api/chat/ws`)
+
+ws.onopen = () => {
+  ws.send(JSON.stringify({ type: 'join', name: 'Alice' }))
+}
+
+ws.onmessage = (event) => {
+  const msg = JSON.parse(event.data)
+  switch (msg.type) {
+    case 'joined':
+      console.log(`${msg.name} joined (${msg.count} online)`)
+      break
+    case 'message':
+      console.log(`${msg.name}: ${msg.text}`)
+      break
+    case 'left':
+      console.log(`${msg.name} left`)
+      break
+  }
+}
+
+ws.onclose = () => console.log('Disconnected')
+ws.onerror = () => console.log('Connection error')
+```
+
+### Auto-reconnecting client
+
+WebSocket has no built-in reconnection (unlike SSE's `EventSource`). Implement it manually:
+
+```js
+function connectWebSocket(url, { onMessage, onConnect, onDisconnect }) {
+  let ws
+  let reconnectTimer
+
+  function connect() {
+    ws = new WebSocket(url)
+
+    ws.onopen = () => {
+      if (onConnect) onConnect(ws)
+    }
+
+    ws.onmessage = (event) => {
+      onMessage(JSON.parse(event.data))
+    }
+
+    ws.onclose = () => {
+      if (onDisconnect) onDisconnect()
+      reconnectTimer = setTimeout(connect, 3000)
+    }
+
+    ws.onerror = () => ws.close()
+  }
+
+  connect()
+
+  // Return cleanup function (for React useEffect, etc.)
+  return () => {
+    clearTimeout(reconnectTimer)
+    ws.close()
+  }
+}
+```
+
+Usage:
+
+```js
+const cleanup = connectWebSocket(`ws://${location.host}/api/chat/ws`, {
+  onConnect: (ws) => ws.send(JSON.stringify({ type: 'join', name: 'Alice' })),
+  onMessage: (msg) => appendMessage(msg),
+  onDisconnect: () => showReconnecting(),
+})
+
+// Cleanup on unmount
+cleanup()
+```
+
+### React hook
+
+```js
+function useWebSocket(url, onMessage) {
+  const wsRef = useRef(null)
+
+  useEffect(() => {
+    let reconnectTimer
+    let mounted = true
+
+    function connect() {
+      const ws = new WebSocket(url)
+      wsRef.current = ws
+
+      ws.onmessage = (event) => onMessage(JSON.parse(event.data))
+      ws.onclose = () => {
+        if (mounted) reconnectTimer = setTimeout(connect, 3000)
+      }
+      ws.onerror = () => ws.close()
+    }
+
+    connect()
+    return () => {
+      mounted = false
+      clearTimeout(reconnectTimer)
+      wsRef.current?.close()
+    }
+  }, [url])
+
+  const send = useCallback((data) => {
+    wsRef.current?.send(JSON.stringify(data))
+  }, [])
+
+  return send
+}
+```
+
+### With authentication
+
+WebSocket connections carry cookies automatically. Since Stanza stores JWT access tokens in `HttpOnly` cookies, authentication works without extra setup:
+
+```js
+// Cookies are sent with the upgrade request — no extra headers needed.
+const ws = new WebSocket(`ws://${location.host}/api/chat/ws`)
+```
+
+Protect the WebSocket endpoint with the same auth middleware as your HTTP routes. The middleware runs on the initial HTTP request before the upgrade.
+
+---
+
+## Vite proxy for WebSocket
+
+During development, the Vite dev server proxies `/api/*` to the Go backend. WebSocket connections need `ws: true` in the proxy config — without it, the upgrade handshake fails with a 404.
+
+```js
+// vite.config.js
+export default defineConfig({
+  server: {
+    port: 23700,
+    proxy: {
+      "/api": {
+        target: "http://localhost:23710",
+        changeOrigin: true,
+        ws: true, // Required for WebSocket
+      },
+    },
+  },
+})
+```
+
+{% callout title="Don't forget ws: true" type="warning" %}
+The default Vite proxy config in the standalone `ui/` project does not include `ws: true`. If your app uses WebSocket, add it. The `admin/` project already has it enabled (for log streaming and notifications). In production, this is not needed — the embedded binary serves everything directly.
+{% /callout %}
+
+---
+
 ## Building your own real-time endpoint
 
 Follow this checklist when adding a new WebSocket endpoint:

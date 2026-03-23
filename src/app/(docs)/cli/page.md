@@ -3,167 +3,20 @@ title: CLI commands
 nextjs:
   metadata:
     title: CLI commands
-    description: The pkg/cmd package for building CLI tools, plus all stanza CLI commands.
+    description: The stanza CLI tool for project management — export, import, backup, logs, status, and database info.
 ---
 
-The `pkg/cmd` package provides a command-line argument parser with subcommands, flags, and auto-generated help. The `stanza` CLI tool uses it for project management operations.
+The `stanza` CLI tool provides project management commands for Stanza applications — backups, data export/import, log viewing, and database inspection. It is built with the framework's [`pkg/cmd`](/cmd) package.
 
-```go
-import "github.com/stanza-go/framework/pkg/cmd"
-```
-
----
-
-## Building a CLI app
-
-```go
-app := cmd.New("myapp",
-    cmd.WithVersion("1.0.0"),
-    cmd.WithDescription("My application CLI"),
-)
-
-app.Command("serve", "Start the server", func(c *cmd.Context) error {
-    addr := c.String("addr")
-    fmt.Printf("Listening on %s\n", addr)
-    return nil
-}, cmd.StringFlag("addr", ":8080", "Listen address"))
-
-app.Command("migrate", "Run database migrations", func(c *cmd.Context) error {
-    verbose := c.Bool("verbose")
-    // ...
-    return nil
-}, cmd.BoolFlag("verbose", false, "Show migration details"))
-
-app.Run(os.Args)
-```
-
-Running `myapp serve --addr :3000` calls the serve handler with `addr` set to `:3000`.
-
----
-
-## Default command
-
-Use `WithDefaultCommand` to specify which command runs when no subcommand is given. This is useful for application binaries that should start a server by default:
-
-```go
-app := cmd.New("myapp",
-    cmd.WithVersion("1.0.0"),
-    cmd.WithDefaultCommand("serve"),
-)
-
-app.Command("serve", "Start the server", func(c *cmd.Context) error {
-    // starts automatically when run as: ./myapp
-    return startServer()
-})
-
-app.Command("version", "Print build information", func(c *cmd.Context) error {
-    fmt.Println("myapp v1.0.0")
-    return nil
-})
-
-app.Run(os.Args)
-```
-
-Without `WithDefaultCommand`, running `./myapp` with no arguments prints help. With it, `./myapp` dispatches to the named command — `./myapp serve` and `./myapp` behave identically.
-
----
-
-## Subcommands
-
-Commands can have subcommands. Pass `nil` as the run function for grouping containers:
-
-```go
-db := app.Command("db", "Database operations", nil)
-
-db.Command("migrate", "Run migrations", func(c *cmd.Context) error {
-    // ...
-    return nil
-})
-
-db.Command("seed", "Seed initial data", func(c *cmd.Context) error {
-    // ...
-    return nil
-})
-```
-
-Usage: `myapp db migrate`, `myapp db seed`.
-
----
-
-## Flag types
-
-Four flag types are available, each as a `CommandOption`:
-
-```go
-cmd.StringFlag("name", "default", "Description")
-cmd.IntFlag("count", 10, "Description")
-cmd.BoolFlag("verbose", false, "Description")
-cmd.DurationFlag("timeout", 30*time.Second, "Description")
-```
-
-Flags are passed as `--name=value` or `--name value`. Bool flags can be set by presence alone (`--verbose`).
-
----
-
-## Context
-
-The `Context` provides access to parsed flags and positional arguments:
-
-```go
-app.Command("greet", "Greet someone", func(c *cmd.Context) error {
-    name := c.String("name")       // flag value
-    loud := c.Bool("loud")         // flag value
-    timeout := c.Duration("timeout")
-
-    if c.Has("name") {
-        // flag was explicitly set on command line
-    }
-
-    args := c.Args()     // positional arguments after flags
-    first := c.Arg(0)    // first positional arg, or ""
-
-    return nil
-},
-    cmd.StringFlag("name", "world", "Who to greet"),
-    cmd.BoolFlag("loud", false, "Shout the greeting"),
-    cmd.DurationFlag("timeout", 5*time.Second, "Greeting timeout"),
-)
-```
-
----
-
-## Auto-generated help
-
-Help is generated automatically from command names, descriptions, and flag definitions:
+Install from the [`cli`](https://github.com/stanza-go/cli) repository:
 
 ```shell
-$ myapp --help
-My application CLI
-
-Usage:
-  myapp <command> [flags]
-
-Commands:
-  serve     Start the server
-  migrate   Run database migrations
-
-$ myapp serve --help
-Start the server
-
-Usage:
-  myapp serve [flags]
-
-Flags:
-  --addr string    Listen address (default ":8080")
+cd cli && go build -o stanza . && mv stanza /usr/local/bin/
 ```
 
 ---
 
-## The stanza CLI tool
-
-The `cli/` repository provides the `stanza` binary for project management. It's built with `pkg/cmd`.
-
-### stanza export
+## stanza export
 
 Exports the data directory as a zip archive:
 
@@ -180,7 +33,14 @@ stanza export --data-dir /path/to/data
 
 The export is a byte-for-byte zip of the data directory. It includes the SQLite database, logs, uploads, and config.
 
-### stanza import
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--output` | `stanza-export-{timestamp}.zip` | Output file path |
+| `--data-dir` | — | Override data directory |
+
+---
+
+## stanza import
 
 Restores a data directory from a previously exported zip:
 
@@ -197,7 +57,14 @@ stanza import --data-dir /path/to/data backup.zip
 
 Import validates that the archive contains `database.sqlite` and includes zip slip protection against path traversal attacks.
 
-### stanza logs
+| Flag | Default | Description |
+|------|---------|-------------|
+| `--force` | `false` | Skip confirmation prompt |
+| `--data-dir` | — | Override data directory |
+
+---
+
+## stanza logs
 
 View and tail structured JSON log files:
 
@@ -248,7 +115,9 @@ stanza logs --follow --level error
 | `--list` | `false` | List available log files |
 | `--data-dir` | — | Override data directory |
 
-### stanza status
+---
+
+## stanza status
 
 Show a health summary of the data directory:
 
@@ -277,7 +146,9 @@ If the data directory does not exist, the command reports `NOT FOUND` without er
 | `--no-color` | `false` | Disable colored output |
 | `--data-dir` | — | Override data directory |
 
-### stanza db
+---
+
+## stanza db
 
 Show database statistics, table information, and migration history:
 
@@ -302,7 +173,9 @@ The database is opened with `PRAGMA query_only = true` so the command never modi
 | `--no-color` | `false` | Disable colored output |
 | `--data-dir` | — | Override data directory |
 
-### stanza backup
+---
+
+## stanza backup
 
 Create a consistent database backup using SQLite's `VACUUM INTO`:
 
@@ -331,7 +204,7 @@ With `--compress`, the backup is gzip-compressed after compaction. SQLite databa
 
 ---
 
-### Data directory resolution
+## Data directory resolution
 
 All commands resolve the data directory in this order:
 

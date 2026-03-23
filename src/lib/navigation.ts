@@ -19,6 +19,7 @@ export const navigation = [
       { title: 'Cache', href: '/cache' },
       { title: 'Webhooks', href: '/webhook' },
       { title: 'Logging', href: '/logging' },
+      { title: 'CLI toolkit', href: '/cmd' },
     ],
   },
   {

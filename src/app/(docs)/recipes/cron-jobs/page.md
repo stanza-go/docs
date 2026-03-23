@@ -132,10 +132,12 @@ The standalone app ships with maintenance cron jobs. All use the 10-minute defau
 | `purge-old-audit-log` | `0 4 * * *` | 10m | Archive audit entries older than 90 days |
 | `purge-old-reset-tokens` | `30 4 * * *` | 10m | Delete used/expired password reset tokens |
 | `purge-old-notifications` | `0 5 * * *` | 10m | Remove read notifications older than 30 days |
+| `purge-old-webhook-deliveries` | `30 5 * * *` | 10m | Remove webhook deliveries older than 30 days |
+| `purge-deleted-uploads` | `0 6 * * *` | 10m | Hard-delete soft-deleted uploads and remove files from disk (30 days) |
 | `daily-backup` | `0 2 * * *` | 30m | VACUUM INTO backup of database |
 | `purge-old-backups` | `30 2 * * *` | 10m | Remove backups older than 7 days |
 
-These keep the SQLite database lean. Add your own jobs following the same pattern.
+These keep the SQLite database and data directory lean. Add your own jobs following the same pattern.
 
 ---
 

@@ -190,6 +190,6 @@ The admin panel includes an uploads management page at `/admin/uploads` with:
 ## Tips
 
 - **50MB limit.** The max upload size is 50MB, set via `MaxBytesReader`. Adjust the `maxUploadSize` constant for larger files.
-- **Soft delete.** Deleted uploads are marked with a `deleted_at` timestamp but the files remain on disk. Implement a cleanup cron if you need to reclaim disk space.
+- **Soft delete with auto-cleanup.** Deleted uploads are marked with a `deleted_at` timestamp. The built-in `purge-deleted-uploads` cron job hard-deletes records and removes files from disk after 30 days.
 - **Content type detection.** MIME types are detected from the file extension, not the file content. This is simpler and covers the common cases.
 - **No CDN.** Files are served directly from the Go binary. For high-traffic apps, put a CDN (Cloudflare, CloudFront) in front.

@@ -253,4 +253,5 @@ def verify(secret, id, timestamp, signature, body):
 - **Delivery is async.** `Dispatch` never blocks the request — it enqueues jobs and returns. This means the response to the client is not delayed by webhook delivery.
 - **Failed deliveries are retried.** The queue retries failed jobs up to 4 total attempts with exponential backoff. After exhausting retries, the delivery is marked as `failed`.
 - **Response body is truncated.** The `response_body` in `webhook_deliveries` stores up to 4KB of the recipient's response for debugging.
+- **Delivery retention.** The built-in `purge-old-webhook-deliveries` cron job removes delivery records older than 30 days to keep the table lean.
 - **Test before going live.** Use the admin panel's "Send test" button or `POST /api/admin/webhooks/{id}/test` to verify the endpoint works before subscribing to real events.

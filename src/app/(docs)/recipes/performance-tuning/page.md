@@ -112,7 +112,7 @@ for _, user := range users {
 sql, args := sqlite.Select("u.id", "u.email", "r.name AS role_name").
     From("users u").
     LeftJoin("roles r", "r.id = u.role_id").
-    Where("u.deleted_at IS NULL").
+    WhereNull("u.deleted_at").
     Build()
 ```
 

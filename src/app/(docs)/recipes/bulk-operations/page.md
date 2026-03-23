@@ -18,8 +18,7 @@ Every bulk handler starts the same way — parse the request body and validate t
 var req struct {
     IDs []int64 `json:"ids"`
 }
-if err := http.ReadJSON(r, &req); err != nil {
-    http.WriteError(w, http.StatusBadRequest, "invalid request body")
+if !http.BindJSON(w, r, &req) {
     return
 }
 if !http.CheckBulkIDs(w, req.IDs, 100) {
@@ -58,8 +57,7 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         var req struct {
             IDs []int64 `json:"ids"`
         }
-        if err := http.ReadJSON(r, &req); err != nil {
-            http.WriteError(w, http.StatusBadRequest, "invalid request body")
+        if !http.BindJSON(w, r, &req) {
             return
         }
         if !http.CheckBulkIDs(w, req.IDs, 100) {
@@ -144,8 +142,7 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         var req struct {
             IDs []int64 `json:"ids"`
         }
-        if err := http.ReadJSON(r, &req); err != nil {
-            http.WriteError(w, http.StatusBadRequest, "invalid request body")
+        if !http.BindJSON(w, r, &req) {
             return
         }
         if !http.CheckBulkIDs(w, req.IDs, 100) {
@@ -198,8 +195,7 @@ func bulkRevokeHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         var req struct {
             IDs []int64 `json:"ids"`
         }
-        if err := http.ReadJSON(r, &req); err != nil {
-            http.WriteError(w, http.StatusBadRequest, "invalid request body")
+        if !http.BindJSON(w, r, &req) {
             return
         }
         if !http.CheckBulkIDs(w, req.IDs, 100) {
@@ -252,8 +248,7 @@ func bulkRetryHandler(q *queue.Queue, db *sqlite.DB) func(http.ResponseWriter, *
         var req struct {
             IDs []int64 `json:"ids"`
         }
-        if err := http.ReadJSON(r, &req); err != nil {
-            http.WriteError(w, http.StatusBadRequest, "invalid request body")
+        if !http.BindJSON(w, r, &req) {
             return
         }
         if !http.CheckBulkIDs(w, req.IDs, 100) {
@@ -304,8 +299,7 @@ func batchUpsertHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) 
         var req struct {
             Settings map[string]string `json:"settings"`
         }
-        if err := http.ReadJSON(r, &req); err != nil {
-            http.WriteError(w, http.StatusBadRequest, "invalid request body")
+        if !http.BindJSON(w, r, &req) {
             return
         }
 

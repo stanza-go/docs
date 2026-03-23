@@ -198,8 +198,7 @@ func createHandler(db *sqlite.DB, key encrypt.Key) func(w http.ResponseWriter, r
 			SSN   string `json:"ssn"`
 			Notes string `json:"notes"`
 		}
-		if err := http.ReadJSON(r, &body); err != nil {
-			http.Error(w, http.StatusBadRequest, "invalid request body")
+		if !http.BindJSON(w, r, &body) {
 			return
 		}
 		if err := validate.Fields(

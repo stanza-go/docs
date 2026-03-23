@@ -75,24 +75,30 @@ perPage := http.QueryParamInt(r, "per_page", 20)
 
 ## Reading request bodies
 
-Parse JSON request bodies with automatic size limiting:
+Use `BindJSON` for the common case — it reads the JSON body and writes a 400 error on failure:
 
 ```go
-var input struct {
+var req struct {
     Name  string `json:"name"`
     Email string `json:"email"`
 }
-
-if err := http.ReadJSON(r, &input); err != nil {
-    http.WriteError(w, http.StatusBadRequest, "invalid JSON")
+if !http.BindJSON(w, r, &req) {
     return
 }
 ```
 
-The default body limit is 1MB. For larger payloads:
+`BindJSON` returns `false` if the body is missing, malformed, or exceeds 1 MB. The caller should return immediately — the error response is already written.
+
+For custom error handling or larger payloads, use the lower-level functions:
 
 ```go
-// Allow up to 10MB
+// ReadJSON — handle the error yourself
+if err := http.ReadJSON(r, &input); err != nil {
+    http.WriteError(w, http.StatusBadRequest, "invalid JSON")
+    return
+}
+
+// ReadJSONLimit — allow up to 10MB
 if err := http.ReadJSONLimit(r, &input, 10<<20); err != nil {
     http.WriteError(w, http.StatusBadRequest, "invalid JSON")
     return
@@ -188,8 +194,7 @@ Validate ID slices for bulk operations (bulk delete, bulk update):
 var req struct {
     IDs []int64 `json:"ids"`
 }
-if err := http.ReadJSON(r, &req); err != nil {
-    http.WriteError(w, http.StatusBadRequest, "invalid request body")
+if !http.BindJSON(w, r, &req) {
     return
 }
 if !http.CheckBulkIDs(w, req.IDs, 100) {

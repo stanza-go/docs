@@ -72,10 +72,9 @@ if v.HasErrors() {
 Return 400 when the request can't even be parsed — malformed JSON, unparseable path parameters, or body too large:
 
 ```go
-// Bad JSON body
+// Bad JSON body — BindJSON writes 400 and returns false on failure
 var req createRequest
-if err := http.ReadJSON(r, &req); err != nil {
-    http.WriteError(w, http.StatusBadRequest, "invalid request body")
+if !http.BindJSON(w, r, &req) {
     return
 }
 

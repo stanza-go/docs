@@ -70,8 +70,7 @@ func loginHandler(db *sqlite.DB, a *auth.Auth) func(http.ResponseWriter, *http.R
             Email    string `json:"email"`
             Password string `json:"password"`
         }
-        if err := http.ReadJSON(r, &req); err != nil {
-            http.WriteError(w, http.StatusBadRequest, "invalid request body")
+        if !http.BindJSON(w, r, &req) {
             return
         }
 

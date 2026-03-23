@@ -732,6 +732,27 @@ Each `PrometheusMetric` has four fields:
 
 The handler sets `Content-Type: text/plain; version=0.0.4` as required by the Prometheus scrape protocol. See the [observability recipe](/docs/recipes/observability) for a complete example wiring all framework Stats() into a single `/api/metrics` endpoint.
 
+### RuntimeMetrics
+
+`RuntimeMetrics` returns standard Go runtime metrics using the same names as the official Go Prometheus client library. This makes them compatible with standard Go Grafana dashboards.
+
+```go
+out = append(out, http.RuntimeMetrics()...)
+```
+
+| Metric | Type | Description |
+|--------|------|-------------|
+| `go_goroutines` | gauge | Number of goroutines that currently exist |
+| `go_memstats_alloc_bytes` | gauge | Bytes of allocated heap objects |
+| `go_memstats_sys_bytes` | gauge | Total bytes obtained from the OS |
+| `go_memstats_heap_inuse_bytes` | gauge | Heap bytes in in-use spans |
+| `go_memstats_stack_inuse_bytes` | gauge | Stack bytes in use |
+| `go_memstats_heap_objects` | gauge | Number of allocated heap objects |
+| `go_gc_completed_total` | counter | Number of completed GC cycles |
+| `go_gc_pause_total_seconds` | counter | Cumulative GC pause duration |
+
+`RuntimeMetrics` calls `runtime.ReadMemStats`, which briefly stops the world. This is negligible at typical Prometheus scrape intervals (15–60 seconds).
+
 ---
 
 ## Status codes

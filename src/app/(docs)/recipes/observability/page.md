@@ -508,6 +508,9 @@ func collectPrometheus(db *sqlite.DB, m *http.Metrics, q *queue.Queue,
             http.PrometheusMetric{Name: "stanza_email_errors_total", Help: "Email errors", Type: "counter", Value: float64(es.Errors)},
         )
 
+        // Go runtime — goroutines, memory, GC.
+        out = append(out, http.RuntimeMetrics()...)
+
         return out
     }
 }
@@ -529,6 +532,12 @@ stanza_http_requests_total 892
 # HELP stanza_queue_pending Pending jobs
 # TYPE stanza_queue_pending gauge
 stanza_queue_pending 0
+# HELP go_goroutines Number of goroutines that currently exist
+# TYPE go_goroutines gauge
+go_goroutines 12
+# HELP go_memstats_alloc_bytes Number of bytes allocated and still in use
+# TYPE go_memstats_alloc_bytes gauge
+go_memstats_alloc_bytes 4.21888e+06
 ...
 ```
 
@@ -628,16 +637,18 @@ Railway will restart your service if the health endpoint returns non-200.
 | Metric | Source | Alert threshold |
 |--------|--------|----------------|
 | Health status | `GET /health` → `status` | Any response != `"ok"` |
-| Memory usage | `GET /health` → `memory_mb` | > 80% of container limit |
-| Goroutine count | `GET /health` → `goroutines` | Sustained growth (leak) |
-| 5xx error rate | `http.Stats()` → `Status5xx / TotalRequests` | > 1% |
-| Queue backlog | `queue.Stats()` → `Pending` | Growing over time |
-| Dead jobs | `queue.Stats()` → `Dead` | Any increase |
-| Pool waits | `db.Stats()` → `PoolWaits` | Sustained growth |
-| WAL size | `db.Stats()` → `WALSize` | > 100 MB (checkpoint blocked) |
-| Auth rejections | `auth.Stats()` → `Rejected` | Sudden spike |
-| Email failures | `email.Stats()` → `Errors` | Any increase |
-| Webhook failures | `webhook.Stats()` → `Failures / Sends` | > 5% |
+| Memory usage | `go_memstats_alloc_bytes` | > 80% of container limit |
+| Goroutine count | `go_goroutines` | Sustained growth (leak) |
+| GC pause time | `go_gc_pause_total_seconds` | Rate > 100ms/min |
+| Heap objects | `go_memstats_heap_objects` | Sustained growth (memory leak) |
+| 5xx error rate | `stanza_http_responses_5xx_total` | > 1% of total |
+| Queue backlog | `stanza_queue_pending` | Growing over time |
+| Dead jobs | `stanza_queue_dead_total` | Any increase |
+| Pool waits | `stanza_sqlite_pool_waits_total` | Sustained growth |
+| WAL size | `stanza_sqlite_wal_size_bytes` | > 100 MB (checkpoint blocked) |
+| Auth rejections | `stanza_auth_tokens_rejected_total` | Sudden spike |
+| Email failures | `stanza_email_errors_total` | Any increase |
+| Webhook failures | `stanza_webhook_failures_total` | > 5% of sends |
 
 ### Polling from external monitoring
 
@@ -669,5 +680,5 @@ The admin panel polls the dashboard endpoint every 30 seconds to show live metri
 - **Stats() is always safe to call.** Atomic reads have zero contention and zero allocations. Call them as often as you need.
 - **Cache expensive queries, not Stats().** Framework Stats() methods are free. Database counts, file sizes, and aggregation queries are not — cache those with a 30-second TTL.
 - **Don't add Stats() to everything.** Only packages with meaningful runtime state need it. Config, validation, and CLI don't.
-- **Use `ReadMemStats` sparingly.** It triggers a stop-the-world pause. The health and dashboard endpoints call it once per request — don't call it in a hot loop.
+- **Use `ReadMemStats` sparingly.** It triggers a stop-the-world pause. The health endpoint, dashboard endpoint, and `RuntimeMetrics()` each call it once per request — don't call it in a hot loop.
 - **Return 503 for degraded, not 500.** Container orchestrators treat 503 as "temporarily unavailable" and may retry routing, while 500 suggests a code bug.

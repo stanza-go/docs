@@ -226,7 +226,7 @@ if err := db.QueryRow(sql, args...).Scan(&id, &passwordHash); err != nil {
 For business logic authorization (not scope-based), use 400:
 
 ```go
-if isActive == 0 {
+if !isActive {
     http.WriteError(w, http.StatusBadRequest, "cannot impersonate an inactive user")
     return
 }

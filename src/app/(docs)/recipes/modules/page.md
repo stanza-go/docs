@@ -113,11 +113,9 @@ Each handler is a closure factory that captures dependencies. Start by extractin
 ```go
 func scanProduct(rows *sqlite.Rows) (productJSON, error) {
     var p productJSON
-    var isActive int
-    if err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.PriceCents, &isActive, &p.CreatedAt, &p.UpdatedAt); err != nil {
+    if err := rows.Scan(&p.ID, &p.Name, &p.Description, &p.PriceCents, &p.IsActive, &p.CreatedAt, &p.UpdatedAt); err != nil {
         return p, err
     }
-    p.IsActive = isActive == 1
     return p, nil
 }
 ```
@@ -263,7 +261,8 @@ func updateHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 
         // Load current product.
         var curName, curDesc, createdAt string
-        var curPrice, curActive int
+        var curPrice int
+        var curActive bool
         sql, args := sqlite.Select("name", "description", "price_cents", "is_active", "created_at").
             From("products").
             Where("id = ?", id).
@@ -289,11 +288,7 @@ func updateHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         }
         isActive := curActive
         if req.IsActive != nil {
-            if *req.IsActive {
-                isActive = 1
-            } else {
-                isActive = 0
-            }
+            isActive = *req.IsActive
         }
 
         now := sqlite.Now()
@@ -319,7 +314,7 @@ func updateHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
                 Name:        name,
                 Description: desc,
                 PriceCents:  price,
-                IsActive:    isActive == 1,
+                IsActive:    isActive,
                 CreatedAt:   createdAt,
                 UpdatedAt:   now,
             },

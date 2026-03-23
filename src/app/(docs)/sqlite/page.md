@@ -165,16 +165,14 @@ users, err := sqlite.QueryAll(db, sql, args, func(rows *sqlite.Rows) (User, erro
 })
 ```
 
-The scan function is called once per row. It receives `*Rows` and should only call `rows.Scan(...)` to read columns into the returned value. Post-processing (e.g., boolean conversion) happens inside the scan function:
+The scan function is called once per row. It receives `*Rows` and should only call `rows.Scan(...)` to read columns into the returned value. SQLite stores booleans as integers (0/1), but `Rows.Scan` handles `*bool` natively — scan directly into bool fields:
 
 ```go
 users, err := sqlite.QueryAll(db, sql, args, func(rows *sqlite.Rows) (UserJSON, error) {
     var u UserJSON
-    var isActive int
-    if err := rows.Scan(&u.ID, &u.Email, &u.Name, &isActive); err != nil {
+    if err := rows.Scan(&u.ID, &u.Email, &u.Name, &u.IsActive); err != nil {
         return u, err
     }
-    u.IsActive = isActive == 1
     return u, nil
 })
 ```
@@ -208,11 +206,9 @@ if errors.Is(err, sqlite.ErrNoRows) {
 // Define once per module:
 func scanUser(rows *sqlite.Rows) (UserJSON, error) {
     var u UserJSON
-    var isActive int
-    if err := rows.Scan(&u.ID, &u.Email, &u.Name, &isActive); err != nil {
+    if err := rows.Scan(&u.ID, &u.Email, &u.Name, &u.IsActive); err != nil {
         return u, err
     }
-    u.IsActive = isActive == 1
     return u, nil
 }
 

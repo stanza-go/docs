@@ -244,14 +244,15 @@ To add a new scope:
 1. Add it to the `KnownScopes` slice in `module/adminroles/adminroles.go`:
 
 ```go
-var KnownScopes = []string{
-    "admin",
-    "admin:users",
-    "admin:settings",
+var KnownScopes = []Scope{
+    {Name: "admin", Label: "Base Access"},
+    {Name: "admin:users", Label: "User Management"},
     // ... existing scopes ...
-    "admin:groomers",  // your new scope
+    {Name: "admin:groomers", Label: "Groomers"},  // your new scope
 }
 ```
+
+The `Label` field provides the human-readable name shown in the admin panel. The admin panel fetches scope names and labels from the `/admin/roles/scopes` API endpoint — no frontend changes needed when adding a new scope.
 
 2. Assign it to roles via the admin panel or API.
 

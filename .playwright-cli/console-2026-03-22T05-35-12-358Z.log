@@ -1,0 +1,42 @@
+[      99ms] [WARNING] WebSocket connection to 'ws://localhost:23706/api/admin/notifications/stream' failed: WebSocket is closed before the connection is established. @ http://localhost:23706/src/components/notification-bell.tsx:109
+[     400ms] [WARNING] WebSocket connection to 'ws://localhost:23706/api/admin/logs/stream' failed: WebSocket is closed before the connection is established. @ http://localhost:23706/src/pages/logs.tsx:165
+[     469ms] [ERROR] In HTML, %s cannot be a child of <%s>.%s
+This will cause a hydration error.%s <tbody> tbody  
+
+  ...
+    <@mantine/core/Box className="m_a100c15 ..." style={{...}} ref={function} __vars={{...}}>
+      <div ref={function} style={{...}} className="m_a100c15 ..." data-variant={undefined} data-size={undefined} ...>
+        <@mantine/core/ScrollAreaViewport className="m_c0783ff9..." style={{}} ref={function} data-offset-scrollbars="x" ...>
+          <@mantine/core/Box className="m_c0783ff9..." data-offset-scrollbars="x" data-scrollbars="xy" ...>
+            <div ref={function} style={{...}} className="m_c0783ff9..." data-variant={undefined} data-size={undefined} ...>
+              <div style={{minWidth:"..."}} ref={function bound dispatchSetState}>
+                <div className="m_62259741..." style={{}}>
+                  <@mantine/core/Table fz="sm">
+                    <Provider value={{...}}>
+                      <@mantine/core/Box component="table" variant={undefined} ref={null} mod={[...]} ...>
+                        <table ref={null} style={{...}} className="m_b23fa0ef..." data-variant={undefined} ...>
+                          <@mantine/core/TableThead>
+                          <@mantine/core/TableTbody>
+                            <@mantine/core/Box component="tbody" ref={null} className="m_b2404537..." style={{}}>
+>                             <tbody
+>                               ref={null}
+>                               style={{}}
+>                               className="m_b2404537 mantine-Table-tbody"
+>                               data-variant={undefined}
+>                               data-size={undefined}
+>                               size={undefined}
+>                             >
+                                <@mantine/core/Box component="tbody">
+>                                 <tbody
+>                                   ref={null}
+>                                   style={{}}
+>                                   className=""
+>                                   data-variant={undefined}
+>                                   data-size={undefined}
+>                                   size={undefined}
+>                                 >
+                                ...
+        ...
+ @ http://localhost:23706/node_modules/.vite/deps/chunk-KJOM3GLF.js?v=1ace8865:2610
+[     469ms] [ERROR] <%s> cannot contain a nested %s.
+See this log for the ancestor stack trace. tbody <tbody> @ http://localhost:23706/node_modules/.vite/deps/chunk-KJOM3GLF.js?v=1ace8865:2610

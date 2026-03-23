@@ -1,0 +1,625 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - paragraph [ref=e7]: Stanza Admin
+      - generic [ref=e8]:
+        - button [ref=e9] [cursor=pointer]:
+          - img [ref=e11]
+        - generic [ref=e14]:
+          - generic [ref=e244]: "1"
+          - button [ref=e15] [cursor=pointer]:
+            - img [ref=e17]
+        - button [ref=e20] [cursor=pointer]:
+          - img [ref=e22]
+  - navigation [ref=e24]:
+    - generic [ref=e27]:
+      - generic [ref=e29] [cursor=pointer]:
+        - img [ref=e31]
+        - generic [ref=e35]: Dashboard
+      - generic [ref=e36]:
+        - paragraph [ref=e37]: Users & Access
+        - generic [ref=e38] [cursor=pointer]:
+          - img [ref=e40]
+          - generic [ref=e45]: Users
+        - generic [ref=e46] [cursor=pointer]:
+          - img [ref=e48]
+          - generic [ref=e52]: Admin Users
+        - generic [ref=e53] [cursor=pointer]:
+          - img [ref=e55]
+          - generic [ref=e58]: Sessions
+        - generic [ref=e59] [cursor=pointer]:
+          - img [ref=e61]
+          - generic [ref=e63]: API Keys
+        - generic [ref=e64] [cursor=pointer]:
+          - img [ref=e66]
+          - generic [ref=e69]: Roles
+      - generic [ref=e70]:
+        - paragraph [ref=e71]: System
+        - generic [ref=e72] [cursor=pointer]:
+          - img [ref=e74]
+          - generic [ref=e77]: Cron Jobs
+        - generic [ref=e78] [cursor=pointer]:
+          - img [ref=e80]
+          - generic [ref=e84]: Job Queue
+        - generic [ref=e85] [cursor=pointer]:
+          - img [ref=e87]
+          - generic [ref=e90]: Logs
+        - generic [ref=e91] [cursor=pointer]:
+          - img [ref=e93]
+          - generic [ref=e97]: Database
+        - generic [ref=e98] [cursor=pointer]:
+          - img [ref=e100]
+          - generic [ref=e104]: Webhooks
+      - generic [ref=e105]:
+        - paragraph [ref=e106]: Content
+        - generic [ref=e107] [cursor=pointer]:
+          - img [ref=e109]
+          - generic [ref=e112]: Uploads
+        - generic [ref=e113] [cursor=pointer]:
+          - img [ref=e115]
+          - generic [ref=e118]: Notifications
+        - generic [ref=e119] [cursor=pointer]:
+          - img [ref=e121]
+          - generic [ref=e124]: Audit Log
+      - generic [ref=e125]:
+        - paragraph [ref=e126]: Config
+        - generic [ref=e127] [cursor=pointer]:
+          - img [ref=e129]
+          - generic [ref=e132]: Settings
+    - generic [ref=e135]:
+      - button "Super Admin superadmin" [ref=e136] [cursor=pointer]:
+        - generic [ref=e137]:
+          - img [ref=e138]
+          - generic [ref=e141]:
+            - paragraph [ref=e142]: Super Admin
+            - paragraph [ref=e143]: superadmin
+      - button [ref=e144] [cursor=pointer]:
+        - img [ref=e146]
+  - main [ref=e150]:
+    - generic [ref=e602]:
+      - generic [ref=e603]:
+        - generic [ref=e604]:
+          - heading "Audit Log" [level=3] [ref=e605]
+          - generic [ref=e607]: "32"
+        - button "Export CSV" [ref=e608] [cursor=pointer]:
+          - generic [ref=e609]:
+            - img [ref=e611]
+            - generic [ref=e614]: Export CSV
+      - generic [ref=e615]:
+        - generic [ref=e617]:
+          - img [ref=e619]
+          - textbox "Search actions or details..." [ref=e622]
+        - generic [ref=e624]:
+          - img [ref=e626]
+          - combobox [ref=e628] [cursor=pointer]:
+            - option "All actions" [selected]
+            - option "Created admin"
+            - option "Updated admin"
+            - option "Deleted admin"
+            - option "Created user"
+            - option "Updated user"
+            - option "Deleted user"
+            - option "Impersonated user"
+            - option "Revoked session"
+            - option "Updated setting"
+            - option "Created API key"
+            - option "Updated API key"
+            - option "Revoked API key"
+            - option "Triggered cron job"
+            - option "Enabled cron job"
+            - option "Disabled cron job"
+            - option "Retried job"
+            - option "Cancelled job"
+          - generic:
+            - img
+        - textbox "From" [ref=e631]
+        - textbox "To" [ref=e634]
+      - table [ref=e639]:
+        - rowgroup [ref=e640]:
+          - row "Time Admin Action Target Details IP" [ref=e641]:
+            - columnheader [ref=e642]
+            - columnheader "Time" [ref=e643] [cursor=pointer]:
+              - generic [ref=e644]:
+                - text: Time
+                - img [ref=e645]
+            - columnheader "Admin" [ref=e648]
+            - columnheader "Action" [ref=e649] [cursor=pointer]:
+              - generic [ref=e650]:
+                - text: Action
+                - img [ref=e651]
+            - columnheader "Target" [ref=e654] [cursor=pointer]:
+              - generic [ref=e655]:
+                - text: Target
+                - img [ref=e656]
+            - columnheader "Details" [ref=e659]
+            - columnheader "IP" [ref=e660]
+        - rowgroup [ref=e661]:
+          - row "1h ago Super Admin admin@stanza.dev Revoked API key api_key#99999 bulk [::1]:60900" [ref=e662] [cursor=pointer]:
+            - cell [ref=e663]:
+              - img [ref=e664]
+            - cell "1h ago" [ref=e666]:
+              - paragraph [ref=e667]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e668]:
+              - paragraph [ref=e669]: Super Admin
+              - paragraph [ref=e670]: admin@stanza.dev
+            - cell "Revoked API key" [ref=e671]:
+              - generic [ref=e673]: Revoked API key
+            - cell "api_key#99999" [ref=e674]:
+              - paragraph [ref=e675]: api_key#99999
+            - cell "bulk" [ref=e676]:
+              - paragraph [ref=e677]: bulk
+            - cell "[::1]:60900" [ref=e678]:
+              - paragraph [ref=e679]: "[::1]:60900"
+          - row "1h ago Super Admin admin@stanza.dev Revoked API key api_key#99998 bulk [::1]:60900" [ref=e680] [cursor=pointer]:
+            - cell [ref=e681]:
+              - img [ref=e682]
+            - cell "1h ago" [ref=e684]:
+              - paragraph [ref=e685]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e686]:
+              - paragraph [ref=e687]: Super Admin
+              - paragraph [ref=e688]: admin@stanza.dev
+            - cell "Revoked API key" [ref=e689]:
+              - generic [ref=e691]: Revoked API key
+            - cell "api_key#99998" [ref=e692]:
+              - paragraph [ref=e693]: api_key#99998
+            - cell "bulk" [ref=e694]:
+              - paragraph [ref=e695]: bulk
+            - cell "[::1]:60900" [ref=e696]:
+              - paragraph [ref=e697]: "[::1]:60900"
+          - row "1h ago Super Admin admin@stanza.dev Deleted user user#99999 bulk [::1]:60899" [ref=e698] [cursor=pointer]:
+            - cell [ref=e699]:
+              - img [ref=e700]
+            - cell "1h ago" [ref=e702]:
+              - paragraph [ref=e703]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e704]:
+              - paragraph [ref=e705]: Super Admin
+              - paragraph [ref=e706]: admin@stanza.dev
+            - cell "Deleted user" [ref=e707]:
+              - generic [ref=e709]: Deleted user
+            - cell "user#99999" [ref=e710]:
+              - paragraph [ref=e711]: user#99999
+            - cell "bulk" [ref=e712]:
+              - paragraph [ref=e713]: bulk
+            - cell "[::1]:60899" [ref=e714]:
+              - paragraph [ref=e715]: "[::1]:60899"
+          - row "1h ago Super Admin admin@stanza.dev Deleted user user#99998 bulk [::1]:60899" [ref=e716] [cursor=pointer]:
+            - cell [ref=e717]:
+              - img [ref=e718]
+            - cell "1h ago" [ref=e720]:
+              - paragraph [ref=e721]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e722]:
+              - paragraph [ref=e723]: Super Admin
+              - paragraph [ref=e724]: admin@stanza.dev
+            - cell "Deleted user" [ref=e725]:
+              - generic [ref=e727]: Deleted user
+            - cell "user#99998" [ref=e728]:
+              - paragraph [ref=e729]: user#99998
+            - cell "bulk" [ref=e730]:
+              - paragraph [ref=e731]: bulk
+            - cell "[::1]:60899" [ref=e732]:
+              - paragraph [ref=e733]: "[::1]:60899"
+          - row "1h ago Super Admin admin@stanza.dev Deleted admin admin#99999 bulk [::1]:60898" [ref=e734] [cursor=pointer]:
+            - cell [ref=e735]:
+              - img [ref=e736]
+            - cell "1h ago" [ref=e738]:
+              - paragraph [ref=e739]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e740]:
+              - paragraph [ref=e741]: Super Admin
+              - paragraph [ref=e742]: admin@stanza.dev
+            - cell "Deleted admin" [ref=e743]:
+              - generic [ref=e745]: Deleted admin
+            - cell "admin#99999" [ref=e746]:
+              - paragraph [ref=e747]: admin#99999
+            - cell "bulk" [ref=e748]:
+              - paragraph [ref=e749]: bulk
+            - cell "[::1]:60898" [ref=e750]:
+              - paragraph [ref=e751]: "[::1]:60898"
+          - row "1h ago Super Admin admin@stanza.dev Deleted admin admin#99998 bulk [::1]:60898" [ref=e752] [cursor=pointer]:
+            - cell [ref=e753]:
+              - img [ref=e754]
+            - cell "1h ago" [ref=e756]:
+              - paragraph [ref=e757]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e758]:
+              - paragraph [ref=e759]: Super Admin
+              - paragraph [ref=e760]: admin@stanza.dev
+            - cell "Deleted admin" [ref=e761]:
+              - generic [ref=e763]: Deleted admin
+            - cell "admin#99998" [ref=e764]:
+              - paragraph [ref=e765]: admin#99998
+            - cell "bulk" [ref=e766]:
+              - paragraph [ref=e767]: bulk
+            - cell "[::1]:60898" [ref=e768]:
+              - paragraph [ref=e769]: "[::1]:60898"
+          - row "1h ago Super Admin admin@stanza.dev upload.delete upload#99999 bulk [::1]:60897" [ref=e770] [cursor=pointer]:
+            - cell [ref=e771]:
+              - img [ref=e772]
+            - cell "1h ago" [ref=e774]:
+              - paragraph [ref=e775]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e776]:
+              - paragraph [ref=e777]: Super Admin
+              - paragraph [ref=e778]: admin@stanza.dev
+            - cell "upload.delete" [ref=e779]:
+              - generic [ref=e781]: upload.delete
+            - cell "upload#99999" [ref=e782]:
+              - paragraph [ref=e783]: upload#99999
+            - cell "bulk" [ref=e784]:
+              - paragraph [ref=e785]: bulk
+            - cell "[::1]:60897" [ref=e786]:
+              - paragraph [ref=e787]: "[::1]:60897"
+          - row "1h ago Super Admin admin@stanza.dev upload.delete upload#99998 bulk [::1]:60897" [ref=e788] [cursor=pointer]:
+            - cell [ref=e789]:
+              - img [ref=e790]
+            - cell "1h ago" [ref=e792]:
+              - paragraph [ref=e793]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e794]:
+              - paragraph [ref=e795]: Super Admin
+              - paragraph [ref=e796]: admin@stanza.dev
+            - cell "upload.delete" [ref=e797]:
+              - generic [ref=e799]: upload.delete
+            - cell "upload#99998" [ref=e800]:
+              - paragraph [ref=e801]: upload#99998
+            - cell "bulk" [ref=e802]:
+              - paragraph [ref=e803]: bulk
+            - cell "[::1]:60897" [ref=e804]:
+              - paragraph [ref=e805]: "[::1]:60897"
+          - row "1h ago Super Admin admin@stanza.dev webhook.delete webhook#99999 bulk [::1]:60895" [ref=e806] [cursor=pointer]:
+            - cell [ref=e807]:
+              - img [ref=e808]
+            - cell "1h ago" [ref=e810]:
+              - paragraph [ref=e811]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e812]:
+              - paragraph [ref=e813]: Super Admin
+              - paragraph [ref=e814]: admin@stanza.dev
+            - cell "webhook.delete" [ref=e815]:
+              - generic [ref=e817]: webhook.delete
+            - cell "webhook#99999" [ref=e818]:
+              - paragraph [ref=e819]: webhook#99999
+            - cell "bulk" [ref=e820]:
+              - paragraph [ref=e821]: bulk
+            - cell "[::1]:60895" [ref=e822]:
+              - paragraph [ref=e823]: "[::1]:60895"
+          - row "1h ago Super Admin admin@stanza.dev webhook.delete webhook#99998 bulk [::1]:60895" [ref=e824] [cursor=pointer]:
+            - cell [ref=e825]:
+              - img [ref=e826]
+            - cell "1h ago" [ref=e828]:
+              - paragraph [ref=e829]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e830]:
+              - paragraph [ref=e831]: Super Admin
+              - paragraph [ref=e832]: admin@stanza.dev
+            - cell "webhook.delete" [ref=e833]:
+              - generic [ref=e835]: webhook.delete
+            - cell "webhook#99998" [ref=e836]:
+              - paragraph [ref=e837]: webhook#99998
+            - cell "bulk" [ref=e838]:
+              - paragraph [ref=e839]: bulk
+            - cell "[::1]:60895" [ref=e840]:
+              - paragraph [ref=e841]: "[::1]:60895"
+          - row "1h ago Super Admin admin@stanza.dev Revoked session session#nonexist2 bulk [::1]:60893" [ref=e842] [cursor=pointer]:
+            - cell [ref=e843]:
+              - img [ref=e844]
+            - cell "1h ago" [ref=e846]:
+              - paragraph [ref=e847]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e848]:
+              - paragraph [ref=e849]: Super Admin
+              - paragraph [ref=e850]: admin@stanza.dev
+            - cell "Revoked session" [ref=e851]:
+              - generic [ref=e853]: Revoked session
+            - cell "session#nonexist2" [ref=e854]:
+              - paragraph [ref=e855]: session#nonexist2
+            - cell "bulk" [ref=e856]:
+              - paragraph [ref=e857]: bulk
+            - cell "[::1]:60893" [ref=e858]:
+              - paragraph [ref=e859]: "[::1]:60893"
+          - row "1h ago Super Admin admin@stanza.dev Revoked session session#nonexist1 bulk [::1]:60893" [ref=e860] [cursor=pointer]:
+            - cell [ref=e861]:
+              - img [ref=e862]
+            - cell "1h ago" [ref=e864]:
+              - paragraph [ref=e865]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e866]:
+              - paragraph [ref=e867]: Super Admin
+              - paragraph [ref=e868]: admin@stanza.dev
+            - cell "Revoked session" [ref=e869]:
+              - generic [ref=e871]: Revoked session
+            - cell "session#nonexist1" [ref=e872]:
+              - paragraph [ref=e873]: session#nonexist1
+            - cell "bulk" [ref=e874]:
+              - paragraph [ref=e875]: bulk
+            - cell "[::1]:60893" [ref=e876]:
+              - paragraph [ref=e877]: "[::1]:60893"
+          - row "1h ago Super Admin admin@stanza.dev role.delete role#4 testrole [::1]:60660" [ref=e878] [cursor=pointer]:
+            - cell [ref=e879]:
+              - img [ref=e880]
+            - cell "1h ago" [ref=e882]:
+              - paragraph [ref=e883]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e884]:
+              - paragraph [ref=e885]: Super Admin
+              - paragraph [ref=e886]: admin@stanza.dev
+            - cell "role.delete" [ref=e887]:
+              - generic [ref=e889]: role.delete
+            - cell "role#4" [ref=e890]:
+              - paragraph [ref=e891]: role#4
+            - cell "testrole" [ref=e892]:
+              - paragraph [ref=e893]: testrole
+            - cell "[::1]:60660" [ref=e894]:
+              - paragraph [ref=e895]: "[::1]:60660"
+          - row "1h ago Super Admin admin@stanza.dev role.create role#4 testrole [::1]:60659" [ref=e896] [cursor=pointer]:
+            - cell [ref=e897]:
+              - img [ref=e898]
+            - cell "1h ago" [ref=e900]:
+              - paragraph [ref=e901]: 1h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e902]:
+              - paragraph [ref=e903]: Super Admin
+              - paragraph [ref=e904]: admin@stanza.dev
+            - cell "role.create" [ref=e905]:
+              - generic [ref=e907]: role.create
+            - cell "role#4" [ref=e908]:
+              - paragraph [ref=e909]: role#4
+            - cell "testrole" [ref=e910]:
+              - paragraph [ref=e911]: testrole
+            - cell "[::1]:60659" [ref=e912]:
+              - paragraph [ref=e913]: "[::1]:60659"
+          - row "7h ago Super Admin admin@stanza.dev Revoked session session#b6930984ed1e56a34df7ca2af6d4cc87 — [::1]:55743" [ref=e914] [cursor=pointer]:
+            - cell [ref=e915]:
+              - img [ref=e916]
+            - cell "7h ago" [ref=e918]:
+              - paragraph [ref=e919]: 7h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e920]:
+              - paragraph [ref=e921]: Super Admin
+              - paragraph [ref=e922]: admin@stanza.dev
+            - cell "Revoked session" [ref=e923]:
+              - generic [ref=e925]: Revoked session
+            - cell "session#b6930984ed1e56a34df7ca2af6d4cc87" [ref=e926]:
+              - paragraph [ref=e927]: session#b6930984ed1e56a34df7ca2af6d4cc87
+            - cell "—" [ref=e928]:
+              - paragraph [ref=e929]: —
+            - cell "[::1]:55743" [ref=e930]:
+              - paragraph [ref=e931]: "[::1]:55743"
+          - row "7h ago Super Admin admin@stanza.dev Created admin admin#3 newadmin@example.com [::1]:55741" [ref=e932] [cursor=pointer]:
+            - cell [ref=e933]:
+              - img [ref=e934]
+            - cell "7h ago" [ref=e936]:
+              - paragraph [ref=e937]: 7h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e938]:
+              - paragraph [ref=e939]: Super Admin
+              - paragraph [ref=e940]: admin@stanza.dev
+            - cell "Created admin" [ref=e941]:
+              - generic [ref=e943]: Created admin
+            - cell "admin#3" [ref=e944]:
+              - paragraph [ref=e945]: admin#3
+            - cell "newadmin@example.com" [ref=e946]:
+              - paragraph [ref=e947]: newadmin@example.com
+            - cell "[::1]:55741" [ref=e948]:
+              - paragraph [ref=e949]: "[::1]:55741"
+          - row "7h ago Super Admin admin@stanza.dev Updated setting setting#app.name Webhook Test App [::1]:55737" [ref=e950] [cursor=pointer]:
+            - cell [ref=e951]:
+              - img [ref=e952]
+            - cell "7h ago" [ref=e954]:
+              - paragraph [ref=e955]: 7h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e956]:
+              - paragraph [ref=e957]: Super Admin
+              - paragraph [ref=e958]: admin@stanza.dev
+            - cell "Updated setting" [ref=e959]:
+              - generic [ref=e961]: Updated setting
+            - cell "setting#app.name" [ref=e962]:
+              - paragraph [ref=e963]: setting#app.name
+            - cell "Webhook Test App" [ref=e964]:
+              - paragraph [ref=e965]: Webhook Test App
+            - cell "[::1]:55737" [ref=e966]:
+              - paragraph [ref=e967]: "[::1]:55737"
+          - row "7h ago Super Admin admin@stanza.dev Deleted user user#15 — [::1]:55736" [ref=e968] [cursor=pointer]:
+            - cell [ref=e969]:
+              - img [ref=e970]
+            - cell "7h ago" [ref=e972]:
+              - paragraph [ref=e973]: 7h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e974]:
+              - paragraph [ref=e975]: Super Admin
+              - paragraph [ref=e976]: admin@stanza.dev
+            - cell "Deleted user" [ref=e977]:
+              - generic [ref=e979]: Deleted user
+            - cell "user#15" [ref=e980]:
+              - paragraph [ref=e981]: user#15
+            - cell "—" [ref=e982]:
+              - paragraph [ref=e983]: —
+            - cell "[::1]:55736" [ref=e984]:
+              - paragraph [ref=e985]: "[::1]:55736"
+          - row "7h ago Super Admin admin@stanza.dev Updated user user#15 webhook-test@example.com [::1]:55735" [ref=e986] [cursor=pointer]:
+            - cell [ref=e987]:
+              - img [ref=e988]
+            - cell "7h ago" [ref=e990]:
+              - paragraph [ref=e991]: 7h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e992]:
+              - paragraph [ref=e993]: Super Admin
+              - paragraph [ref=e994]: admin@stanza.dev
+            - cell "Updated user" [ref=e995]:
+              - generic [ref=e997]: Updated user
+            - cell "user#15" [ref=e998]:
+              - paragraph [ref=e999]: user#15
+            - cell "webhook-test@example.com" [ref=e1000]:
+              - paragraph [ref=e1001]: webhook-test@example.com
+            - cell "[::1]:55735" [ref=e1002]:
+              - paragraph [ref=e1003]: "[::1]:55735"
+          - row "7h ago Super Admin admin@stanza.dev Created user user#15 webhook-test@example.com [::1]:55730" [ref=e1004] [cursor=pointer]:
+            - cell [ref=e1005]:
+              - img [ref=e1006]
+            - cell "7h ago" [ref=e1008]:
+              - paragraph [ref=e1009]: 7h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e1010]:
+              - paragraph [ref=e1011]: Super Admin
+              - paragraph [ref=e1012]: admin@stanza.dev
+            - cell "Created user" [ref=e1013]:
+              - generic [ref=e1015]: Created user
+            - cell "user#15" [ref=e1016]:
+              - paragraph [ref=e1017]: user#15
+            - cell "webhook-test@example.com" [ref=e1018]:
+              - paragraph [ref=e1019]: webhook-test@example.com
+            - cell "[::1]:55730" [ref=e1020]:
+              - paragraph [ref=e1021]: "[::1]:55730"
+          - row "7h ago Super Admin admin@stanza.dev webhook.create webhook#1 https://httpbin.org/post [::1]:55729" [ref=e1022] [cursor=pointer]:
+            - cell [ref=e1023]:
+              - img [ref=e1024]
+            - cell "7h ago" [ref=e1026]:
+              - paragraph [ref=e1027]: 7h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e1028]:
+              - paragraph [ref=e1029]: Super Admin
+              - paragraph [ref=e1030]: admin@stanza.dev
+            - cell "webhook.create" [ref=e1031]:
+              - generic [ref=e1033]: webhook.create
+            - cell "webhook#1" [ref=e1034]:
+              - paragraph [ref=e1035]: webhook#1
+            - cell "https://httpbin.org/post" [ref=e1036]:
+              - paragraph [ref=e1037]: https://httpbin.org/post
+            - cell "[::1]:55729" [ref=e1038]:
+              - paragraph [ref=e1039]: "[::1]:55729"
+          - row "9h ago Super Admin admin@stanza.dev Updated user user#14 activitytest@example.com [::1]:54612" [ref=e1040] [cursor=pointer]:
+            - cell [ref=e1041]:
+              - img [ref=e1042]
+            - cell "9h ago" [ref=e1044]:
+              - paragraph [ref=e1045]: 9h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e1046]:
+              - paragraph [ref=e1047]: Super Admin
+              - paragraph [ref=e1048]: admin@stanza.dev
+            - cell "Updated user" [ref=e1049]:
+              - generic [ref=e1051]: Updated user
+            - cell "user#14" [ref=e1052]:
+              - paragraph [ref=e1053]: user#14
+            - cell "activitytest@example.com" [ref=e1054]:
+              - paragraph [ref=e1055]: activitytest@example.com
+            - cell "[::1]:54612" [ref=e1056]:
+              - paragraph [ref=e1057]: "[::1]:54612"
+          - row "9h ago Super Admin admin@stanza.dev Created user user#14 activitytest@example.com [::1]:54602" [ref=e1058] [cursor=pointer]:
+            - cell [ref=e1059]:
+              - img [ref=e1060]
+            - cell "9h ago" [ref=e1062]:
+              - paragraph [ref=e1063]: 9h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e1064]:
+              - paragraph [ref=e1065]: Super Admin
+              - paragraph [ref=e1066]: admin@stanza.dev
+            - cell "Created user" [ref=e1067]:
+              - generic [ref=e1069]: Created user
+            - cell "user#14" [ref=e1070]:
+              - paragraph [ref=e1071]: user#14
+            - cell "activitytest@example.com" [ref=e1072]:
+              - paragraph [ref=e1073]: activitytest@example.com
+            - cell "[::1]:54602" [ref=e1074]:
+              - paragraph [ref=e1075]: "[::1]:54602"
+          - row "12h ago Super Admin admin@stanza.dev Created user user#10 jane@test.com [::1]:51616" [ref=e1076] [cursor=pointer]:
+            - cell [ref=e1077]:
+              - img [ref=e1078]
+            - cell "12h ago" [ref=e1080]:
+              - paragraph [ref=e1081]: 12h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e1082]:
+              - paragraph [ref=e1083]: Super Admin
+              - paragraph [ref=e1084]: admin@stanza.dev
+            - cell "Created user" [ref=e1085]:
+              - generic [ref=e1087]: Created user
+            - cell "user#10" [ref=e1088]:
+              - paragraph [ref=e1089]: user#10
+            - cell "jane@test.com" [ref=e1090]:
+              - paragraph [ref=e1091]: jane@test.com
+            - cell "[::1]:51616" [ref=e1092]:
+              - paragraph [ref=e1093]: "[::1]:51616"
+          - row "12h ago Super Admin admin@stanza.dev Created user user#9 testuser@example.com [::1]:51595" [ref=e1094] [cursor=pointer]:
+            - cell [ref=e1095]:
+              - img [ref=e1096]
+            - cell "12h ago" [ref=e1098]:
+              - paragraph [ref=e1099]: 12h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e1100]:
+              - paragraph [ref=e1101]: Super Admin
+              - paragraph [ref=e1102]: admin@stanza.dev
+            - cell "Created user" [ref=e1103]:
+              - generic [ref=e1105]: Created user
+            - cell "user#9" [ref=e1106]:
+              - paragraph [ref=e1107]: user#9
+            - cell "testuser@example.com" [ref=e1108]:
+              - paragraph [ref=e1109]: testuser@example.com
+            - cell "[::1]:51595" [ref=e1110]:
+              - paragraph [ref=e1111]: "[::1]:51595"
+          - row "12h ago Super Admin admin@stanza.dev admin.revoke_session session#0879ca149b614e495b5a1d7ba7b08319 revoked own session [::1]:51322" [ref=e1112] [cursor=pointer]:
+            - cell [ref=e1113]:
+              - img [ref=e1114]
+            - cell "12h ago" [ref=e1116]:
+              - paragraph [ref=e1117]: 12h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e1118]:
+              - paragraph [ref=e1119]: Super Admin
+              - paragraph [ref=e1120]: admin@stanza.dev
+            - cell "admin.revoke_session" [ref=e1121]:
+              - generic [ref=e1123]: admin.revoke_session
+            - cell "session#0879ca149b614e495b5a1d7ba7b08319" [ref=e1124]:
+              - paragraph [ref=e1125]: session#0879ca149b614e495b5a1d7ba7b08319
+            - cell "revoked own session" [ref=e1126]:
+              - paragraph [ref=e1127]: revoked own session
+            - cell "[::1]:51322" [ref=e1128]:
+              - paragraph [ref=e1129]: "[::1]:51322"
+          - row "12h ago Super Admin admin@stanza.dev admin.update_profile admin#1 updated name [::1]:51314" [ref=e1130] [cursor=pointer]:
+            - cell [ref=e1131]:
+              - img [ref=e1132]
+            - cell "12h ago" [ref=e1134]:
+              - paragraph [ref=e1135]: 12h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e1136]:
+              - paragraph [ref=e1137]: Super Admin
+              - paragraph [ref=e1138]: admin@stanza.dev
+            - cell "admin.update_profile" [ref=e1139]:
+              - generic [ref=e1141]: admin.update_profile
+            - cell "admin#1" [ref=e1142]:
+              - paragraph [ref=e1143]: admin#1
+            - cell "updated name" [ref=e1144]:
+              - paragraph [ref=e1145]: updated name
+            - cell "[::1]:51314" [ref=e1146]:
+              - paragraph [ref=e1147]: "[::1]:51314"
+          - row "21h ago Super Admin admin@stanza.dev upload.create upload#3 file=test-upload.txt size=27 type=text/plain [::1]:63077" [ref=e1148] [cursor=pointer]:
+            - cell [ref=e1149]:
+              - img [ref=e1150]
+            - cell "21h ago" [ref=e1152]:
+              - paragraph [ref=e1153]: 21h ago
+            - cell "Super Admin admin@stanza.dev" [ref=e1154]:
+              - paragraph [ref=e1155]: Super Admin
+              - paragraph [ref=e1156]: admin@stanza.dev
+            - cell "upload.create" [ref=e1157]:
+              - generic [ref=e1159]: upload.create
+            - cell "upload#3" [ref=e1160]:
+              - paragraph [ref=e1161]: upload#3
+            - cell "file=test-upload.txt size=27 type=text/plain" [ref=e1162]:
+              - paragraph [ref=e1163]: file=test-upload.txt size=27 type=text/plain
+            - cell "[::1]:63077" [ref=e1164]:
+              - paragraph [ref=e1165]: "[::1]:63077"
+          - row "1d ago Super Admin admin@stanza.dev upload.delete upload#1 — [::1]:60530" [ref=e1166] [cursor=pointer]:
+            - cell [ref=e1167]:
+              - img [ref=e1168]
+            - cell "1d ago" [ref=e1170]:
+              - paragraph [ref=e1171]: 1d ago
+            - cell "Super Admin admin@stanza.dev" [ref=e1172]:
+              - paragraph [ref=e1173]: Super Admin
+              - paragraph [ref=e1174]: admin@stanza.dev
+            - cell "upload.delete" [ref=e1175]:
+              - generic [ref=e1177]: upload.delete
+            - cell "upload#1" [ref=e1178]:
+              - paragraph [ref=e1179]: upload#1
+            - cell "—" [ref=e1180]:
+              - paragraph [ref=e1181]: —
+            - cell "[::1]:60530" [ref=e1182]:
+              - paragraph [ref=e1183]: "[::1]:60530"
+          - row "1d ago Super Admin admin@stanza.dev upload.create upload#2 file=test-image.png size=146238 type=image/png [::1]:60521" [ref=e1184] [cursor=pointer]:
+            - cell [ref=e1185]:
+              - img [ref=e1186]
+            - cell "1d ago" [ref=e1188]:
+              - paragraph [ref=e1189]: 1d ago
+            - cell "Super Admin admin@stanza.dev" [ref=e1190]:
+              - paragraph [ref=e1191]: Super Admin
+              - paragraph [ref=e1192]: admin@stanza.dev
+            - cell "upload.create" [ref=e1193]:
+              - generic [ref=e1195]: upload.create
+            - cell "upload#2" [ref=e1196]:
+              - paragraph [ref=e1197]: upload#2
+            - cell "file=test-image.png size=146238 type=image/png" [ref=e1198]:
+              - paragraph [ref=e1199]: file=test-image.png size=146238 type=image/png
+            - cell "[::1]:60521" [ref=e1200]:
+              - paragraph [ref=e1201]: "[::1]:60521"
+      - generic [ref=e1202]:
+        - paragraph [ref=e1203]: Showing 1–30 of 32
+        - generic [ref=e1205]:
+          - button [disabled] [ref=e1206]:
+            - img [ref=e1207]
+          - button "1" [ref=e1209] [cursor=pointer]
+          - button "2" [ref=e1210] [cursor=pointer]
+          - button [ref=e1211] [cursor=pointer]:
+            - img [ref=e1212]

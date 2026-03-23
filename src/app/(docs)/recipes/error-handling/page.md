@@ -145,7 +145,7 @@ When fetching a single row, `Scan` returns `sqlite.ErrNoRows` if no row matches:
 sql, args := sqlite.Select("id", "name", "email").
     From("users").
     Where("id = ?", id).
-    Where("deleted_at IS NULL").
+    WhereNull("deleted_at").
     Build()
 
 if err := db.QueryRow(sql, args...).Scan(&u.ID, &u.Name, &u.Email); err != nil {
@@ -162,7 +162,7 @@ After an UPDATE or DELETE, check whether any rows were actually changed:
 sql, args := sqlite.Update("users").
     Set("deleted_at", now).
     Where("id = ?", id).
-    Where("deleted_at IS NULL").
+    WhereNull("deleted_at").
     Build()
 
 result, err := db.Exec(sql, args...)

@@ -18,7 +18,7 @@ This recipe covers everything beyond basic `WHERE` clauses — multi-column text
 func buildUserSelect(r *http.Request) *sqlite.SelectBuilder {
     q := sqlite.Select("id", "name", "email", "role", "created_at").
         From("users").
-        Where("deleted_at IS NULL")
+        WhereNull("deleted_at")
 
     search := r.URL.Query().Get("search")
     q.WhereSearch(search, "name", "email")
@@ -209,7 +209,7 @@ Extract the builder function so list, export, and count handlers all apply ident
 func buildSelect(r *http.Request) *sqlite.SelectBuilder {
     q := sqlite.Select("id", "name", "email", "created_at").
         From("users").
-        Where("deleted_at IS NULL")
+        WhereNull("deleted_at")
 
     q.WhereSearch(r.URL.Query().Get("search"), "name", "email")
 

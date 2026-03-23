@@ -66,7 +66,7 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             return
         }
 
-        now := time.Now().UTC().Format(time.RFC3339)
+        now := sqlite.Now()
         ids := make([]any, len(req.IDs))
         for i, id := range req.IDs {
             ids[i] = id
@@ -76,7 +76,7 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             Set("deleted_at", now).
             Set("is_active", 0).
             Set("updated_at", now).
-            Where("deleted_at IS NULL").
+            WhereNull("deleted_at").
             WhereIn("id", ids...).
             Build()
         result, err := db.Exec(query, args...)
@@ -98,7 +98,7 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 }
 ```
 
-The `Where("deleted_at IS NULL")` guard prevents double-deleting already-deleted rows. `RowsAffected` reflects only the rows that actually changed, so the client knows how many were genuinely deleted.
+The `WhereNull("deleted_at")` guard prevents double-deleting already-deleted rows. `RowsAffected` reflects only the rows that actually changed, so the client knows how many were genuinely deleted.
 
 Register on a POST route:
 
@@ -214,7 +214,7 @@ func bulkRevokeHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             return
         }
 
-        now := time.Now().UTC().Format(time.RFC3339)
+        now := sqlite.Now()
         ids := make([]any, len(req.IDs))
         for i, id := range req.IDs {
             ids[i] = id
@@ -222,7 +222,7 @@ func bulkRevokeHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 
         query, args := sqlite.Update("api_keys").
             Set("revoked_at", now).
-            Where("revoked_at IS NULL").
+            WhereNull("revoked_at").
             WhereIn("id", ids...).
             Build()
         result, err := db.Exec(query, args...)
@@ -244,7 +244,7 @@ func bulkRevokeHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 }
 ```
 
-The `Where("revoked_at IS NULL")` guard prevents re-revoking already-revoked keys — same idempotency pattern as the soft-delete null check. Register as:
+The `WhereNull("revoked_at")` guard prevents re-revoking already-revoked keys — same idempotency pattern as the soft-delete null check. Register as:
 
 ```go
 admin.HandleFunc("POST /api-keys/bulk-revoke", bulkRevokeHandler(db))
@@ -330,7 +330,7 @@ func batchUpsertHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) 
             return
         }
 
-        now := time.Now().UTC().Format(time.RFC3339)
+        now := sqlite.Now()
 
         for key, value := range req.Settings {
             sql, args := sqlite.Insert("user_settings").
@@ -414,7 +414,7 @@ The conventions:
 |---|------|
 | 1 | **Cap at 100 IDs.** Use `http.CheckBulkIDs(w, req.IDs, 100)` as the first check after parsing the body. |
 | 2 | **POST, not DELETE.** Bulk operations carry a JSON body — use POST for all of them. |
-| 3 | **Guard against double-apply.** Add `Where("deleted_at IS NULL")` or `Where("revoked_at IS NULL")` so the operation is idempotent. |
+| 3 | **Guard against double-apply.** Add `WhereNull("deleted_at")` or `WhereNull("revoked_at")` so the operation is idempotent. |
 | 4 | **Audit each ID individually.** Loop through `req.IDs` and call `adminaudit.Log` per record. The audit trail needs to show which specific records were affected. |
 | 5 | **Return `affected` count.** Always return `{"ok": true, "affected": N}` so the client knows how many rows actually changed. |
 | 6 | **Ignore side-effect errors.** Session revocation, child record cleanup, and webhook dispatch use `_, _` — they should never block the response. |

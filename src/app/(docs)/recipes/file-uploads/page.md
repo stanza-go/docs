@@ -168,7 +168,7 @@ sql, args := sqlite.Select("id", "uuid", "original_name", "content_type", "has_t
     From("uploads").
     Where("entity_type = ?", "product").
     Where("entity_id = ?", productID).
-    Where("deleted_at IS NULL").
+    WhereNull("deleted_at").
     OrderBy("created_at", "DESC").
     Build()
 ```

@@ -154,7 +154,7 @@ type User struct {
 
 sql, args := sqlite.Select("id", "email", "name").
     From("users").
-    Where("deleted_at IS NULL").
+    WhereNull("deleted_at").
     OrderBy("id", "ASC").
     Build()
 
@@ -224,6 +224,22 @@ user, err := sqlite.QueryOne(db, sql, args, scanUser)
 ```
 
 Extra rows beyond the first are ignored. For simple scalar queries (`COUNT`, existence checks), `db.QueryRow().Scan()` remains the more concise choice.
+
+### Now — current UTC timestamp
+
+`sqlite.Now()` returns the current UTC time as an RFC 3339 string (`2024-01-15T14:30:00Z`). Use it when storing timestamps in database columns:
+
+```go
+now := sqlite.Now()
+
+sql, args := sqlite.Insert("users").
+    Set("name", "Alice").
+    Set("email", "alice@example.com").
+    Set("created_at", now).
+    Build()
+```
+
+This is the canonical format for `created_at`, `updated_at`, `deleted_at`, and similar columns throughout the application.
 
 ---
 
@@ -394,7 +410,7 @@ db.QueryRow(countQ.Build()).Scan(&total)
 ```go
 selectQ := sqlite.Select("id", "name", "email").
     From("users").
-    Where("deleted_at IS NULL").
+    WhereNull("deleted_at").
     WhereSearch(search, "name", "email")
 
 total, err := db.Count(selectQ)
@@ -636,7 +652,7 @@ search := r.URL.Query().Get("search")
 
 q := sqlite.Select("id", "email", "name").
     From("users").
-    Where("deleted_at IS NULL").
+    WhereNull("deleted_at").
     WhereSearch(search, "email", "name")
 // → WHERE deleted_at IS NULL AND (email LIKE '%term%' ESCAPE '\' OR name LIKE '%term%' ESCAPE '\')
 ```
@@ -668,7 +684,7 @@ Combines with regular `Where` for mixed AND/OR logic:
 ```go
 sql, args := sqlite.Select("id").
     From("tokens").
-    Where("deleted_at IS NULL").
+    WhereNull("deleted_at").
     WhereOr(
         sqlite.Cond("used_at IS NOT NULL"),
         sqlite.Cond("expires_at < ?", cutoff),

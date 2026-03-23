@@ -523,7 +523,7 @@ func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 
         selectQ := sqlite.Select("id", "name", "email").
             From("users").
-            Where("deleted_at IS NULL").
+            WhereNull("deleted_at").
             Limit(pg.Limit).
             Offset(pg.Offset)
 
@@ -571,7 +571,7 @@ func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 
         selectQ := sqlite.Select("id", "name", "email", "created_at").
             From("users").
-            Where("deleted_at IS NULL").
+            WhereNull("deleted_at").
             OrderBy(col, dir).
             Limit(pg.Limit).
             Offset(pg.Offset)

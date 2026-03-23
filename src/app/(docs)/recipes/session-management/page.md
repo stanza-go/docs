@@ -79,7 +79,7 @@ func loginHandler(db *sqlite.DB, a *auth.Auth) func(http.ResponseWriter, *http.R
         sql, args := sqlite.Select("id", "password", "name").
             From("users").
             Where("email = ?", req.Email).
-            Where("deleted_at IS NULL").
+            WhereNull("deleted_at").
             Where("is_active = 1").
             Build()
 
@@ -189,7 +189,7 @@ func statusHandler(db *sqlite.DB, a *auth.Auth) func(http.ResponseWriter, *http.
         sql, args = sqlite.Select("id", "email", "name").
             From("users").
             Where("id = ?", entityID).
-            Where("deleted_at IS NULL").
+            WhereNull("deleted_at").
             Where("is_active = 1").
             Build()
 
@@ -271,7 +271,7 @@ func Register(admin *http.Group, db *sqlite.DB, wh *webhooks.Dispatcher) {
 Query non-expired refresh tokens with a LEFT JOIN to resolve entity names:
 
 ```go
-now := time.Now().UTC().Format(time.RFC3339)
+now := sqlite.Now()
 
 sql, args := sqlite.Select(
     "rt.id", "rt.entity_type", "rt.entity_id",

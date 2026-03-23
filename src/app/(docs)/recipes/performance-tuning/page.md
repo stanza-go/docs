@@ -85,7 +85,7 @@ The query builder produces parameterized SQL with no runtime overhead beyond str
 sql, args := sqlite.Select("id", "email", "name").
     From("users").
     Where("is_active = ?", 1).
-    Where("deleted_at IS NULL").
+    WhereNull("deleted_at").
     OrderBy("created_at", "DESC").
     Limit(25).
     Build()
@@ -124,7 +124,7 @@ When listing with pagination, you need both the rows and the total count. The `C
 selectQ := sqlite.Select("id", "email", "name").
     From("users").
     Where("is_active = ?", 1).
-    Where("deleted_at IS NULL")
+    WhereNull("deleted_at")
 
 countQ := sqlite.CountFrom(selectQ)
 

@@ -135,7 +135,7 @@ func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 
         selectQ := sqlite.Select("id", "name", "description", "price_cents", "is_active", "created_at", "updated_at").
             From("products").
-            Where("deleted_at IS NULL").
+            WhereNull("deleted_at").
             WhereSearch(r.URL.Query().Get("search"), "name", "description")
 
         total, _ := db.Count(selectQ)
@@ -181,7 +181,7 @@ func createHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             return
         }
 
-        now := time.Now().UTC().Format(time.RFC3339)
+        now := sqlite.Now()
         sql, args := sqlite.Insert("products").
             Set("name", req.Name).
             Set("description", req.Description).
@@ -225,7 +225,7 @@ func getHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         sql, args := sqlite.Select("id", "name", "description", "price_cents", "is_active", "created_at", "updated_at").
             From("products").
             Where("id = ?", id).
-            Where("deleted_at IS NULL").
+            WhereNull("deleted_at").
             Build()
         p, err := sqlite.QueryOne(db, sql, args, scanProduct)
         if err != nil {
@@ -267,7 +267,7 @@ func updateHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         sql, args := sqlite.Select("name", "description", "price_cents", "is_active", "created_at").
             From("products").
             Where("id = ?", id).
-            Where("deleted_at IS NULL").
+            WhereNull("deleted_at").
             Build()
         if err := db.QueryRow(sql, args...).Scan(&curName, &curDesc, &curPrice, &curActive, &createdAt); err != nil {
             http.WriteError(w, http.StatusNotFound, "product not found")
@@ -296,7 +296,7 @@ func updateHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             }
         }
 
-        now := time.Now().UTC().Format(time.RFC3339)
+        now := sqlite.Now()
         sql, args = sqlite.Update("products").
             Set("name", name).
             Set("description", desc).
@@ -304,7 +304,7 @@ func updateHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             Set("is_active", isActive).
             Set("updated_at", now).
             Where("id = ?", id).
-            Where("deleted_at IS NULL").
+            WhereNull("deleted_at").
             Build()
         if _, err := db.Exec(sql, args...); err != nil {
             http.WriteError(w, http.StatusInternalServerError, "failed to update product")
@@ -338,13 +338,13 @@ func deleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             return
         }
 
-        now := time.Now().UTC().Format(time.RFC3339)
+        now := sqlite.Now()
         sql, args := sqlite.Update("products").
             Set("deleted_at", now).
             Set("is_active", 0).
             Set("updated_at", now).
             Where("id = ?", id).
-            Where("deleted_at IS NULL").
+            WhereNull("deleted_at").
             Build()
         result, err := db.Exec(sql, args...)
         if err != nil {

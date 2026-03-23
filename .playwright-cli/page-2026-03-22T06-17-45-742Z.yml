@@ -1,0 +1,111 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - button [ref=e7] [cursor=pointer]
+        - paragraph [ref=e9]: Stanza Admin
+      - generic [ref=e10]:
+        - button [ref=e11] [cursor=pointer]:
+          - img [ref=e13]
+        - button [ref=e17] [cursor=pointer]:
+          - img [ref=e19]
+        - button [ref=e22] [cursor=pointer]:
+          - img [ref=e24]
+  - navigation [ref=e26]:
+    - generic [ref=e29]:
+      - generic [ref=e31] [cursor=pointer]:
+        - img [ref=e33]
+        - generic [ref=e37]: Dashboard
+      - generic [ref=e38]:
+        - paragraph [ref=e39]: Users & Access
+        - generic [ref=e40] [cursor=pointer]:
+          - img [ref=e42]
+          - generic [ref=e47]: Users
+        - generic [ref=e48] [cursor=pointer]:
+          - img [ref=e50]
+          - generic [ref=e54]: Admin Users
+        - generic [ref=e55] [cursor=pointer]:
+          - img [ref=e57]
+          - generic [ref=e60]: Sessions
+        - generic [ref=e61] [cursor=pointer]:
+          - img [ref=e63]
+          - generic [ref=e65]: API Keys
+        - generic [ref=e66] [cursor=pointer]:
+          - img [ref=e68]
+          - generic [ref=e71]: Roles
+      - generic [ref=e72]:
+        - paragraph [ref=e73]: System
+        - generic [ref=e74] [cursor=pointer]:
+          - img [ref=e76]
+          - generic [ref=e79]: Cron Jobs
+        - generic [ref=e80] [cursor=pointer]:
+          - img [ref=e82]
+          - generic [ref=e86]: Job Queue
+        - generic [ref=e87] [cursor=pointer]:
+          - img [ref=e89]
+          - generic [ref=e92]: Logs
+        - generic [ref=e93] [cursor=pointer]:
+          - img [ref=e95]
+          - generic [ref=e99]: Database
+        - generic [ref=e100] [cursor=pointer]:
+          - img [ref=e102]
+          - generic [ref=e106]: Webhooks
+      - generic [ref=e107]:
+        - paragraph [ref=e108]: Content
+        - generic [ref=e109] [cursor=pointer]:
+          - img [ref=e111]
+          - generic [ref=e114]: Uploads
+        - generic [ref=e115] [cursor=pointer]:
+          - img [ref=e117]
+          - generic [ref=e120]: Notifications
+        - generic [ref=e121] [cursor=pointer]:
+          - img [ref=e123]
+          - generic [ref=e126]: Audit Log
+      - generic [ref=e127]:
+        - paragraph [ref=e128]: Config
+        - generic [ref=e129] [cursor=pointer]:
+          - img [ref=e131]
+          - generic [ref=e134]: Settings
+    - generic [ref=e137]:
+      - button "Super Admin superadmin" [ref=e138] [cursor=pointer]:
+        - generic [ref=e139]:
+          - img [ref=e140]
+          - generic [ref=e143]:
+            - paragraph [ref=e144]: Super Admin
+            - paragraph [ref=e145]: superadmin
+      - button [ref=e146] [cursor=pointer]:
+        - img [ref=e148]
+  - main [ref=e152]:
+    - table [ref=e181]:
+      - rowgroup [ref=e182]:
+        - row [ref=e183]:
+          - columnheader [ref=e184]
+          - columnheader [ref=e186]
+          - columnheader [ref=e188]
+          - columnheader [ref=e190]
+      - rowgroup [ref=e192]:
+        - row [ref=e193]:
+          - cell [ref=e194]
+          - cell [ref=e196]
+          - cell [ref=e198]
+          - cell [ref=e200]
+        - row [ref=e202]:
+          - cell [ref=e203]
+          - cell [ref=e205]
+          - cell [ref=e207]
+          - cell [ref=e209]
+        - row [ref=e211]:
+          - cell [ref=e212]
+          - cell [ref=e214]
+          - cell [ref=e216]
+          - cell [ref=e218]
+        - row [ref=e220]:
+          - cell [ref=e221]
+          - cell [ref=e223]
+          - cell [ref=e225]
+          - cell [ref=e227]
+        - row [ref=e229]:
+          - cell [ref=e230]
+          - cell [ref=e232]
+          - cell [ref=e234]
+          - cell [ref=e236]

@@ -24,10 +24,10 @@ func deleteHandler(db *sqlite.DB, wh *webhooks.Dispatcher) func(http.ResponseWri
 
         // Soft-delete the user.
         sql, args := sqlite.Update("users").
-            Set("deleted_at", time.Now().UTC().Format(time.RFC3339)).
+            Set("deleted_at", sqlite.Now()).
             Set("is_active", 0).
             Where("id = ?", id).
-            Where("deleted_at IS NULL").
+            WhereNull("deleted_at").
             Build()
         result, err := db.Exec(sql, args...)
         if err != nil {
@@ -100,7 +100,7 @@ err := db.InTx(func(tx *sqlite.Tx) error {
         Set("from_id", fromID).
         Set("to_id", toID).
         Set("amount", amount).
-        Set("created_at", time.Now().UTC().Format(time.RFC3339)).
+        Set("created_at", sqlite.Now()).
         Build()
     _, err = tx.Exec(sql, args...)
     return err
@@ -130,7 +130,7 @@ defer tx.Rollback() // Safe to call after Commit — it's a no-op.
 sql, args := sqlite.Insert("orders").
     Set("user_id", userID).
     Set("total_cents", total).
-    Set("created_at", time.Now().UTC().Format(time.RFC3339)).
+    Set("created_at", sqlite.Now()).
     Build()
 result, err := tx.Exec(sql, args...)
 if err != nil {

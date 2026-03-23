@@ -86,7 +86,7 @@ Most tables use soft deletes instead of `DELETE FROM`. The pattern:
 ```go
 // Soft delete — set deleted_at, never remove the row.
 sql, args := sqlite.Update("products").
-    Set("deleted_at", time.Now().UTC().Format(time.RFC3339)).
+    Set("deleted_at", sqlite.Now()).
     Where("id = ?", id).
     Build()
 result, err := db.Exec(sql, args...)
@@ -98,7 +98,7 @@ Queries filter out deleted rows by default:
 // List active products only.
 sql, args := sqlite.Select("id", "name", "price_cents").
     From("products").
-    Where("deleted_at IS NULL").
+    WhereNull("deleted_at").
     OrderBy("created_at", "DESC").
     Build()
 ```

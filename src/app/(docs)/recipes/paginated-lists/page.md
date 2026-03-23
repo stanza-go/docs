@@ -30,7 +30,7 @@ func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 
         selectQ := sqlite.Select("id", "name", "email", "created_at").
             From("users").
-            Where("deleted_at IS NULL").
+            WhereNull("deleted_at").
             WhereSearch(r.URL.Query().Get("search"), "name", "email").
             OrderBy(col, dir).
             Limit(pg.Limit).
@@ -89,7 +89,7 @@ When both the list handler and export handler need the same filters, extract the
 func buildUserSelect(r *http.Request) *sqlite.SelectBuilder {
     selectQ := sqlite.Select("id", "name", "email", "role", "created_at").
         From("users").
-        Where("deleted_at IS NULL").
+        WhereNull("deleted_at").
         WhereSearch(r.URL.Query().Get("search"), "name", "email")
 
     if role := r.URL.Query().Get("role"); role != "" {
@@ -192,7 +192,7 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             return
         }
 
-        now := time.Now().UTC().Format(time.RFC3339)
+        now := sqlite.Now()
         ids := make([]any, len(req.IDs))
         for i, id := range req.IDs {
             ids[i] = id
@@ -201,7 +201,7 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         query, args := sqlite.Update("users").
             Set("deleted_at", now).
             Set("updated_at", now).
-            Where("deleted_at IS NULL").
+            WhereNull("deleted_at").
             WhereIn("id", ids...).
             Build()
         result, err := db.Exec(query, args...)

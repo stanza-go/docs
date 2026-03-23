@@ -1,0 +1,189 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - paragraph [ref=e7]: Stanza Admin
+      - generic [ref=e8]:
+        - button [ref=e9] [cursor=pointer]:
+          - img [ref=e11]
+        - generic [ref=e14]:
+          - generic [ref=e244]: "1"
+          - button [ref=e15] [cursor=pointer]:
+            - img [ref=e17]
+        - button [ref=e20] [cursor=pointer]:
+          - img [ref=e22]
+  - navigation [ref=e24]:
+    - generic [ref=e27]:
+      - generic [ref=e29] [cursor=pointer]:
+        - img [ref=e31]
+        - generic [ref=e35]: Dashboard
+      - generic [ref=e36]:
+        - paragraph [ref=e37]: Users & Access
+        - generic [ref=e38] [cursor=pointer]:
+          - img [ref=e40]
+          - generic [ref=e45]: Users
+        - generic [ref=e46] [cursor=pointer]:
+          - img [ref=e48]
+          - generic [ref=e52]: Admin Users
+        - generic [ref=e53] [cursor=pointer]:
+          - img [ref=e55]
+          - generic [ref=e58]: Sessions
+        - generic [ref=e59] [cursor=pointer]:
+          - img [ref=e61]
+          - generic [ref=e63]: API Keys
+        - generic [ref=e64] [cursor=pointer]:
+          - img [ref=e66]
+          - generic [ref=e69]: Roles
+      - generic [ref=e70]:
+        - paragraph [ref=e71]: System
+        - generic [ref=e72] [cursor=pointer]:
+          - img [ref=e74]
+          - generic [ref=e77]: Cron Jobs
+        - generic [ref=e78] [cursor=pointer]:
+          - img [ref=e80]
+          - generic [ref=e84]: Job Queue
+        - generic [ref=e85] [cursor=pointer]:
+          - img [ref=e87]
+          - generic [ref=e90]: Logs
+        - generic [ref=e91] [cursor=pointer]:
+          - img [ref=e93]
+          - generic [ref=e97]: Database
+        - generic [ref=e98] [cursor=pointer]:
+          - img [ref=e100]
+          - generic [ref=e104]: Webhooks
+      - generic [ref=e105]:
+        - paragraph [ref=e106]: Content
+        - generic [ref=e107] [cursor=pointer]:
+          - img [ref=e109]
+          - generic [ref=e112]: Uploads
+        - generic [ref=e113] [cursor=pointer]:
+          - img [ref=e115]
+          - generic [ref=e118]: Notifications
+        - generic [ref=e119] [cursor=pointer]:
+          - img [ref=e121]
+          - generic [ref=e124]: Audit Log
+      - generic [ref=e125]:
+        - paragraph [ref=e126]: Config
+        - generic [ref=e127] [cursor=pointer]:
+          - img [ref=e129]
+          - generic [ref=e132]: Settings
+    - generic [ref=e135]:
+      - button "Super Admin superadmin" [ref=e136] [cursor=pointer]:
+        - generic [ref=e137]:
+          - img [ref=e138]
+          - generic [ref=e141]:
+            - paragraph [ref=e142]: Super Admin
+            - paragraph [ref=e143]: superadmin
+      - button [ref=e144] [cursor=pointer]:
+        - img [ref=e146]
+  - main [ref=e150]:
+    - generic [ref=e346]:
+      - generic [ref=e347]:
+        - generic [ref=e348]:
+          - heading "Uploads" [level=3] [ref=e349]
+          - generic [ref=e351]: "2"
+        - generic [ref=e352]:
+          - button "Export CSV" [ref=e353] [cursor=pointer]:
+            - generic [ref=e354]:
+              - img [ref=e356]
+              - generic [ref=e359]: Export CSV
+          - button "Upload File" [ref=e360] [cursor=pointer]:
+            - generic [ref=e361]:
+              - img [ref=e363]
+              - generic [ref=e366]: Upload File
+      - generic [ref=e367]:
+        - radiogroup [ref=e368]:
+          - generic [ref=e370]:
+            - radio "All" [checked]
+            - generic [ref=e371] [cursor=pointer]: All
+          - generic [ref=e372]:
+            - radio "Images"
+            - generic [ref=e373] [cursor=pointer]: Images
+          - generic [ref=e374]:
+            - radio "Videos"
+            - generic [ref=e375] [cursor=pointer]: Videos
+          - generic [ref=e376]:
+            - radio "PDFs"
+            - generic [ref=e377] [cursor=pointer]: PDFs
+        - generic [ref=e379]:
+          - generic [ref=e380]:
+            - checkbox "Show deleted" [ref=e381]
+            - img
+          - generic [ref=e383]: Show deleted
+      - table [ref=e388]:
+        - rowgroup [ref=e389]:
+          - row "Select all Name Type Size Owner Uploaded Actions" [ref=e390]:
+            - columnheader "Select all" [ref=e391]:
+              - generic [ref=e394]:
+                - checkbox "Select all" [ref=e395]
+                - img
+            - columnheader [ref=e396]
+            - columnheader "Name" [ref=e397] [cursor=pointer]:
+              - generic [ref=e398]:
+                - text: Name
+                - img [ref=e399]
+            - columnheader "Type" [ref=e402] [cursor=pointer]:
+              - generic [ref=e403]:
+                - text: Type
+                - img [ref=e404]
+            - columnheader "Size" [ref=e407] [cursor=pointer]:
+              - generic [ref=e408]:
+                - text: Size
+                - img [ref=e409]
+            - columnheader "Owner" [ref=e412]
+            - columnheader "Uploaded" [ref=e413] [cursor=pointer]:
+              - generic [ref=e414]:
+                - text: Uploaded
+                - img [ref=e415]
+            - columnheader "Actions" [ref=e418]
+        - rowgroup [ref=e419]:
+          - row "Select test-upload.txt test-upload.txt text/plain 27 B — 3/21/2026, 3:01:30 PM" [ref=e420]:
+            - cell "Select test-upload.txt" [ref=e421]:
+              - generic [ref=e424]:
+                - checkbox "Select test-upload.txt" [ref=e425]
+                - img
+            - cell [ref=e426]:
+              - img [ref=e428]
+            - cell "test-upload.txt" [ref=e431]:
+              - paragraph [ref=e432] [cursor=pointer]: test-upload.txt
+            - cell "text/plain" [ref=e433]:
+              - paragraph [ref=e434]: text/plain
+            - cell "27 B" [ref=e435]:
+              - paragraph [ref=e436]: 27 B
+            - cell "—" [ref=e437]:
+              - paragraph [ref=e438]: —
+            - cell "3/21/2026, 3:01:30 PM" [ref=e439]:
+              - paragraph [ref=e440]: 3/21/2026, 3:01:30 PM
+            - cell [ref=e441]:
+              - generic [ref=e442]:
+                - button [ref=e443] [cursor=pointer]:
+                  - img [ref=e445]
+                - link [ref=e448] [cursor=pointer]:
+                  - /url: /api/admin/uploads/3/file
+                  - img [ref=e450]
+                - button [ref=e453] [cursor=pointer]:
+                  - img [ref=e455]
+          - row "Select test-image.png test-image.png image/png 142.8 KB product:123 3/21/2026, 11:18:34 AM" [ref=e458]:
+            - cell "Select test-image.png" [ref=e459]:
+              - generic [ref=e462]:
+                - checkbox "Select test-image.png" [ref=e463]
+                - img
+            - cell [ref=e464]
+            - cell "test-image.png" [ref=e465]:
+              - paragraph [ref=e466] [cursor=pointer]: test-image.png
+            - cell "image/png" [ref=e467]:
+              - paragraph [ref=e468]: image/png
+            - cell "142.8 KB" [ref=e469]:
+              - paragraph [ref=e470]: 142.8 KB
+            - cell "product:123" [ref=e471]:
+              - paragraph [ref=e472]: product:123
+            - cell "3/21/2026, 11:18:34 AM" [ref=e473]:
+              - paragraph [ref=e474]: 3/21/2026, 11:18:34 AM
+            - cell [ref=e475]:
+              - generic [ref=e476]:
+                - button [ref=e477] [cursor=pointer]:
+                  - img [ref=e479]
+                - link [ref=e482] [cursor=pointer]:
+                  - /url: /api/admin/uploads/2/file
+                  - img [ref=e484]
+                - button [ref=e487] [cursor=pointer]:
+                  - img [ref=e489]

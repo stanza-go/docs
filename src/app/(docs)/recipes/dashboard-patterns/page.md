@@ -82,7 +82,7 @@ func queryDBStats(db *sqlite.DB) (*dbStats, error) {
     st := &dbStats{}
 
     // Existing queries...
-    sql, args := sqlite.Count("users").Where("deleted_at IS NULL").Build()
+    sql, args := sqlite.Count("users").WhereNull("deleted_at").Build()
     _ = db.QueryRow(sql, args...).Scan(&st.TotalUsers)
 
     // Your new queries.

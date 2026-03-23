@@ -1,0 +1,446 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - paragraph [ref=e7]: Stanza Admin
+      - generic [ref=e8]:
+        - button [ref=e9] [cursor=pointer]:
+          - img [ref=e11]
+        - generic [ref=e14]:
+          - generic [ref=e244]: "1"
+          - button [ref=e15] [cursor=pointer]:
+            - img [ref=e17]
+        - button [ref=e20] [cursor=pointer]:
+          - img [ref=e22]
+  - navigation [ref=e24]:
+    - generic [ref=e27]:
+      - generic [ref=e29] [cursor=pointer]:
+        - img [ref=e31]
+        - generic [ref=e35]: Dashboard
+      - generic [ref=e36]:
+        - paragraph [ref=e37]: Users & Access
+        - generic [ref=e38] [cursor=pointer]:
+          - img [ref=e40]
+          - generic [ref=e45]: Users
+        - generic [ref=e46] [cursor=pointer]:
+          - img [ref=e48]
+          - generic [ref=e52]: Admin Users
+        - generic [ref=e53] [cursor=pointer]:
+          - img [ref=e55]
+          - generic [ref=e58]: Sessions
+        - generic [ref=e59] [cursor=pointer]:
+          - img [ref=e61]
+          - generic [ref=e63]: API Keys
+        - generic [ref=e64] [cursor=pointer]:
+          - img [ref=e66]
+          - generic [ref=e69]: Roles
+      - generic [ref=e70]:
+        - paragraph [ref=e71]: System
+        - generic [ref=e72] [cursor=pointer]:
+          - img [ref=e74]
+          - generic [ref=e77]: Cron Jobs
+        - generic [ref=e78] [cursor=pointer]:
+          - img [ref=e80]
+          - generic [ref=e84]: Job Queue
+        - generic [ref=e85] [cursor=pointer]:
+          - img [ref=e87]
+          - generic [ref=e90]: Logs
+        - generic [ref=e91] [cursor=pointer]:
+          - img [ref=e93]
+          - generic [ref=e97]: Database
+        - generic [ref=e98] [cursor=pointer]:
+          - img [ref=e100]
+          - generic [ref=e104]: Webhooks
+      - generic [ref=e105]:
+        - paragraph [ref=e106]: Content
+        - generic [ref=e107] [cursor=pointer]:
+          - img [ref=e109]
+          - generic [ref=e112]: Uploads
+        - generic [ref=e113] [cursor=pointer]:
+          - img [ref=e115]
+          - generic [ref=e118]: Notifications
+        - generic [ref=e119] [cursor=pointer]:
+          - img [ref=e121]
+          - generic [ref=e124]: Audit Log
+      - generic [ref=e125]:
+        - paragraph [ref=e126]: Config
+        - generic [ref=e127] [cursor=pointer]:
+          - img [ref=e129]
+          - generic [ref=e132]: Settings
+    - generic [ref=e135]:
+      - button "Super Admin superadmin" [ref=e136] [cursor=pointer]:
+        - generic [ref=e137]:
+          - img [ref=e138]
+          - generic [ref=e141]:
+            - paragraph [ref=e142]: Super Admin
+            - paragraph [ref=e143]: superadmin
+      - button [ref=e144] [cursor=pointer]:
+        - img [ref=e146]
+  - main [ref=e150]:
+    - generic [ref=e822]:
+      - generic [ref=e823]:
+        - generic [ref=e824]:
+          - heading "Users" [level=3] [ref=e825]
+          - generic [ref=e827]: "14"
+        - generic [ref=e828]:
+          - button "Export CSV" [ref=e829] [cursor=pointer]:
+            - generic [ref=e830]:
+              - img [ref=e832]
+              - generic [ref=e835]: Export CSV
+          - button "Create User" [ref=e836] [cursor=pointer]:
+            - generic [ref=e837]:
+              - img [ref=e839]
+              - generic [ref=e840]: Create User
+      - generic [ref=e842]:
+        - img [ref=e844]
+        - textbox "Search by email or name..." [ref=e847]
+      - table [ref=e852]:
+        - rowgroup [ref=e853]:
+          - row "Select all ID Email Name Status Created Actions" [ref=e854]:
+            - columnheader "Select all" [ref=e855]:
+              - generic [ref=e858]:
+                - checkbox "Select all" [ref=e859]
+                - img
+            - columnheader "ID" [ref=e860] [cursor=pointer]:
+              - generic [ref=e861]:
+                - text: ID
+                - img [ref=e862]
+            - columnheader "Email" [ref=e865] [cursor=pointer]:
+              - generic [ref=e866]:
+                - text: Email
+                - img [ref=e867]
+            - columnheader "Name" [ref=e870] [cursor=pointer]:
+              - generic [ref=e871]:
+                - text: Name
+                - img [ref=e872]
+            - columnheader "Status" [ref=e875] [cursor=pointer]:
+              - generic [ref=e876]:
+                - text: Status
+                - img [ref=e877]
+            - columnheader "Created" [ref=e880] [cursor=pointer]:
+              - generic [ref=e881]:
+                - text: Created
+                - img [ref=e882]
+            - columnheader "Actions" [ref=e885]
+        - rowgroup [ref=e886]:
+          - row "Select selfregister@example.com 16 selfregister@example.com Self Register Active 7h ago" [ref=e887]:
+            - cell "Select selfregister@example.com" [ref=e888]:
+              - generic [ref=e891]:
+                - checkbox "Select selfregister@example.com" [ref=e892]
+                - img
+            - cell "16" [ref=e893]:
+              - paragraph [ref=e894]: "16"
+            - cell "selfregister@example.com" [ref=e895]:
+              - paragraph [ref=e896] [cursor=pointer]: selfregister@example.com
+            - cell "Self Register" [ref=e897]:
+              - paragraph [ref=e898]: Self Register
+            - cell "Active" [ref=e899]:
+              - generic [ref=e901] [cursor=pointer]: Active
+            - cell "7h ago" [ref=e902]:
+              - paragraph [ref=e903]: 7h ago
+            - cell [ref=e904]:
+              - generic [ref=e905]:
+                - button [ref=e906] [cursor=pointer]:
+                  - img [ref=e908]
+                - button [ref=e912] [cursor=pointer]:
+                  - img [ref=e914]
+                - button [ref=e917] [cursor=pointer]:
+                  - img [ref=e919]
+          - row "Select activitytest@example.com 14 activitytest@example.com Activity Test Updated Active 9h ago" [ref=e922]:
+            - cell "Select activitytest@example.com" [ref=e923]:
+              - generic [ref=e926]:
+                - checkbox "Select activitytest@example.com" [ref=e927]
+                - img
+            - cell "14" [ref=e928]:
+              - paragraph [ref=e929]: "14"
+            - cell "activitytest@example.com" [ref=e930]:
+              - paragraph [ref=e931] [cursor=pointer]: activitytest@example.com
+            - cell "Activity Test Updated" [ref=e932]:
+              - paragraph [ref=e933]: Activity Test Updated
+            - cell "Active" [ref=e934]:
+              - generic [ref=e936] [cursor=pointer]: Active
+            - cell "9h ago" [ref=e937]:
+              - paragraph [ref=e938]: 9h ago
+            - cell [ref=e939]:
+              - generic [ref=e940]:
+                - button [ref=e941] [cursor=pointer]:
+                  - img [ref=e943]
+                - button [ref=e947] [cursor=pointer]:
+                  - img [ref=e949]
+                - button [ref=e952] [cursor=pointer]:
+                  - img [ref=e954]
+          - row "Select settingstest@example.com 13 settingstest@example.com Settings Test Active 9h ago" [ref=e957]:
+            - cell "Select settingstest@example.com" [ref=e958]:
+              - generic [ref=e961]:
+                - checkbox "Select settingstest@example.com" [ref=e962]
+                - img
+            - cell "13" [ref=e963]:
+              - paragraph [ref=e964]: "13"
+            - cell "settingstest@example.com" [ref=e965]:
+              - paragraph [ref=e966] [cursor=pointer]: settingstest@example.com
+            - cell "Settings Test" [ref=e967]:
+              - paragraph [ref=e968]: Settings Test
+            - cell "Active" [ref=e969]:
+              - generic [ref=e971] [cursor=pointer]: Active
+            - cell "9h ago" [ref=e972]:
+              - paragraph [ref=e973]: 9h ago
+            - cell [ref=e974]:
+              - generic [ref=e975]:
+                - button [ref=e976] [cursor=pointer]:
+                  - img [ref=e978]
+                - button [ref=e982] [cursor=pointer]:
+                  - img [ref=e984]
+                - button [ref=e987] [cursor=pointer]:
+                  - img [ref=e989]
+          - row "Select otheruser@example.com 12 otheruser@example.com Other User Active 10h ago" [ref=e992]:
+            - cell "Select otheruser@example.com" [ref=e993]:
+              - generic [ref=e996]:
+                - checkbox "Select otheruser@example.com" [ref=e997]
+                - img
+            - cell "12" [ref=e998]:
+              - paragraph [ref=e999]: "12"
+            - cell "otheruser@example.com" [ref=e1000]:
+              - paragraph [ref=e1001] [cursor=pointer]: otheruser@example.com
+            - cell "Other User" [ref=e1002]:
+              - paragraph [ref=e1003]: Other User
+            - cell "Active" [ref=e1004]:
+              - generic [ref=e1006] [cursor=pointer]: Active
+            - cell "10h ago" [ref=e1007]:
+              - paragraph [ref=e1008]: 10h ago
+            - cell [ref=e1009]:
+              - generic [ref=e1010]:
+                - button [ref=e1011] [cursor=pointer]:
+                  - img [ref=e1013]
+                - button [ref=e1017] [cursor=pointer]:
+                  - img [ref=e1019]
+                - button [ref=e1022] [cursor=pointer]:
+                  - img [ref=e1024]
+          - row "Select session-test@example.com 11 session-test@example.com Session Tester Active 10h ago" [ref=e1027]:
+            - cell "Select session-test@example.com" [ref=e1028]:
+              - generic [ref=e1031]:
+                - checkbox "Select session-test@example.com" [ref=e1032]
+                - img
+            - cell "11" [ref=e1033]:
+              - paragraph [ref=e1034]: "11"
+            - cell "session-test@example.com" [ref=e1035]:
+              - paragraph [ref=e1036] [cursor=pointer]: session-test@example.com
+            - cell "Session Tester" [ref=e1037]:
+              - paragraph [ref=e1038]: Session Tester
+            - cell "Active" [ref=e1039]:
+              - generic [ref=e1041] [cursor=pointer]: Active
+            - cell "10h ago" [ref=e1042]:
+              - paragraph [ref=e1043]: 10h ago
+            - cell [ref=e1044]:
+              - generic [ref=e1045]:
+                - button [ref=e1046] [cursor=pointer]:
+                  - img [ref=e1048]
+                - button [ref=e1052] [cursor=pointer]:
+                  - img [ref=e1054]
+                - button [ref=e1057] [cursor=pointer]:
+                  - img [ref=e1059]
+          - row "Select jane@test.com 10 jane@test.com Jane Doe Active 12h ago" [ref=e1062]:
+            - cell "Select jane@test.com" [ref=e1063]:
+              - generic [ref=e1066]:
+                - checkbox "Select jane@test.com" [ref=e1067]
+                - img
+            - cell "10" [ref=e1068]:
+              - paragraph [ref=e1069]: "10"
+            - cell "jane@test.com" [ref=e1070]:
+              - paragraph [ref=e1071] [cursor=pointer]: jane@test.com
+            - cell "Jane Doe" [ref=e1072]:
+              - paragraph [ref=e1073]: Jane Doe
+            - cell "Active" [ref=e1074]:
+              - generic [ref=e1076] [cursor=pointer]: Active
+            - cell "12h ago" [ref=e1077]:
+              - paragraph [ref=e1078]: 12h ago
+            - cell [ref=e1079]:
+              - generic [ref=e1080]:
+                - button [ref=e1081] [cursor=pointer]:
+                  - img [ref=e1083]
+                - button [ref=e1087] [cursor=pointer]:
+                  - img [ref=e1089]
+                - button [ref=e1092] [cursor=pointer]:
+                  - img [ref=e1094]
+          - row "Select testuser@example.com 9 testuser@example.com Test User Active 12h ago" [ref=e1097]:
+            - cell "Select testuser@example.com" [ref=e1098]:
+              - generic [ref=e1101]:
+                - checkbox "Select testuser@example.com" [ref=e1102]
+                - img
+            - cell "9" [ref=e1103]:
+              - paragraph [ref=e1104]: "9"
+            - cell "testuser@example.com" [ref=e1105]:
+              - paragraph [ref=e1106] [cursor=pointer]: testuser@example.com
+            - cell "Test User" [ref=e1107]:
+              - paragraph [ref=e1108]: Test User
+            - cell "Active" [ref=e1109]:
+              - generic [ref=e1111] [cursor=pointer]: Active
+            - cell "12h ago" [ref=e1112]:
+              - paragraph [ref=e1113]: 12h ago
+            - cell [ref=e1114]:
+              - generic [ref=e1115]:
+                - button [ref=e1116] [cursor=pointer]:
+                  - img [ref=e1118]
+                - button [ref=e1122] [cursor=pointer]:
+                  - img [ref=e1124]
+                - button [ref=e1127] [cursor=pointer]:
+                  - img [ref=e1129]
+          - row "Select zenkilies@gmail.com 8 zenkilies@gmail.com Test User Active 23h ago" [ref=e1132]:
+            - cell "Select zenkilies@gmail.com" [ref=e1133]:
+              - generic [ref=e1136]:
+                - checkbox "Select zenkilies@gmail.com" [ref=e1137]
+                - img
+            - cell "8" [ref=e1138]:
+              - paragraph [ref=e1139]: "8"
+            - cell "zenkilies@gmail.com" [ref=e1140]:
+              - paragraph [ref=e1141] [cursor=pointer]: zenkilies@gmail.com
+            - cell "Test User" [ref=e1142]:
+              - paragraph [ref=e1143]: Test User
+            - cell "Active" [ref=e1144]:
+              - generic [ref=e1146] [cursor=pointer]: Active
+            - cell "23h ago" [ref=e1147]:
+              - paragraph [ref=e1148]: 23h ago
+            - cell [ref=e1149]:
+              - generic [ref=e1150]:
+                - button [ref=e1151] [cursor=pointer]:
+                  - img [ref=e1153]
+                - button [ref=e1157] [cursor=pointer]:
+                  - img [ref=e1159]
+                - button [ref=e1162] [cursor=pointer]:
+                  - img [ref=e1164]
+          - row "Select playwright@test.dev 7 playwright@test.dev Updated Via UI Active 1d ago" [ref=e1167]:
+            - cell "Select playwright@test.dev" [ref=e1168]:
+              - generic [ref=e1171]:
+                - checkbox "Select playwright@test.dev" [ref=e1172]
+                - img
+            - cell "7" [ref=e1173]:
+              - paragraph [ref=e1174]: "7"
+            - cell "playwright@test.dev" [ref=e1175]:
+              - paragraph [ref=e1176] [cursor=pointer]: playwright@test.dev
+            - cell "Updated Via UI" [ref=e1177]:
+              - paragraph [ref=e1178]: Updated Via UI
+            - cell "Active" [ref=e1179]:
+              - generic [ref=e1181] [cursor=pointer]: Active
+            - cell "1d ago" [ref=e1182]:
+              - paragraph [ref=e1183]: 1d ago
+            - cell [ref=e1184]:
+              - generic [ref=e1185]:
+                - button [ref=e1186] [cursor=pointer]:
+                  - img [ref=e1188]
+                - button [ref=e1192] [cursor=pointer]:
+                  - img [ref=e1194]
+                - button [ref=e1197] [cursor=pointer]:
+                  - img [ref=e1199]
+          - row "Select test@example.com 6 test@example.com Updated Name Active 1d ago" [ref=e1202]:
+            - cell "Select test@example.com" [ref=e1203]:
+              - generic [ref=e1206]:
+                - checkbox "Select test@example.com" [ref=e1207]
+                - img
+            - cell "6" [ref=e1208]:
+              - paragraph [ref=e1209]: "6"
+            - cell "test@example.com" [ref=e1210]:
+              - paragraph [ref=e1211] [cursor=pointer]: test@example.com
+            - cell "Updated Name" [ref=e1212]:
+              - paragraph [ref=e1213]: Updated Name
+            - cell "Active" [ref=e1214]:
+              - generic [ref=e1216] [cursor=pointer]: Active
+            - cell "1d ago" [ref=e1217]:
+              - paragraph [ref=e1218]: 1d ago
+            - cell [ref=e1219]:
+              - generic [ref=e1220]:
+                - button [ref=e1221] [cursor=pointer]:
+                  - img [ref=e1223]
+                - button [ref=e1227] [cursor=pointer]:
+                  - img [ref=e1229]
+                - button [ref=e1232] [cursor=pointer]:
+                  - img [ref=e1234]
+          - row "Select other@example.com 5 other@example.com Other User Active 1d ago" [ref=e1237]:
+            - cell "Select other@example.com" [ref=e1238]:
+              - generic [ref=e1241]:
+                - checkbox "Select other@example.com" [ref=e1242]
+                - img
+            - cell "5" [ref=e1243]:
+              - paragraph [ref=e1244]: "5"
+            - cell "other@example.com" [ref=e1245]:
+              - paragraph [ref=e1246] [cursor=pointer]: other@example.com
+            - cell "Other User" [ref=e1247]:
+              - paragraph [ref=e1248]: Other User
+            - cell "Active" [ref=e1249]:
+              - generic [ref=e1251] [cursor=pointer]: Active
+            - cell "1d ago" [ref=e1252]:
+              - paragraph [ref=e1253]: 1d ago
+            - cell [ref=e1254]:
+              - generic [ref=e1255]:
+                - button [ref=e1256] [cursor=pointer]:
+                  - img [ref=e1258]
+                - button [ref=e1262] [cursor=pointer]:
+                  - img [ref=e1264]
+                - button [ref=e1267] [cursor=pointer]:
+                  - img [ref=e1269]
+          - row "Select final@example.com 4 final@example.com Final Name Active 1d ago" [ref=e1272]:
+            - cell "Select final@example.com" [ref=e1273]:
+              - generic [ref=e1276]:
+                - checkbox "Select final@example.com" [ref=e1277]
+                - img
+            - cell "4" [ref=e1278]:
+              - paragraph [ref=e1279]: "4"
+            - cell "final@example.com" [ref=e1280]:
+              - paragraph [ref=e1281] [cursor=pointer]: final@example.com
+            - cell "Final Name" [ref=e1282]:
+              - paragraph [ref=e1283]: Final Name
+            - cell "Active" [ref=e1284]:
+              - generic [ref=e1286] [cursor=pointer]: Active
+            - cell "1d ago" [ref=e1287]:
+              - paragraph [ref=e1288]: 1d ago
+            - cell [ref=e1289]:
+              - generic [ref=e1290]:
+                - button [ref=e1291] [cursor=pointer]:
+                  - img [ref=e1293]
+                - button [ref=e1297] [cursor=pointer]:
+                  - img [ref=e1299]
+                - button [ref=e1302] [cursor=pointer]:
+                  - img [ref=e1304]
+          - row "Select testuser_30612@example.com 3 testuser_30612@example.com Test User Active 1d ago" [ref=e1307]:
+            - cell "Select testuser_30612@example.com" [ref=e1308]:
+              - generic [ref=e1311]:
+                - checkbox "Select testuser_30612@example.com" [ref=e1312]
+                - img
+            - cell "3" [ref=e1313]:
+              - paragraph [ref=e1314]: "3"
+            - cell "testuser_30612@example.com" [ref=e1315]:
+              - paragraph [ref=e1316] [cursor=pointer]: testuser_30612@example.com
+            - cell "Test User" [ref=e1317]:
+              - paragraph [ref=e1318]: Test User
+            - cell "Active" [ref=e1319]:
+              - generic [ref=e1321] [cursor=pointer]: Active
+            - cell "1d ago" [ref=e1322]:
+              - paragraph [ref=e1323]: 1d ago
+            - cell [ref=e1324]:
+              - generic [ref=e1325]:
+                - button [ref=e1326] [cursor=pointer]:
+                  - img [ref=e1328]
+                - button [ref=e1332] [cursor=pointer]:
+                  - img [ref=e1334]
+                - button [ref=e1337] [cursor=pointer]:
+                  - img [ref=e1339]
+          - row "Select alice@example.com 1 alice@example.com Alice Smith Active 1d ago" [ref=e1342]:
+            - cell "Select alice@example.com" [ref=e1343]:
+              - generic [ref=e1346]:
+                - checkbox "Select alice@example.com" [ref=e1347]
+                - img
+            - cell "1" [ref=e1348]:
+              - paragraph [ref=e1349]: "1"
+            - cell "alice@example.com" [ref=e1350]:
+              - paragraph [ref=e1351] [cursor=pointer]: alice@example.com
+            - cell "Alice Smith" [ref=e1352]:
+              - paragraph [ref=e1353]: Alice Smith
+            - cell "Active" [ref=e1354]:
+              - generic [ref=e1356] [cursor=pointer]: Active
+            - cell "1d ago" [ref=e1357]:
+              - paragraph [ref=e1358]: 1d ago
+            - cell [ref=e1359]:
+              - generic [ref=e1360]:
+                - button [ref=e1361] [cursor=pointer]:
+                  - img [ref=e1363]
+                - button [ref=e1367] [cursor=pointer]:
+                  - img [ref=e1369]
+                - button [ref=e1372] [cursor=pointer]:
+                  - img [ref=e1374]

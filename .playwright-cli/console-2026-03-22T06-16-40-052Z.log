@@ -1,0 +1,1 @@
+[     121ms] [WARNING] WebSocket connection to 'ws://localhost:23706/api/admin/notifications/stream' failed: WebSocket is closed before the connection is established. @ http://localhost:23706/src/components/notification-bell.tsx:109

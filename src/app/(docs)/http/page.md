@@ -1079,7 +1079,11 @@ source.onerror = () => {
 
 ### Middleware compatibility
 
-SSE works correctly through the full middleware chain. The `Compress` middleware excludes `text/event-stream` from gzip compression automatically. Both `Compress` and `ETag` middleware implement `http.Flusher` — when SSE calls `Flush()`, each wrapper propagates it to the underlying `ResponseWriter`, ensuring events reach the client immediately.
+SSE works correctly through the full middleware chain:
+
+- **Write timeout**: `NewSSEWriter` automatically clears the server's `WriteTimeout` deadline (typically 15 seconds) using `ResponseController`. Without this, SSE connections would be killed after the timeout expires. WebSocket avoids this by hijacking the connection; SSE needs an explicit deadline reset.
+- **Compression**: The `Compress` middleware excludes `text/event-stream` from gzip automatically.
+- **ETag / Flush**: Both `Compress` and `ETag` middleware implement `http.Flusher` — when SSE calls `Flush()`, each wrapper propagates it to the underlying `ResponseWriter`, ensuring events reach the client immediately.
 
 ### When to use SSE vs WebSocket
 

@@ -4,6 +4,7 @@ import yaml from 'js-yaml'
 
 import { DocsLayout } from '@/components/DocsLayout'
 import { Fence } from '@/components/Fence'
+import { MarkdocLink } from '@/components/MarkdocLink'
 
 let documentSlugifyMap = new Map()
 
@@ -49,6 +50,10 @@ const nodes = {
         default: 'col',
       },
     },
+  },
+  link: {
+    ...defaultNodes.link,
+    render: MarkdocLink,
   },
   fence: {
     render: Fence,

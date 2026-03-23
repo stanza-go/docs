@@ -172,5 +172,5 @@ POST /api/admin/queue/jobs/{id}/cancel    — cancel a pending job
 - **Payloads are raw JSON bytes.** You control the structure — the queue doesn't interpret them.
 - **Keep handlers idempotent.** Jobs may be retried, so design for safe re-execution.
 - **Log outcomes.** Workers run silently in the background. Use the logger to make failures observable.
-- **Use cron for periodic enqueuing.** A cron job that enqueues queue work is a common pattern — the cron fires on schedule, the queue handles retries and backpressure. See [Custom cron jobs](/docs/recipes/cron-jobs).
+- **Use cron for periodic enqueuing.** A cron job that enqueues queue work is a common pattern — the cron fires on schedule, the queue handles retries and backpressure. See [Custom cron jobs](/recipes/cron-jobs).
 - **Completed jobs are purged.** The built-in `purge-completed-jobs` cron removes completed and cancelled jobs older than 24 hours.

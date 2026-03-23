@@ -233,4 +233,4 @@ Use `400 Bad Request` (via `http.WriteError`) for malformed input that can't be 
 - **Empty strings pass format validators.** `Email`, `MinLen`, `OneOf` skip empty values. Use `Required` to enforce presence.
 - **Don't duplicate database constraints.** Unique, foreign key, and NOT NULL violations are database errors — handle them as 409 or 500, not 422.
 
-See the [Input validation](/docs/recipes/validation) recipe for practical handler examples and frontend integration patterns.
+See the [Input validation](/recipes/validation) recipe for practical handler examples and frontend integration patterns.

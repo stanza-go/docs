@@ -6,7 +6,7 @@ nextjs:
     description: Build multi-column text search, combined filters, and advanced query patterns.
 ---
 
-This recipe covers everything beyond basic `WHERE` clauses — multi-column text search, combining independent filters, OR groups, subquery filters, and custom LIKE patterns. For the full list-endpoint pattern (pagination, sorting, export, bulk), see [Paginated lists](/docs/recipes/paginated-lists).
+This recipe covers everything beyond basic `WHERE` clauses — multi-column text search, combining independent filters, OR groups, subquery filters, and custom LIKE patterns. For the full list-endpoint pattern (pagination, sorting, export, bulk), see [Paginated lists](/recipes/paginated-lists).
 
 ---
 

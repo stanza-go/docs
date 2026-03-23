@@ -783,7 +783,7 @@ Each `PrometheusMetric` has four fields:
 | `Type` | `string` | `"counter"` (monotonically increasing) or `"gauge"` (point-in-time) |
 | `Value` | `float64` | Current value |
 
-The handler sets `Content-Type: text/plain; version=0.0.4` as required by the Prometheus scrape protocol. See the [observability recipe](/docs/recipes/observability) for a complete example wiring all framework Stats() into a single `/api/metrics` endpoint.
+The handler sets `Content-Type: text/plain; version=0.0.4` as required by the Prometheus scrape protocol. See the [observability recipe](/recipes/observability) for a complete example wiring all framework Stats() into a single `/api/metrics` endpoint.
 
 ### RuntimeMetrics
 

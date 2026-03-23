@@ -150,7 +150,7 @@ func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 }
 ```
 
-`WhereSearch` handles LIKE escaping automatically — no manual escape helper needed. When the search string is empty, it's a no-op. `db.Count` derives a COUNT query from the SelectBuilder, reusing the same WHERE conditions without duplication. For advanced filter patterns — multi-column search, OR conditions, subquery filters — see the [Search & filtering](/docs/recipes/search-filtering) recipe.
+`WhereSearch` handles LIKE escaping automatically — no manual escape helper needed. When the search string is empty, it's a no-op. `db.Count` derives a COUNT query from the SelectBuilder, reusing the same WHERE conditions without duplication. For advanced filter patterns — multi-column search, OR conditions, subquery filters — see the [Search & filtering](/recipes/search-filtering) recipe.
 
 ### Create with validation
 

@@ -6,7 +6,7 @@ nextjs:
     description: Step-by-step guide to creating a new admin page with data table, CRUD modals, and bulk actions.
 ---
 
-This recipe walks through creating a new admin page from scratch — a "Products" page with a data table, search, sort, pagination, CRUD modals, bulk actions, and CSV export. This is the frontend counterpart of the [Adding a module](/docs/recipes/modules) recipe.
+This recipe walks through creating a new admin page from scratch — a "Products" page with a data table, search, sort, pagination, CRUD modals, bulk actions, and CSV export. This is the frontend counterpart of the [Adding a module](/recipes/modules) recipe.
 
 The admin panel lives in `admin/` and uses React, Mantine UI, and React Router.
 

@@ -6,7 +6,7 @@ nextjs:
     description: Schema conventions, indexing strategies, and evolution patterns for SQLite tables in Stanza.
 ---
 
-This recipe covers the design decisions behind Stanza's database schemas — column types, naming, indexes, constraints, and how to evolve schemas safely over time. For the mechanics of writing and running migrations, see [Database migrations](/docs/recipes/migrations).
+This recipe covers the design decisions behind Stanza's database schemas — column types, naming, indexes, constraints, and how to evolve schemas safely over time. For the mechanics of writing and running migrations, see [Database migrations](/recipes/migrations).
 
 ---
 

@@ -187,7 +187,7 @@ stanza backup --compress --output /backups/daily.sqlite.gz
 stanza backup --data-dir /data
 ```
 
-The `stanza backup` command uses the same `VACUUM INTO` mechanism as the cron job. See the [CLI documentation](/docs/cli#stanza-backup) for all options.
+The `stanza backup` command uses the same `VACUUM INTO` mechanism as the cron job. See the [CLI documentation](/cli#stanza-backup) for all options.
 
 ---
 

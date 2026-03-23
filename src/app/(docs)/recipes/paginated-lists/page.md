@@ -6,7 +6,7 @@ nextjs:
     description: Build paginated, sortable list endpoints with bulk actions and CSV export.
 ---
 
-This recipe shows how to build a complete list endpoint with pagination, sorting, filtering, bulk actions, and CSV export — the pattern used by every admin module in the standalone app. For advanced filter patterns — multi-column search, OR conditions, subquery filters, and custom LIKE — see [Search & filtering](/docs/recipes/search-filtering).
+This recipe shows how to build a complete list endpoint with pagination, sorting, filtering, bulk actions, and CSV export — the pattern used by every admin module in the standalone app. For advanced filter patterns — multi-column search, OR conditions, subquery filters, and custom LIKE — see [Search & filtering](/recipes/search-filtering).
 
 ---
 
@@ -223,7 +223,7 @@ Register on a POST route (bulk operations carry a JSON body):
 group.HandleFunc("POST /users/bulk-delete", bulkDeleteHandler(db))
 ```
 
-For the complete set of bulk patterns — hard-delete with FK cleanup, bulk state changes, loop-based service calls, batch upserts, audit logging, and webhook dispatch — see the [Bulk operations](/docs/recipes/bulk-operations) recipe.
+For the complete set of bulk patterns — hard-delete with FK cleanup, bulk state changes, loop-based service calls, batch upserts, audit logging, and webhook dispatch — see the [Bulk operations](/recipes/bulk-operations) recipe.
 
 ---
 

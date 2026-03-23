@@ -6,7 +6,7 @@ nextjs:
     description: How to send transactional emails in a Stanza app — client setup, HTML templates, error handling, and graceful degradation without an API key.
 ---
 
-This recipe covers the patterns for sending transactional emails in a Stanza app using the `pkg/email` package. The [Email reference](/docs/email) documents the package API. This recipe shows how to wire it, write templates, handle errors, and degrade gracefully in development.
+This recipe covers the patterns for sending transactional emails in a Stanza app using the `pkg/email` package. The [Email reference](/email) documents the package API. This recipe shows how to wire it, write templates, handle errors, and degrade gracefully in development.
 
 ---
 
@@ -272,7 +272,7 @@ q.Handle("send_email", func(ctx context.Context, payload string) error {
 
 The queue handles retries automatically. If `Send` returns an error, the job is retried with backoff. This is useful for transient network errors or Resend API rate limits.
 
-See the [Queue jobs](/docs/recipes/queue-jobs) recipe for the full job processing pattern.
+See the [Queue jobs](/recipes/queue-jobs) recipe for the full job processing pattern.
 
 ---
 

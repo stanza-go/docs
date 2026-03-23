@@ -6,7 +6,7 @@ nextjs:
     description: Practical patterns for managing config in a Stanza app — adding keys, organizing defaults, handling secrets, and configuring for different environments.
 ---
 
-This recipe covers the practical patterns for managing configuration in a Stanza app. The [Configuration reference](/docs/configuration) documents the `config` package API. This recipe shows how to apply it — adding config for new modules, organizing defaults, handling secrets, and running the same binary across development, staging, and production.
+This recipe covers the practical patterns for managing configuration in a Stanza app. The [Configuration reference](/configuration) documents the `config` package API. This recipe shows how to apply it — adding config for new modules, organizing defaults, handling secrets, and running the same binary across development, staging, and production.
 
 ---
 

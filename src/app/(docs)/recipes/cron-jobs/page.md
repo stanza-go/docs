@@ -95,7 +95,7 @@ if err := s.Add("generate-daily-report", "0 8 * * *", func(ctx context.Context) 
 }
 ```
 
-The cron job fires at 8:00 AM and enqueues the work. A separate queue handler (see [Queue jobs](/docs/recipes/queue-jobs)) processes it with retries.
+The cron job fires at 8:00 AM and enqueues the work. A separate queue handler (see [Queue jobs](/recipes/queue-jobs)) processes it with retries.
 
 ---
 

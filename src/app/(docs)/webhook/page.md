@@ -233,4 +233,4 @@ All counters are cumulative since the client was created. `Stats()` is safe to c
 - **Check the status code.** A `200` response means the recipient acknowledged the webhook. A `4xx` means the recipient rejected it (bad payload, invalid event) and retrying won't help. A `5xx` means the recipient's server had an issue and a retry may succeed.
 - **Keep payloads small.** The response body is truncated to 64KB. Keep your webhook payloads focused on the event data — don't send large blobs.
 
-See the [Webhooks](/docs/recipes/webhooks) recipe for integration patterns with the standalone app's webhook management system.
+See the [Webhooks](/recipes/webhooks) recipe for integration patterns with the standalone app's webhook management system.

@@ -197,4 +197,4 @@ Or create the cache inside a module's `Register` function — it will be garbage
 - **Don't cache what's already fast.** In-memory data (goroutine counts, `runtime.MemStats`) doesn't need caching. Cache database queries and external API calls.
 - **Close is optional for process-scoped caches.** If the cache lives for the entire process lifetime, the cleanup goroutine will be stopped when the process exits.
 
-See the [Caching](/docs/recipes/caching) recipe for integration patterns with real examples from the standalone app.
+See the [Caching](/recipes/caching) recipe for integration patterns with real examples from the standalone app.

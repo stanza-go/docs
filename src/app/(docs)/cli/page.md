@@ -41,6 +41,33 @@ Running `myapp serve --addr :3000` calls the serve handler with `addr` set to `:
 
 ---
 
+## Default command
+
+Use `WithDefaultCommand` to specify which command runs when no subcommand is given. This is useful for application binaries that should start a server by default:
+
+```go
+app := cmd.New("myapp",
+    cmd.WithVersion("1.0.0"),
+    cmd.WithDefaultCommand("serve"),
+)
+
+app.Command("serve", "Start the server", func(c *cmd.Context) error {
+    // starts automatically when run as: ./myapp
+    return startServer()
+})
+
+app.Command("version", "Print build information", func(c *cmd.Context) error {
+    fmt.Println("myapp v1.0.0")
+    return nil
+})
+
+app.Run(os.Args)
+```
+
+Without `WithDefaultCommand`, running `./myapp` with no arguments prints help. With it, `./myapp` dispatches to the named command — `./myapp serve` and `./myapp` behave identically.
+
+---
+
 ## Subcommands
 
 Commands can have subcommands. Pass `nil` as the run function for grouping containers:

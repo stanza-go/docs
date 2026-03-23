@@ -42,7 +42,10 @@ Register jobs before starting the scheduler. Each job has a unique name, a cron 
 ```go
 scheduler.Add("cleanup-sessions", "0 * * * *", func(ctx context.Context) error {
     // runs every hour at minute 0
-    _, err := db.Exec("DELETE FROM sessions WHERE expires_at < ?", time.Now().Unix())
+    sql, args := sqlite.Delete("sessions").
+        Where("expires_at < ?", sqlite.Now()).
+        Build()
+    _, err := db.Exec(sql, args...)
     return err
 })
 
@@ -157,7 +160,10 @@ func provideCron(lc *lifecycle.Lifecycle, db *sqlite.DB, q *queue.Queue, logger 
     })
 
     s.Add("purge-expired-tokens", "30 * * * *", func(ctx context.Context) error {
-        _, err := db.Exec("DELETE FROM refresh_tokens WHERE expires_at < ?", time.Now().Unix())
+        sql, args := sqlite.Delete("refresh_tokens").
+            Where("expires_at < ?", sqlite.Now()).
+            Build()
+        _, err := db.Exec(sql, args...)
         return err
     })
 

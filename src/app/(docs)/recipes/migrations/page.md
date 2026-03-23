@@ -112,7 +112,8 @@ Seed data lives in `api/seed/seed.go` and runs after migrations on boot. Use it 
 func Run(db *sqlite.DB, logger *log.Logger) error {
     // Check if admin already exists.
     var count int
-    _ = db.QueryRow("SELECT COUNT(*) FROM admins").Scan(&count)
+    sql, args := sqlite.Count("admins").Build()
+    _ = db.QueryRow(sql, args...).Scan(&count)
     if count > 0 {
         return nil
     }
@@ -122,10 +123,13 @@ func Run(db *sqlite.DB, logger *log.Logger) error {
     if err != nil {
         return err
     }
-    _, err = db.Exec(
-        "INSERT INTO admins (email, password, name, role) VALUES (?, ?, ?, ?)",
-        "admin@stanza.dev", hash, "Admin", "superadmin",
-    )
+    sql, args := sqlite.Insert("admins").
+        Set("email", "admin@stanza.dev").
+        Set("password", hash).
+        Set("name", "Admin").
+        Set("role", "superadmin").
+        Build()
+    _, err = db.Exec(sql, args...)
     return err
 }
 ```

@@ -153,7 +153,12 @@ The most common breaking change is restructuring a response. Keep the database q
 // queryProduct fetches a product from the database.
 // Shared between v1 and v2 — the query doesn't change.
 func queryProduct(db *sqlite.DB, id int64) (*product, error) {
-    row := db.QueryRow("SELECT id, name, price_cents, currency, is_active, created_at FROM products WHERE id = ? AND deleted_at IS NULL", id)
+    sql, args := sqlite.Select("id", "name", "price_cents", "currency", "is_active", "created_at").
+        From("products").
+        Where("id = ?", id).
+        WhereNull("deleted_at").
+        Build()
+    row := db.QueryRow(sql, args...)
     var p product
     err := row.Scan(&p.ID, &p.Name, &p.PriceCents, &p.Currency, &p.IsActive, &p.CreatedAt)
     if err != nil {

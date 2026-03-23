@@ -385,7 +385,8 @@ Query by key:
 
 ```go
 var value string
-err := db.QueryRow("SELECT value FROM settings WHERE key = ?", "site_name").Scan(&value)
+sql, args := sqlite.Select("value").From("settings").Where("key = ?", "site_name").Build()
+err := db.QueryRow(sql, args...).Scan(&value)
 ```
 
 This pattern is used for the admin settings page. Group by `group_name` for categorized display. The admin panel renders each group as a card with inline-editable fields.

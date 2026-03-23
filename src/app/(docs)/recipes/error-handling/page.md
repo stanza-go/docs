@@ -157,23 +157,20 @@ if err := db.QueryRow(sql, args...).Scan(&u.ID, &u.Name, &u.Email); err != nil {
 }
 ```
 
-### Exec: check RowsAffected
+### Update/Delete: check affected rows
 
 After an UPDATE or DELETE, check whether any rows were actually changed:
 
 ```go
-sql, args := sqlite.Update("users").
+n, err := db.Update(sqlite.Update("users").
     Set("deleted_at", now).
     Where("id = ?", id).
-    WhereNull("deleted_at").
-    Build()
-
-result, err := db.Exec(sql, args...)
+    WhereNull("deleted_at"))
 if err != nil {
     http.WriteServerError(w, r, "failed to delete user", err)
     return
 }
-if result.RowsAffected == 0 {
+if n == 0 {
     http.WriteError(w, http.StatusNotFound, "user not found")
     return
 }
@@ -186,7 +183,9 @@ if result.RowsAffected == 0 {
 Detect UNIQUE constraint violations by inspecting the error message from SQLite:
 
 ```go
-result, err := db.Exec(sql, args...)
+_, err := db.Insert(sqlite.Insert("users").
+    Set("email", email).
+    Set("name", name))
 if err != nil {
     if strings.Contains(err.Error(), "UNIQUE constraint failed") {
         http.WriteError(w, http.StatusConflict, "email already exists")

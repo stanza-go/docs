@@ -72,14 +72,12 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             ids[i] = id
         }
 
-        query, args := sqlite.Update("users").
+        n, err := db.Update(sqlite.Update("users").
             Set("deleted_at", now).
             Set("is_active", 0).
             Set("updated_at", now).
             WhereNull("deleted_at").
-            WhereIn("id", ids...).
-            Build()
-        result, err := db.Exec(query, args...)
+            WhereIn("id", ids...))
         if err != nil {
             http.WriteServerError(w, r, "failed to bulk delete users", err)
             return
@@ -87,12 +85,12 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 
         for _, id := range req.IDs {
             adminaudit.Log(db, r, "user.delete", "user",
-                strconv.FormatInt(id, 10), "bulk")
+                sqlite.FormatID(id), "bulk")
         }
 
         http.WriteJSON(w, http.StatusOK, map[string]any{
             "ok":       true,
-            "affected": result.RowsAffected,
+            "affected": n,
         })
     }
 }
@@ -119,18 +117,16 @@ When deleting users or admins, revoke their active sessions so they're logged ou
 
 // Revoke sessions for deleted users.
 for _, id := range req.IDs {
-    idStr := strconv.FormatInt(id, 10)
-    sql, a := sqlite.Delete("refresh_tokens").
+    idStr := sqlite.FormatID(id)
+    _, _ = db.Delete(sqlite.Delete("refresh_tokens").
         Where("entity_type = 'user'").
-        Where("entity_id = ?", idStr).
-        Build()
-    _, _ = db.Exec(sql, a...)
+        Where("entity_id = ?", idStr))
 }
 
 // Audit log each deletion.
 for _, id := range req.IDs {
     adminaudit.Log(db, r, "user.delete", "user",
-        strconv.FormatInt(id, 10), "bulk")
+        sqlite.FormatID(id), "bulk")
 }
 ```
 
@@ -162,16 +158,12 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         }
 
         // Delete child records first (FK constraint).
-        dq, da := sqlite.Delete("webhook_deliveries").
-            WhereIn("webhook_id", ids...).
-            Build()
-        _, _ = db.Exec(dq, da...)
+        _, _ = db.Delete(sqlite.Delete("webhook_deliveries").
+            WhereIn("webhook_id", ids...))
 
         // Delete parent records.
-        dq, da = sqlite.Delete("webhooks").
-            WhereIn("id", ids...).
-            Build()
-        result, err := db.Exec(dq, da...)
+        n, err := db.Delete(sqlite.Delete("webhooks").
+            WhereIn("id", ids...))
         if err != nil {
             http.WriteServerError(w, r, "failed to bulk delete webhooks", err)
             return
@@ -179,12 +171,12 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 
         for _, id := range req.IDs {
             adminaudit.Log(db, r, "webhook.delete", "webhook",
-                strconv.FormatInt(id, 10), "bulk")
+                sqlite.FormatID(id), "bulk")
         }
 
         http.WriteJSON(w, http.StatusOK, map[string]any{
             "ok":       true,
-            "affected": result.RowsAffected,
+            "affected": n,
         })
     }
 }
@@ -220,12 +212,10 @@ func bulkRevokeHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             ids[i] = id
         }
 
-        query, args := sqlite.Update("api_keys").
+        n, err := db.Update(sqlite.Update("api_keys").
             Set("revoked_at", now).
             WhereNull("revoked_at").
-            WhereIn("id", ids...).
-            Build()
-        result, err := db.Exec(query, args...)
+            WhereIn("id", ids...))
         if err != nil {
             http.WriteServerError(w, r, "failed to bulk revoke api keys", err)
             return
@@ -233,12 +223,12 @@ func bulkRevokeHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 
         for _, id := range req.IDs {
             adminaudit.Log(db, r, "api_key.revoke", "api_key",
-                strconv.FormatInt(id, 10), "bulk")
+                sqlite.FormatID(id), "bulk")
         }
 
         http.WriteJSON(w, http.StatusOK, map[string]any{
             "ok":       true,
-            "affected": result.RowsAffected,
+            "affected": n,
         })
     }
 }
@@ -275,7 +265,7 @@ func bulkRetryHandler(q *queue.Queue, db *sqlite.DB) func(http.ResponseWriter, *
             if err := q.Retry(id); err == nil {
                 affected++
                 adminaudit.Log(db, r, "job.retry", "job",
-                    strconv.FormatInt(id, 10), "bulk")
+                    sqlite.FormatID(id), "bulk")
             }
         }
 
@@ -333,7 +323,7 @@ func batchUpsertHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) 
         now := sqlite.Now()
 
         for key, value := range req.Settings {
-            sql, args := sqlite.Insert("user_settings").
+            if _, err := db.Insert(sqlite.Insert("user_settings").
                 Set("user_id", claims.UID).
                 Set("key", key).
                 Set("value", value).
@@ -342,9 +332,7 @@ func batchUpsertHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) 
                 OnConflict(
                     []string{"user_id", "key"},
                     []string{"value", "updated_at"},
-                ).
-                Build()
-            if _, err := db.Exec(sql, args...); err != nil {
+                )); err != nil {
                 http.WriteServerError(w, r, "failed to save setting", err)
                 return
             }

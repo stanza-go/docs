@@ -85,11 +85,9 @@ Most tables use soft deletes instead of `DELETE FROM`. The pattern:
 
 ```go
 // Soft delete — set deleted_at, never remove the row.
-sql, args := sqlite.Update("products").
+n, err := db.Update(sqlite.Update("products").
     Set("deleted_at", sqlite.Now()).
-    Where("id = ?", id).
-    Build()
-result, err := db.Exec(sql, args...)
+    Where("id = ?", id))
 ```
 
 Queries filter out deleted rows by default:
@@ -266,7 +264,10 @@ CREATE TABLE user_settings (
 This ensures each user has at most one value per setting key. Handle conflicts in the handler:
 
 ```go
-result, err := db.Exec(sql, args...)
+_, err := db.Insert(sqlite.Insert("user_settings").
+    Set("user_id", userID).
+    Set("key", key).
+    Set("value", value))
 if err != nil && strings.Contains(err.Error(), "UNIQUE constraint") {
     http.WriteError(w, 409, "setting already exists")
     return

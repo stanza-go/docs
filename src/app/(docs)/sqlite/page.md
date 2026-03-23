@@ -254,6 +254,25 @@ startedAt := sqlite.FormatTime(job.StartedAt)
 
 `sqlite.Now()` delegates to `FormatTime(time.Now())` internally, so both produce the same canonical format.
 
+### FormatID — convert an int64 ID to string
+
+`sqlite.FormatID(id)` converts an `int64` database ID to its string representation. Use it when an integer primary key needs to be compared against a TEXT column (`entity_id` in `refresh_tokens`, `audit_log`, etc.), passed to audit logging, or included in string slices such as CSV export rows:
+
+```go
+// Audit logging — entity ID as string
+adminaudit.Log(db, r, "user.create", "user", sqlite.FormatID(id), req.Email)
+
+// WHERE on a TEXT column — entity_id stores IDs as strings
+_, _ = db.Delete(sqlite.Delete("refresh_tokens").
+    Where("entity_type = 'user'").
+    Where("entity_id = ?", sqlite.FormatID(id)))
+
+// CSV export — all values must be strings
+return []string{sqlite.FormatID(id), email, name, createdAt}
+```
+
+For comparing a parsed path parameter against `claims.UID`, prefer `claims.IntUID() == id` instead — it avoids the string conversion entirely.
+
 ---
 
 ## Query builder
@@ -434,16 +453,48 @@ rows, _ := db.Query(sql, args...)
 
 `db.Count` calls `CountFrom` internally, so it inherits the same behavior — table and WHERE conditions are reused, ORDER BY/LIMIT/OFFSET are excluded.
 
+### db.Insert / db.Update / db.Delete
+
+Convenience methods that combine `Build` and `Exec` into a single call, returning the most commonly needed value:
+
+| Method | Takes | Returns | Value |
+|--------|-------|---------|-------|
+| `db.Insert(ib)` | `*InsertBuilder` | `(int64, error)` | Last inserted row ID |
+| `db.Update(ub)` | `*UpdateBuilder` | `(int64, error)` | Number of affected rows |
+| `db.Delete(d)` | `*DeleteBuilder` | `(int64, error)` | Number of deleted rows |
+
+```go
+// Create — returns the new row ID
+id, err := db.Insert(sqlite.Insert("users").
+    Set("email", req.Email).
+    Set("name", req.Name).
+    Set("created_at", sqlite.Now()))
+
+// Update — returns affected row count (0 means not found)
+n, err := db.Update(sqlite.Update("users").
+    Set("name", req.Name).
+    Set("updated_at", sqlite.Now()).
+    Where("id = ?", id).
+    WhereNull("deleted_at"))
+if n == 0 {
+    // not found
+}
+
+// Delete — returns deleted row count
+n, err := db.Delete(sqlite.Delete("refresh_tokens").
+    Where("expires_at < ?", cutoff))
+```
+
+Use `db.Exec` directly when you need `OrIgnore`, `OnConflict`, `InsertBatch`, or raw SQL.
+
 ### INSERT
 
 ```go
-sql, args := sqlite.Insert("users").
+id, err := db.Insert(sqlite.Insert("users").
     Set("name", "Alice").
     Set("email", "alice@example.com").
-    Set("created_at", time.Now().Unix()).
-    Build()
-
-result, err := db.Exec(sql, args...)
+    Set("created_at", sqlite.Now()))
+// id is the last inserted row ID (int64)
 ```
 
 Use `OrIgnore()` to skip on conflict:
@@ -454,6 +505,7 @@ sql, args := sqlite.Insert("settings").
     Set("key", "site_name").
     Set("value", "My App").
     Build()
+_, _ = db.Exec(sql, args...) // OrIgnore — use Exec directly
 ```
 
 Use `OnConflict()` for upsert — insert a row, or update specific columns if it already exists:
@@ -516,13 +568,11 @@ sql, args := sqlite.InsertBatch("user_settings").
 ### UPDATE
 
 ```go
-sql, args := sqlite.Update("users").
+n, err := db.Update(sqlite.Update("users").
     Set("name", "Bob").
-    Set("updated_at", time.Now().Unix()).
-    Where("id = ?", 42).
-    Build()
-
-result, err := db.Exec(sql, args...)
+    Set("updated_at", sqlite.Now()).
+    Where("id = ?", 42))
+// n is the number of affected rows (int64)
 ```
 
 Use `SetExpr` for computed assignments that use raw SQL expressions:
@@ -549,11 +599,9 @@ sql, args := sqlite.Update("wallets").
 ### DELETE
 
 ```go
-sql, args := sqlite.Delete("sessions").
-    Where("expires_at < ?", time.Now().Unix()).
-    Build()
-
-result, err := db.Exec(sql, args...)
+n, err := db.Delete(sqlite.Delete("sessions").
+    Where("expires_at < ?", cutoff))
+// n is the number of deleted rows (int64)
 ```
 
 ### WhereNull / WhereNotNull

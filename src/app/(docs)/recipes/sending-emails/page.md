@@ -241,7 +241,7 @@ For non-urgent emails or bulk sends, queue them as jobs so they don't block the 
 ```go
 // In the handler — enqueue the job
 payload, _ := json.Marshal(map[string]string{
-    "user_id": strconv.FormatInt(user.ID, 10),
+    "user_id": sqlite.FormatID(user.ID),
     "type":    "welcome",
 })
 q.Enqueue("send_email", string(payload))

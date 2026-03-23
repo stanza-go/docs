@@ -43,16 +43,14 @@ Add a new `s.Add()` call inside `provideCron`, before the lifecycle hook:
 
 ```go
 if err := s.Add("cleanup-old-products", "0 2 * * *", func(ctx context.Context) error {
-    sql, args := sqlite.Delete("products").
+    n, err := db.Delete(sqlite.Delete("products").
         Where("deleted_at IS NOT NULL").
-        Where("deleted_at < ?", sqlite.FormatTime(time.Now().Add(-30*24*time.Hour))).
-        Build()
-    result, err := db.Exec(sql, args...)
+        Where("deleted_at < ?", sqlite.FormatTime(time.Now().Add(-30*24*time.Hour))))
     if err != nil {
         return err
     }
-    if result.RowsAffected > 0 {
-        logger.Info("purged old products", log.Int64("count", result.RowsAffected))
+    if n > 0 {
+        logger.Info("purged old products", log.Int64("count", n))
     }
     return nil
 }); err != nil {

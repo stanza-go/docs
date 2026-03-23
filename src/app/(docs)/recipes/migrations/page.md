@@ -123,13 +123,11 @@ func Run(db *sqlite.DB, logger *log.Logger) error {
     if err != nil {
         return err
     }
-    sql, args := sqlite.Insert("admins").
+    _, err = db.Insert(sqlite.Insert("admins").
         Set("email", "admin@stanza.dev").
         Set("password", hash).
         Set("name", "Admin").
-        Set("role", "superadmin").
-        Build()
-    _, err = db.Exec(sql, args...)
+        Set("role", "superadmin"))
     return err
 }
 ```

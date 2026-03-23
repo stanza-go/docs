@@ -172,7 +172,7 @@ http.WriteCSV(w, "users", []string{"ID", "Email", "Name"}, func() []string {
     if err := rows.Scan(&id, &email, &name); err != nil {
         return nil
     }
-    return []string{strconv.FormatInt(id, 10), email, name}
+    return []string{sqlite.FormatID(id), email, name}
 })
 ```
 

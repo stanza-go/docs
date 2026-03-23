@@ -23,28 +23,24 @@ func deleteHandler(db *sqlite.DB, wh *webhooks.Dispatcher) func(http.ResponseWri
         }
 
         // Soft-delete the user.
-        sql, args := sqlite.Update("users").
+        n, err := db.Update(sqlite.Update("users").
             Set("deleted_at", sqlite.Now()).
             Set("is_active", 0).
             Where("id = ?", id).
-            WhereNull("deleted_at").
-            Build()
-        result, err := db.Exec(sql, args...)
+            WhereNull("deleted_at"))
         if err != nil {
             http.WriteServerError(w, r, "failed to delete user", err)
             return
         }
-        if result.RowsAffected == 0 {
+        if n == 0 {
             http.WriteError(w, http.StatusNotFound, "user not found")
             return
         }
 
         // Revoke sessions — best-effort, failure is acceptable.
-        sql, args = sqlite.Delete("refresh_tokens").
+        _, _ = db.Delete(sqlite.Delete("refresh_tokens").
             Where("entity_type = ?", "user").
-            Where("entity_id = ?", id).
-            Build()
-        _, _ = db.Exec(sql, args...)
+            Where("entity_id = ?", id))
 
         // Audit and webhook — fire-and-forget.
         adminaudit.Log(db, r, "user.delete", "user", id, "")

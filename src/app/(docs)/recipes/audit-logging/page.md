@@ -60,7 +60,7 @@ func createHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         // ... validate, insert into database ...
 
         adminaudit.Log(db, r, "product.create", "product",
-            strconv.FormatInt(result.LastInsertID, 10), req.Name)
+            sqlite.FormatID(result.LastInsertID), req.Name)
 
         http.WriteJSON(w, http.StatusCreated, map[string]any{"product": p})
     }
@@ -71,7 +71,7 @@ func deleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         // ... soft-delete from database ...
 
         adminaudit.Log(db, r, "product.delete", "product",
-            strconv.FormatInt(id, 10), "")
+            sqlite.FormatID(id), "")
 
         http.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
     }

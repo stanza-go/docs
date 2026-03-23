@@ -180,24 +180,22 @@ func createHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         }
 
         now := sqlite.Now()
-        sql, args := sqlite.Insert("products").
+        id, err := db.Insert(sqlite.Insert("products").
             Set("name", req.Name).
             Set("description", req.Description).
             Set("price_cents", req.PriceCents).
             Set("created_at", now).
-            Set("updated_at", now).
-            Build()
-        result, err := db.Exec(sql, args...)
+            Set("updated_at", now))
         if err != nil {
             http.WriteServerError(w, r, "failed to create product", err)
             return
         }
 
-        adminaudit.Log(db, r, "product.create", "product", strconv.FormatInt(result.LastInsertID, 10), req.Name)
+        adminaudit.Log(db, r, "product.create", "product", sqlite.FormatID(id), req.Name)
 
         http.WriteJSON(w, http.StatusCreated, map[string]any{
             "product": productJSON{
-                ID:          result.LastInsertID,
+                ID:          id,
                 Name:        req.Name,
                 Description: req.Description,
                 PriceCents:  req.PriceCents,
@@ -292,21 +290,19 @@ func updateHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         }
 
         now := sqlite.Now()
-        sql, args = sqlite.Update("products").
+        if _, err := db.Update(sqlite.Update("products").
             Set("name", name).
             Set("description", desc).
             Set("price_cents", price).
             Set("is_active", isActive).
             Set("updated_at", now).
             Where("id = ?", id).
-            WhereNull("deleted_at").
-            Build()
-        if _, err := db.Exec(sql, args...); err != nil {
+            WhereNull("deleted_at")); err != nil {
             http.WriteServerError(w, r, "failed to update product", err)
             return
         }
 
-        adminaudit.Log(db, r, "product.update", "product", strconv.FormatInt(id, 10), curName)
+        adminaudit.Log(db, r, "product.update", "product", sqlite.FormatID(id), curName)
 
         http.WriteJSON(w, http.StatusOK, map[string]any{
             "product": productJSON{
@@ -334,24 +330,22 @@ func deleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         }
 
         now := sqlite.Now()
-        sql, args := sqlite.Update("products").
+        n, err := db.Update(sqlite.Update("products").
             Set("deleted_at", now).
-            Set("is_active", 0).
+            Set("is_active", false).
             Set("updated_at", now).
             Where("id = ?", id).
-            WhereNull("deleted_at").
-            Build()
-        result, err := db.Exec(sql, args...)
+            WhereNull("deleted_at"))
         if err != nil {
             http.WriteServerError(w, r, "failed to delete product", err)
             return
         }
-        if result.RowsAffected == 0 {
+        if n == 0 {
             http.WriteError(w, http.StatusNotFound, "product not found")
             return
         }
 
-        adminaudit.Log(db, r, "product.delete", "product", strconv.FormatInt(id, 10), "")
+        adminaudit.Log(db, r, "product.delete", "product", sqlite.FormatID(id), "")
 
         http.WriteJSON(w, http.StatusOK, map[string]any{"ok": true})
     }

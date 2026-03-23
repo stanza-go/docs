@@ -267,7 +267,7 @@ func exportHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             if err := rows.Scan(&id, &name, &email, &createdAt); err != nil {
                 return nil
             }
-            return []string{strconv.FormatInt(id, 10), name, email, createdAt}
+            return []string{sqlite.FormatID(id), name, email, createdAt}
         })
     }
 }

@@ -67,23 +67,19 @@ if err := row.Scan(&userID); err != nil {
 }
 
 // 3. Invalidate existing unused tokens for this email
-sql, args = sqlite.Update("password_reset_tokens").
+_, _ = db.Update(sqlite.Update("password_reset_tokens").
     Set("used_at", sqlite.Now()).
     Where("email = ?", email).
-    WhereNull("used_at").
-    Build()
-db.Exec(sql, args...)
+    WhereNull("used_at"))
 
 // 4. Generate token (32 bytes = 64 hex chars), store SHA256 hash
 token := generateToken()  // crypto/rand
 tokenHash := auth.HashToken(token)
-sql, args = sqlite.Insert("password_reset_tokens").
+_, _ = db.Insert(sqlite.Insert("password_reset_tokens").
     Set("email", email).
     Set("token_hash", tokenHash).
     Set("expires_at", /* 30 minutes from now */).
-    Set("created_at", sqlite.Now()).
-    Build()
-db.Exec(sql, args...)
+    Set("created_at", sqlite.Now()))
 
 // 5. Send email with the raw token
 client.Send(ctx, email.Message{
@@ -118,25 +114,19 @@ if time.Now().After(expiresAt) {
 
 // 3. Update password
 passwordHash, _ := auth.HashPassword(req.Password)
-sql, args = sqlite.Update("users").
+_, _ = db.Update(sqlite.Update("users").
     Set("password", passwordHash).
-    Where("email = ?", tokenEmail).
-    Build()
-db.Exec(sql, args...)
+    Where("email = ?", tokenEmail))
 
 // 4. Mark token as used
-sql, args = sqlite.Update("password_reset_tokens").
+_, _ = db.Update(sqlite.Update("password_reset_tokens").
     Set("used_at", sqlite.Now()).
-    Where("id = ?", tokenID).
-    Build()
-db.Exec(sql, args...)
+    Where("id = ?", tokenID))
 
 // 5. Revoke all refresh tokens — forces re-login
-sql, args = sqlite.Delete("refresh_tokens").
+_, _ = db.Delete(sqlite.Delete("refresh_tokens").
     Where("entity_type = ?", "user").
-    Where("entity_id = ?", userID).
-    Build()
-db.Exec(sql, args...)
+    Where("entity_id = ?", userID))
 ```
 
 ---

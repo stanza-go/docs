@@ -95,7 +95,7 @@ func loginHandler(db *sqlite.DB, a *auth.Auth) func(http.ResponseWriter, *http.R
             return
         }
 
-        uid := strconv.FormatInt(id, 10)
+        uid := sqlite.FormatID(id)
         scopes := []string{"user"}
 
         // Issue JWT access token (5 min).
@@ -115,14 +115,12 @@ func loginHandler(db *sqlite.DB, a *auth.Auth) func(http.ResponseWriter, *http.R
         tokenHash := auth.HashToken(refreshToken)
         expiresAt := sqlite.FormatTime(time.Now().Add(a.RefreshTokenTTL()))
 
-        sql, args = sqlite.Insert("refresh_tokens").
+        if _, err := db.Insert(sqlite.Insert("refresh_tokens").
             Set("id", randomID()).
             Set("entity_type", "user").
             Set("entity_id", uid).
             Set("token_hash", tokenHash).
-            Set("expires_at", expiresAt).
-            Build()
-        if _, err := db.Exec(sql, args...); err != nil {
+            Set("expires_at", expiresAt)); err != nil {
             http.WriteServerError(w, r, "internal error", err)
             return
         }
@@ -176,9 +174,8 @@ func statusHandler(db *sqlite.DB, a *auth.Auth) func(http.ResponseWriter, *http.
         exp, _ := time.Parse(time.RFC3339, expiresAt)
         if time.Now().UTC().After(exp) {
             // Expired — clean up and reject.
-            sql, args = sqlite.Delete("refresh_tokens").
-                Where("token_hash = ?", tokenHash).Build()
-            _, _ = db.Exec(sql, args...)
+            _, _ = db.Delete(sqlite.Delete("refresh_tokens").
+                Where("token_hash = ?", tokenHash))
             a.ClearAllCookies(w)
             http.WriteError(w, http.StatusUnauthorized, "session expired")
             return
@@ -196,16 +193,15 @@ func statusHandler(db *sqlite.DB, a *auth.Auth) func(http.ResponseWriter, *http.
         var email, name string
         if err := db.QueryRow(sql, args...).Scan(&id, &email, &name); err != nil {
             // User deleted or deactivated — revoke session.
-            sql, args = sqlite.Delete("refresh_tokens").
-                Where("token_hash = ?", tokenHash).Build()
-            _, _ = db.Exec(sql, args...)
+            _, _ = db.Delete(sqlite.Delete("refresh_tokens").
+                Where("token_hash = ?", tokenHash))
             a.ClearAllCookies(w)
             http.WriteError(w, http.StatusUnauthorized, "account deactivated")
             return
         }
 
         // Issue a fresh access token with current scopes.
-        accessToken, err := a.IssueAccessToken(strconv.FormatInt(id, 10), []string{"user"})
+        accessToken, err := a.IssueAccessToken(sqlite.FormatID(id), []string{"user"})
         if err != nil {
             http.WriteServerError(w, r, "internal error", err)
             return
@@ -237,9 +233,8 @@ func logoutHandler(db *sqlite.DB, a *auth.Auth) func(http.ResponseWriter, *http.
         refreshToken, err := auth.ReadRefreshToken(r)
         if err == nil {
             tokenHash := auth.HashToken(refreshToken)
-            sql, args := sqlite.Delete("refresh_tokens").
-                Where("token_hash = ?", tokenHash).Build()
-            _, _ = db.Exec(sql, args...)
+            _, _ = db.Delete(sqlite.Delete("refresh_tokens").
+                Where("token_hash = ?", tokenHash))
         }
 
         a.ClearAllCookies(w)
@@ -288,9 +283,12 @@ sql, args := sqlite.Select(
 Delete by the refresh token's row ID (not the token hash — admins see the ID, not the token):
 
 ```go
-sql, args := sqlite.Delete("refresh_tokens").Where("id = ?", id).Build()
-result, err := db.Exec(sql, args...)
-if result.RowsAffected == 0 {
+n, err := db.Delete(sqlite.Delete("refresh_tokens").Where("id = ?", id))
+if err != nil {
+    http.WriteServerError(w, r, "failed to revoke session", err)
+    return
+}
+if n == 0 {
     http.WriteError(w, http.StatusNotFound, "session not found")
     return
 }
@@ -306,10 +304,8 @@ for i, id := range req.IDs {
     ids[i] = id
 }
 
-sql, args := sqlite.Delete("refresh_tokens").
-    WhereIn("id", ids...).
-    Build()
-result, err := db.Exec(sql, args...)
+n, err := db.Delete(sqlite.Delete("refresh_tokens").
+    WhereIn("id", ids...))
 ```
 
 ---

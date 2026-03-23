@@ -114,7 +114,7 @@ User uploads are scoped via `entity_type="user"` and `entity_id` set to the auth
 ```go
 // User upload endpoints add these filters automatically:
 q.Where("entity_type = ?", "user")
-q.Where("entity_id = ?", strconv.FormatInt(userID, 10))
+q.Where("entity_id = ?", sqlite.FormatID(userID))
 ```
 
 ---

@@ -49,6 +49,7 @@ export const navigation = [
       { title: 'Queue jobs', href: '/recipes/queue-jobs' },
       { title: 'Roles & scopes', href: '/recipes/roles-scopes' },
       { title: 'Real-time with WebSocket', href: '/recipes/real-time' },
+      { title: 'Server-Sent Events', href: '/recipes/server-sent-events' },
       { title: 'Caching', href: '/recipes/caching' },
       { title: 'Webhooks', href: '/recipes/webhooks' },
       { title: 'User API keys', href: '/recipes/user-api-keys' },

@@ -834,6 +834,7 @@ The package re-exports common HTTP status codes as constants:
 | `StatusUnprocessableEntity` | 422 |
 | `StatusTooManyRequests` | 429 |
 | `StatusInternalServerError` | 500 |
+| `StatusBadGateway` | 502 |
 | `StatusServiceUnavailable` | 503 |
 
 ---

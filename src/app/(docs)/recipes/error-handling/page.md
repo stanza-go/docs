@@ -65,6 +65,7 @@ if v.HasErrors() {
 | Expired/removed resource | 410 | `StatusGone` | `"paste has expired"` |
 | Too many requests | 429 | `StatusTooManyRequests` | `"too many requests"` |
 | Database or system failure | 500 | `StatusInternalServerError` | `"failed to create user"` |
+| Upstream API error | 502 | `StatusBadGateway` | `"AI service error (HTTP 500)"` |
 
 ---
 

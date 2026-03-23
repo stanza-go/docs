@@ -1,4 +1,0 @@
-[      80ms] [ERROR] Failed to load resource: the server responded with a status of 429 (Too Many Requests) @ http://localhost:23706/api/admin/auth/:0
-[      81ms] [ERROR] Failed to load resource: the server responded with a status of 429 (Too Many Requests) @ http://localhost:23706/api/admin/auth/:0
-[    1090ms] [ERROR] Failed to load resource: the server responded with a status of 429 (Too Many Requests) @ http://localhost:23706/api/admin/auth/:0
-[    1093ms] [ERROR] Failed to load resource: the server responded with a status of 429 (Too Many Requests) @ http://localhost:23706/api/admin/auth/:0

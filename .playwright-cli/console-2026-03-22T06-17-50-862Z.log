@@ -1,4 +1,0 @@
-[     118ms] [WARNING] WebSocket connection to 'ws://localhost:23706/api/admin/notifications/stream' failed: WebSocket is closed before the connection is established. @ http://localhost:23706/src/components/notification-bell.tsx:109
-[     459ms] [ERROR] Each child in a list should have a unique "key" prop.%s%s See https://react.dev/link/warning-keys for more information. 
-
-Check the render method of `@mantine/core/Box`.  It was passed a child from WebhookDetailPage. @ http://localhost:23706/node_modules/.vite/deps/chunk-KJOM3GLF.js?v=1ace8865:2610

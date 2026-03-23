@@ -5,7 +5,6 @@ import Link from 'next/link'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { Dialog, DialogPanel } from '@headlessui/react'
 
-import { Logomark } from '@/components/Logo'
 import { Navigation } from '@/components/Navigation'
 
 function MenuIcon(props: React.ComponentPropsWithoutRef<'svg'>) {
@@ -91,8 +90,8 @@ export function MobileNavigation() {
             >
               <CloseIcon className="h-6 w-6 stroke-slate-500" />
             </button>
-            <Link href="/" className="ml-6" aria-label="Home page">
-              <Logomark className="h-9 w-9" />
+            <Link href="/" className="ml-6 text-xl font-bold text-slate-900 dark:text-white" aria-label="Home page">
+              Stanza
             </Link>
           </div>
           <Navigation className="mt-5 px-1" onLinkClick={onLinkClick} />

@@ -62,6 +62,7 @@ if v.HasErrors() {
 | Valid credentials, wrong scope | 403 | `StatusForbidden` | `"insufficient permissions"` |
 | Resource doesn't exist | 404 | `StatusNotFound` | `"user not found"` |
 | Unique constraint violation | 409 | `StatusConflict` | `"email already exists"` |
+| Expired/removed resource | 410 | `StatusGone` | `"paste has expired"` |
 | Too many requests | 429 | `StatusTooManyRequests` | `"too many requests"` |
 | Database or system failure | 500 | `StatusInternalServerError` | `"failed to create user"` |
 

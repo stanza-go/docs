@@ -829,6 +829,7 @@ The package re-exports common HTTP status codes as constants:
 | `StatusNotFound` | 404 |
 | `StatusMethodNotAllowed` | 405 |
 | `StatusConflict` | 409 |
+| `StatusGone` | 410 |
 | `StatusRequestEntityTooLarge` | 413 |
 | `StatusUnprocessableEntity` | 422 |
 | `StatusTooManyRequests` | 429 |

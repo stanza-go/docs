@@ -959,3 +959,86 @@ for {
     }
 }
 ```
+
+---
+
+## Server-Sent Events (SSE)
+
+`SSEWriter` provides a simple API for streaming events from server to client using the [Server-Sent Events](https://developer.mozilla.org/en-US/docs/Web/API/Server-sent_events) protocol. SSE is simpler than WebSocket when you only need server-to-client push — the browser's `EventSource` API handles reconnection automatically.
+
+### Basic usage
+
+```go
+func streamHandler(w http.ResponseWriter, r *http.Request) {
+    sse := http.NewSSEWriter(w)
+
+    for {
+        select {
+        case <-r.Context().Done():
+            return
+        case msg := <-updates:
+            sse.Event("message", msg)
+        case <-time.After(30 * time.Second):
+            sse.Comment("keepalive")
+        }
+    }
+}
+```
+
+`NewSSEWriter` sets `Content-Type: text/event-stream`, `Cache-Control: no-cache`, and `Connection: keep-alive`, then flushes the headers immediately.
+
+### Methods
+
+| Method | Description |
+|--------|-------------|
+| `Event(name, data string)` | Send a named event. The client receives it via `addEventListener(name, ...)` |
+| `Data(data string)` | Send an unnamed event. The client receives it via `onmessage` |
+| `Comment(text string)` | Send a comment (invisible to `EventSource`). Use as a keep-alive heartbeat |
+| `Retry(ms int)` | Tell the client to wait `ms` milliseconds before reconnecting |
+
+All methods flush automatically. Multiline data is split across multiple `data:` fields per the SSE specification.
+
+### Sending JSON
+
+```go
+type Update struct {
+    Count int    `json:"count"`
+    Label string `json:"label"`
+}
+
+data, _ := json.Marshal(Update{Count: 42, Label: "active"})
+sse.Event("stats", string(data))
+```
+
+### Client-side
+
+```js
+const source = new EventSource('/api/stream');
+
+source.addEventListener('stats', (e) => {
+    const data = JSON.parse(e.data);
+    console.log(data.count, data.label);
+});
+
+source.addEventListener('message', (e) => {
+    console.log('unnamed event:', e.data);
+});
+
+source.onerror = () => {
+    // EventSource reconnects automatically using the retry interval
+};
+```
+
+### Middleware compatibility
+
+SSE works correctly through the full middleware chain. The `Compress` middleware excludes `text/event-stream` from gzip compression automatically. Both `Compress` and `ETag` middleware implement `http.Flusher` — when SSE calls `Flush()`, each wrapper propagates it to the underlying `ResponseWriter`, ensuring events reach the client immediately.
+
+### When to use SSE vs WebSocket
+
+| | SSE | WebSocket |
+|---|-----|-----------|
+| Direction | Server → Client | Bidirectional |
+| Protocol | HTTP | Upgrade to WS |
+| Reconnection | Automatic (`EventSource`) | Manual |
+| Data format | Text (UTF-8) | Text or binary |
+| Use cases | Logs, notifications, dashboards | Chat, interactive features |

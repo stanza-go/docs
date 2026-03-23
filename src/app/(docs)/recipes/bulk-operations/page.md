@@ -81,7 +81,7 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             Build()
         result, err := db.Exec(query, args...)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to bulk delete users")
+            http.WriteServerError(w, r, "failed to bulk delete users", err)
             return
         }
 
@@ -173,7 +173,7 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             Build()
         result, err := db.Exec(dq, da...)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to bulk delete webhooks")
+            http.WriteServerError(w, r, "failed to bulk delete webhooks", err)
             return
         }
 
@@ -227,7 +227,7 @@ func bulkRevokeHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             Build()
         result, err := db.Exec(query, args...)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to bulk revoke api keys")
+            http.WriteServerError(w, r, "failed to bulk revoke api keys", err)
             return
         }
 
@@ -345,8 +345,7 @@ func batchUpsertHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) 
                 ).
                 Build()
             if _, err := db.Exec(sql, args...); err != nil {
-                http.WriteError(w, http.StatusInternalServerError,
-                    "failed to save setting")
+                http.WriteServerError(w, r, "failed to save setting", err)
                 return
             }
         }

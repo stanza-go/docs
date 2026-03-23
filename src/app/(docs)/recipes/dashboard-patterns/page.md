@@ -272,7 +272,7 @@ func recentHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
 
         rows, err := db.Query(sql, args...)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to list recent activity")
+            http.WriteServerError(w, r, "failed to list recent activity", err)
             return
         }
         defer rows.Close()
@@ -283,13 +283,13 @@ func recentHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             if err := rows.Scan(&e.ID, &e.AdminID, &e.AdminEmail, &e.AdminName,
                 &e.Action, &e.EntityType, &e.EntityID,
                 &e.Details, &e.IPAddress, &e.CreatedAt); err != nil {
-                http.WriteError(w, http.StatusInternalServerError, "failed to scan audit entry")
+                http.WriteServerError(w, r, "failed to scan audit entry", err)
                 return
             }
             entries = append(entries, e)
         }
         if err := rows.Err(); err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to iterate entries")
+            http.WriteServerError(w, r, "failed to iterate entries", err)
             return
         }
 
@@ -318,7 +318,7 @@ admin.HandleFunc("GET /orders/recent", func(w http.ResponseWriter, r *http.Reque
 
     rows, err := db.Query(sql, args...)
     if err != nil {
-        http.WriteError(w, http.StatusInternalServerError, "failed to list recent orders")
+        http.WriteServerError(w, r, "failed to list recent orders", err)
         return
     }
     defer rows.Close()

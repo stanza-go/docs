@@ -906,7 +906,7 @@ if err == sqlite.ErrNoRows {
     return
 }
 if err != nil {
-    http.WriteError(w, http.StatusInternalServerError, "database error")
+    http.WriteServerError(w, r, "database error", err)
     return
 }
 ```
@@ -922,7 +922,7 @@ if sqlite.IsUniqueConstraintError(err) {
     return
 }
 if err != nil {
-    http.WriteError(w, http.StatusInternalServerError, "database error")
+    http.WriteServerError(w, r, "database error", err)
     return
 }
 ```

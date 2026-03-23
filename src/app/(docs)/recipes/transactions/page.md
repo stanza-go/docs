@@ -31,7 +31,7 @@ func deleteHandler(db *sqlite.DB, wh *webhooks.Dispatcher) func(http.ResponseWri
             Build()
         result, err := db.Exec(sql, args...)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to delete user")
+            http.WriteServerError(w, r, "failed to delete user", err)
             return
         }
         if result.RowsAffected == 0 {
@@ -106,7 +106,7 @@ err := db.InTx(func(tx *sqlite.Tx) error {
     return err
 })
 if err != nil {
-    http.WriteError(w, http.StatusInternalServerError, "failed to transfer")
+    http.WriteServerError(w, r, "failed to transfer", err)
     return
 }
 ```
@@ -122,7 +122,7 @@ Use manual transactions when you need more control — for example, when error h
 ```go
 tx, err := db.Begin()
 if err != nil {
-    http.WriteError(w, http.StatusInternalServerError, "failed to begin transaction")
+    http.WriteServerError(w, r, "failed to begin transaction", err)
     return
 }
 defer tx.Rollback() // Safe to call after Commit — it's a no-op.
@@ -134,7 +134,7 @@ sql, args := sqlite.Insert("orders").
     Build()
 result, err := tx.Exec(sql, args...)
 if err != nil {
-    http.WriteError(w, http.StatusInternalServerError, "failed to create order")
+    http.WriteServerError(w, r, "failed to create order", err)
     return
 }
 
@@ -148,13 +148,13 @@ for _, item := range items {
         Set("price_cents", item.Price).
         Build()
     if _, err := tx.Exec(sql, args...); err != nil {
-        http.WriteError(w, http.StatusInternalServerError, "failed to add order item")
+        http.WriteServerError(w, r, "failed to add order item", err)
         return
     }
 }
 
 if err := tx.Commit(); err != nil {
-    http.WriteError(w, http.StatusInternalServerError, "failed to commit order")
+    http.WriteServerError(w, r, "failed to commit order", err)
     return
 }
 ```
@@ -281,7 +281,7 @@ if err != nil {
         http.WriteError(w, http.StatusConflict, "email already exists")
         return
     }
-    http.WriteError(w, http.StatusInternalServerError, "failed to create user")
+    http.WriteServerError(w, r, "failed to create user", err)
     return
 }
 ```

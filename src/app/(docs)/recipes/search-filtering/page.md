@@ -234,7 +234,7 @@ func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         sql, args = selectQ.Build()
         rows, err := db.Query(sql, args...)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to list")
+            http.WriteServerError(w, r, "failed to list", err)
             return
         }
         defer rows.Close()
@@ -253,7 +253,7 @@ func exportHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         sql, args := selectQ.Build()
         rows, err := db.Query(sql, args...)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to export")
+            http.WriteServerError(w, r, "failed to export", err)
             return
         }
         defer rows.Close()

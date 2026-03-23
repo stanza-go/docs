@@ -101,7 +101,7 @@ func loginHandler(db *sqlite.DB, a *auth.Auth) func(http.ResponseWriter, *http.R
         // Issue JWT access token (5 min).
         accessToken, err := a.IssueAccessToken(uid, scopes)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "internal error")
+            http.WriteServerError(w, r, "internal error", err)
             return
         }
         a.SetAccessTokenCookie(w, accessToken)
@@ -109,7 +109,7 @@ func loginHandler(db *sqlite.DB, a *auth.Auth) func(http.ResponseWriter, *http.R
         // Generate and store refresh token (24 hours).
         refreshToken, err := auth.GenerateRefreshToken()
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "internal error")
+            http.WriteServerError(w, r, "internal error", err)
             return
         }
         tokenHash := auth.HashToken(refreshToken)
@@ -123,7 +123,7 @@ func loginHandler(db *sqlite.DB, a *auth.Auth) func(http.ResponseWriter, *http.R
             Set("expires_at", expiresAt).
             Build()
         if _, err := db.Exec(sql, args...); err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "internal error")
+            http.WriteServerError(w, r, "internal error", err)
             return
         }
 
@@ -207,7 +207,7 @@ func statusHandler(db *sqlite.DB, a *auth.Auth) func(http.ResponseWriter, *http.
         // Issue a fresh access token with current scopes.
         accessToken, err := a.IssueAccessToken(strconv.FormatInt(id, 10), []string{"user"})
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "internal error")
+            http.WriteServerError(w, r, "internal error", err)
             return
         }
         a.SetAccessTokenCookie(w, accessToken)

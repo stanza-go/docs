@@ -141,7 +141,7 @@ func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         sql, args := selectQ.OrderBy(col, dir).Limit(pg.Limit).Offset(pg.Offset).Build()
         products, err := sqlite.QueryAll(db, sql, args, scanProduct)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to list products")
+            http.WriteServerError(w, r, "failed to list products", err)
             return
         }
 
@@ -189,7 +189,7 @@ func createHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             Build()
         result, err := db.Exec(sql, args...)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to create product")
+            http.WriteServerError(w, r, "failed to create product", err)
             return
         }
 
@@ -302,7 +302,7 @@ func updateHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             WhereNull("deleted_at").
             Build()
         if _, err := db.Exec(sql, args...); err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to update product")
+            http.WriteServerError(w, r, "failed to update product", err)
             return
         }
 
@@ -343,7 +343,7 @@ func deleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             Build()
         result, err := db.Exec(sql, args...)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to delete product")
+            http.WriteServerError(w, r, "failed to delete product", err)
             return
         }
         if result.RowsAffected == 0 {

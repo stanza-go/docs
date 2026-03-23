@@ -120,6 +120,37 @@ http.WriteError(w, http.StatusUnauthorized, "invalid credentials")
 
 ---
 
+## WriteServerError
+
+`WriteServerError` handles internal server errors by logging the real error and writing a generic 500 response in one call:
+
+```go
+func WriteServerError(w ResponseWriter, r *Request, message string, err error)
+```
+
+It does two things:
+
+1. **Logs the error** via the request-scoped logger (from `RequestLogger` middleware), so the log entry automatically includes `request_id`, path, and other request context.
+2. **Writes a 500 JSON response** with the generic message — `{"error": "message"}`.
+
+Use `WriteServerError` instead of `WriteError` for internal server errors whenever you have an `err` variable. It replaces the manual log-then-write pattern:
+
+```go
+// Before — two steps, easy to forget the log
+l := log.FromContext(r.Context())
+l.Error("failed to list users", log.String("error", err.Error()))
+http.WriteError(w, http.StatusInternalServerError, "failed to list users")
+return
+
+// After — one call, error is always logged
+http.WriteServerError(w, r, "failed to list users", err)
+return
+```
+
+For non-500 errors (400, 404, 409, etc.), continue using `WriteError`.
+
+---
+
 ## CSV export
 
 Write CSV file responses with automatic Content-Type and Content-Disposition headers:

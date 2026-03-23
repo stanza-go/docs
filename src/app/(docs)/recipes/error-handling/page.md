@@ -30,11 +30,14 @@ For validation errors, field-level details are included:
 }
 ```
 
-The framework provides two helpers for writing error responses:
+The framework provides three helpers for writing error responses:
 
 ```go
 // Simple error — single message
 http.WriteError(w, http.StatusNotFound, "user not found")
+
+// Internal server error — logs err and writes 500
+http.WriteServerError(w, r, "failed to list users", err)
 
 // Validation error — per-field messages (422)
 v := validate.Fields(
@@ -167,7 +170,7 @@ sql, args := sqlite.Update("users").
 
 result, err := db.Exec(sql, args...)
 if err != nil {
-    http.WriteError(w, http.StatusInternalServerError, "failed to delete user")
+    http.WriteServerError(w, r, "failed to delete user", err)
     return
 }
 if result.RowsAffected == 0 {
@@ -189,7 +192,7 @@ if err != nil {
         http.WriteError(w, http.StatusConflict, "email already exists")
         return
     }
-    http.WriteError(w, http.StatusInternalServerError, "failed to create user")
+    http.WriteServerError(w, r, "failed to create user", err)
     return
 }
 ```
@@ -236,38 +239,41 @@ if !isActive {
 
 ## Internal errors (500)
 
-Return 500 for failures the client can't fix — database errors, encoding failures, crypto failures:
+Return 500 for failures the client can't fix — database errors, encoding failures, crypto failures. Use `WriteServerError` to log the real error and write the response in one call:
 
 ```go
 rows, err := db.Query(sql, args...)
 if err != nil {
-    http.WriteError(w, http.StatusInternalServerError, "failed to list users")
+    http.WriteServerError(w, r, "failed to list users", err)
     return
 }
 defer rows.Close()
 ```
 
+`WriteServerError` logs the error via the request-scoped logger (from `RequestLogger` middleware), so the log entry automatically includes `request_id`, path, and other request context. The client receives a generic `{"error": "failed to list users"}` response with status 500 — the real error is only in the logs.
+
 The error message should be **generic but descriptive** — tell the client what operation failed without exposing internals. Never include the raw error in the response:
 
 ```go
-// Good: tells the client what failed
-http.WriteError(w, http.StatusInternalServerError, "failed to create user")
+// Good: tells the client what failed, logs the real error
+http.WriteServerError(w, r, "failed to create user", err)
 
 // Bad: leaks internal details
 http.WriteError(w, http.StatusInternalServerError, err.Error())
 ```
 
-For sensitive operations (token generation, encryption), log the real error and return a generic message. Use `log.FromContext` so the error is automatically correlated with the HTTP request:
+This replaces the manual log-then-write pattern that was previously needed for sensitive operations:
 
 ```go
+// Before — two steps, easy to forget the log
 l := log.FromContext(r.Context())
+l.Error("issue access token", log.String("error", err.Error()))
+http.WriteError(w, http.StatusInternalServerError, "internal error")
+return
 
-token, err := a.IssueAccessToken(uid, scopes)
-if err != nil {
-    l.Error("issue access token", log.String("error", err.Error()))
-    http.WriteError(w, http.StatusInternalServerError, "internal error")
-    return
-}
+// After — one call, error is always logged
+http.WriteServerError(w, r, "internal error", err)
+return
 ```
 
 ---
@@ -300,7 +306,7 @@ Always check `rows.Err()` after a `for rows.Next()` loop. If `Next()` returns `f
 ```go
 rows, err := db.Query(sql, args...)
 if err != nil {
-    http.WriteError(w, http.StatusInternalServerError, "failed to list users")
+    http.WriteServerError(w, r, "failed to list users", err)
     return
 }
 defer rows.Close()
@@ -309,13 +315,13 @@ users := make([]userJSON, 0)
 for rows.Next() {
     var u userJSON
     if err := rows.Scan(&u.ID, &u.Name, &u.Email); err != nil {
-        http.WriteError(w, http.StatusInternalServerError, "failed to scan user")
+        http.WriteServerError(w, r, "failed to scan user", err)
         return
     }
     users = append(users, u)
 }
 if err := rows.Err(); err != nil {
-    http.WriteError(w, http.StatusInternalServerError, "failed to iterate users")
+    http.WriteServerError(w, r, "failed to iterate users", err)
     return
 }
 ```
@@ -346,7 +352,7 @@ When ignoring errors, use `_` explicitly to make the intent clear. Never swallow
 
 2. **Return after writing an error.** Always `return` after `http.WriteError()` or `v.WriteError()`. Without the return, the handler continues executing with invalid state.
 
-3. **Generic messages for 500s.** Tell the client what operation failed, not why. Log the real error server-side.
+3. **Generic messages for 500s.** Tell the client what operation failed, not why. Use `WriteServerError` to log the real error and write the response in one call.
 
 4. **Specific messages for 4xxs.** The client can act on "email already exists" or "password must be at least 8 characters" — give them useful feedback.
 

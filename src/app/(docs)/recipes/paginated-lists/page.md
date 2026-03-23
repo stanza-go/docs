@@ -57,7 +57,7 @@ func listHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             }, nil
         })
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to list users")
+            http.WriteServerError(w, r, "failed to list users", err)
             return
         }
 
@@ -145,7 +145,7 @@ func exportHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
         sql, args := selectQ.Build()
         rows, err := db.Query(sql, args...)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to export")
+            http.WriteServerError(w, r, "failed to export", err)
             return
         }
         defer rows.Close()
@@ -206,7 +206,7 @@ func bulkDeleteHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
             Build()
         result, err := db.Exec(query, args...)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to delete users")
+            http.WriteServerError(w, r, "failed to delete users", err)
             return
         }
 

@@ -99,13 +99,13 @@ func backupHandler(db *sqlite.DB, backupsDir string) func(http.ResponseWriter, *
         backupPath := filepath.Join(backupsDir, backupName)
 
         if err := db.Backup(backupPath); err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to create backup")
+            http.WriteServerError(w, r, "failed to create backup", err)
             return
         }
 
         info, err := os.Stat(backupPath)
         if err != nil {
-            http.WriteError(w, http.StatusInternalServerError, "failed to stat backup")
+            http.WriteServerError(w, r, "failed to stat backup", err)
             return
         }
 

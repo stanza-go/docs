@@ -159,6 +159,108 @@ func downloadHandler(backupsDir string) func(http.ResponseWriter, *http.Request)
 
 ---
 
+## Delete backup endpoint
+
+Allow admins to delete specific backups by name. Validates against path traversal:
+
+```go
+func deleteBackupHandler(db *sqlite.DB, backupsDir string) func(http.ResponseWriter, *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        name := r.PathValue("name")
+
+        if name == "" || strings.Contains(name, "/") || strings.Contains(name, "..") {
+            http.WriteError(w, http.StatusBadRequest, "invalid backup name")
+            return
+        }
+
+        path := filepath.Join(backupsDir, name)
+        if _, err := os.Stat(path); err != nil {
+            http.WriteError(w, http.StatusNotFound, "backup not found")
+            return
+        }
+
+        if err := os.Remove(path); err != nil {
+            http.WriteServerError(w, r, "failed to delete backup", err)
+            return
+        }
+
+        http.WriteJSON(w, http.StatusOK, map[string]any{"deleted": name})
+    }
+}
+```
+
+Register:
+
+```go
+group.HandleFunc("DELETE /database/backups/{name}", deleteBackupHandler(db, dir.Backups))
+```
+
+---
+
+## Integrity check endpoint
+
+Verify database integrity on demand using `db.IntegrityCheck()`:
+
+```go
+func integrityCheckHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        start := time.Now()
+        err := db.IntegrityCheck()
+        duration := time.Since(start)
+
+        result := map[string]any{
+            "status":      "ok",
+            "duration_ms": duration.Milliseconds(),
+        }
+        if err != nil {
+            result["status"] = "failed"
+            result["errors"] = strings.Split(err.Error(), "\n")
+        }
+
+        http.WriteJSON(w, http.StatusOK, result)
+    }
+}
+```
+
+Register:
+
+```go
+group.HandleFunc("POST /database/integrity-check", integrityCheckHandler(db))
+```
+
+This runs `PRAGMA integrity_check` — a read-only operation that verifies B-tree structure, page pointers, index integrity, and row data. Returns `{"status": "ok"}` when healthy. May be slow on very large databases.
+
+---
+
+## Optimize endpoint
+
+Trigger `PRAGMA optimize` manually instead of waiting for shutdown:
+
+```go
+func optimizeHandler(db *sqlite.DB) func(http.ResponseWriter, *http.Request) {
+    return func(w http.ResponseWriter, r *http.Request) {
+        start := time.Now()
+        if err := db.Optimize(); err != nil {
+            http.WriteServerError(w, r, "pragma optimize failed", err)
+            return
+        }
+
+        http.WriteJSON(w, http.StatusOK, map[string]any{
+            "status":      "ok",
+            "duration_ms": time.Since(start).Milliseconds(),
+        })
+    }
+}
+```
+
+Register:
+
+```go
+group.HandleFunc("POST /database/optimize", optimizeHandler(db))
+```
+
+---
+
 ## Migration backup
 
 The framework's migration system automatically backs up the database before running migrations. This happens transparently — no configuration needed:

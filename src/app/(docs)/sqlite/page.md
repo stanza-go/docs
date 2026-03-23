@@ -959,6 +959,16 @@ err := db.Backup("/path/to/backup.sqlite")
 
 `Backup` uses `VACUUM INTO` to create a complete, consistent copy of the database. Unlike a raw file copy, it includes all WAL data and produces a compacted, defragmented file. Safe to call while the database is in use. If the destination file already exists, it is removed first.
 
+### Integrity check
+
+```go
+err := db.IntegrityCheck()
+// nil = database is healthy
+// non-nil = error contains diagnostic messages
+```
+
+`IntegrityCheck` runs `PRAGMA integrity_check`, which verifies the structural integrity of the entire database — B-tree consistency, page pointers, index integrity, and row data. Returns `nil` when healthy. If corruption is detected, the error contains detailed diagnostic messages. This is a read-only operation, safe to call at any time, though it may be slow on very large databases.
+
 ### Optimize
 
 ```go

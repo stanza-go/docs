@@ -118,6 +118,19 @@ hash := auth.HashToken(token)
 
 ---
 
+## Random identifiers
+
+Generate cryptographically random identifiers for database records, session tokens, and similar:
+
+```go
+id, err := auth.GenerateID()
+// id = "a1b2c3d4e5f6a7b8c9d0e1f2a3b4c5d6" (32-char hex, 16 random bytes)
+```
+
+Use this for primary keys in tables like `refresh_tokens`, `password_reset_tokens`, and other records that need opaque, unguessable identifiers.
+
+---
+
 ## API keys
 
 Generate prefixed API keys for programmatic access. The key is returned once; only the SHA-256 hash is stored:

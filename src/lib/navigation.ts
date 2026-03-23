@@ -4,6 +4,7 @@ export const navigation = [
     links: [
       { title: 'Getting started', href: '/' },
       { title: 'Installation', href: '/installation' },
+      { title: 'Customizing your fork', href: '/customizing' },
       { title: 'API reference', href: '/api-reference' },
     ],
   },

@@ -369,7 +369,11 @@ sql, args := sqlite.Select("id", sqlite.Coalesce("deleted_at", "''")).
 // → SELECT id, COALESCE(deleted_at, '') FROM users
 ```
 
-`CoalesceEmpty(column)` is a convenience for the most common pattern — converting `NULL` to an empty string. Use it when scanning nullable TEXT columns into Go strings:
+`CoalesceEmpty(column)` is a convenience for the most common pattern — converting `NULL` to an empty string. Use it when scanning nullable TEXT columns into Go strings.
+
+{% callout title="Why CoalesceEmpty is required" %}
+The SQLite scanner does not support Go pointer types like `*string`. You cannot scan a nullable column into a `*string` and check for nil. Instead, use `CoalesceEmpty` in your SELECT query to convert NULLs to empty strings at the SQL level, then scan into a plain `string`. Check for empty string in Go code where you need to distinguish "no value" from "has value."
+{% /callout %}
 
 ```go
 sql, args := sqlite.Select("id", "name",

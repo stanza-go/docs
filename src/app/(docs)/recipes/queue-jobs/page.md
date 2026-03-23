@@ -166,11 +166,48 @@ POST /api/admin/queue/jobs/{id}/cancel    — cancel a pending job
 
 ---
 
+## Handling deleted entities
+
+When a job references a database record (e.g., a user ID or question ID), that record might be deleted while the job is pending or retrying. If the handler returns an error for "not found," the queue will keep retrying until max attempts are exhausted — wasting resources on work that can never succeed.
+
+Treat "entity not found" as a non-retryable condition by returning `nil` instead of an error:
+
+```go
+q.Register("process-question", func(ctx context.Context, payload []byte) error {
+    var p QuestionPayload
+    if err := json.Unmarshal(payload, &p); err != nil {
+        return fmt.Errorf("unmarshal: %w", err)
+    }
+
+    // Fetch the entity
+    question, err := getQuestion(db, p.QuestionID)
+    if err != nil {
+        return fmt.Errorf("query question: %w", err)
+    }
+
+    // Entity was deleted — nothing to do, don't retry
+    if question == nil {
+        logger.Info("question deleted, skipping",
+            log.Int64("question_id", p.QuestionID),
+        )
+        return nil
+    }
+
+    // Process normally...
+    return nil
+})
+```
+
+This pattern applies to any job that references external state: sending emails to deleted users, processing orders that were cancelled, generating reports for removed entities. The rule is simple — if the entity is gone, return `nil` to mark the job as completed.
+
+---
+
 ## Tips
 
 - **Handlers must be registered before `q.Start()`.** Add them in `provideQueue`.
 - **Payloads are raw JSON bytes.** You control the structure — the queue doesn't interpret them.
 - **Keep handlers idempotent.** Jobs may be retried, so design for safe re-execution.
+- **Treat "not found" as success.** If a job's target entity was deleted, return `nil` — don't waste retries on work that can never complete.
 - **Log outcomes.** Workers run silently in the background. Use the logger to make failures observable.
 - **Use cron for periodic enqueuing.** A cron job that enqueues queue work is a common pattern — the cron fires on schedule, the queue handles retries and backpressure. See [Custom cron jobs](/recipes/cron-jobs).
 - **Completed jobs are purged.** The built-in `purge-completed-jobs` cron removes completed and cancelled jobs older than 24 hours.

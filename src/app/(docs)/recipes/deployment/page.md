@@ -74,15 +74,21 @@ The binary is stateless — the data directory is the only thing you need to bac
 
 ### Build the image
 
-Run from the **workspace root** (not from `standalone/`), because the Dockerfile needs both `framework/` and `standalone/`:
+Run from the **project root** (where the `Dockerfile` lives):
 
 ```bash
-docker build -t stanza -f standalone/Dockerfile .
+docker build -t stanza .
+```
+
+Or with build metadata:
+
+```bash
+make docker
 ```
 
 The Dockerfile uses a 3-stage build:
 1. **Frontend stage** (bun) — builds UI and admin dist bundles
-2. **Backend stage** (golang:alpine) — compiles Go binary with CGO for SQLite, injects build metadata
+2. **Backend stage** (golang:alpine) — compiles Go binary with CGO for SQLite, fetches framework from Go module proxy, injects build metadata
 3. **Runtime stage** (alpine:3.21) — minimal image with the binary
 
 The runtime image is ~12MB, runs as a non-root `stanza` user via `su-exec`, and sets `DATA_DIR=/data`.
@@ -113,16 +119,16 @@ docker run -p 23710:23710 \
 ### Initial setup
 
 1. Create a new project on [Railway](https://railway.com)
-2. Link your repo (or use `railway link` from the workspace root)
+2. Link your repo (or use `railway link` from the project root)
 3. Add a **persistent volume** mounted at `/data` — this stores your SQLite database, logs, and uploads
 
 ### Configuration
 
-The `railway.toml` at the workspace root configures the build:
+The `railway.toml` in the project root configures the build:
 
 ```toml
 [build]
-dockerfilePath = "standalone/Dockerfile"
+dockerfilePath = "Dockerfile"
 
 [deploy]
 healthcheckPath = "/api/health"
@@ -179,7 +185,7 @@ Cloud Run works with the same Docker image. Key differences from Railway:
 
 ```bash
 # Build and push
-docker build -t gcr.io/PROJECT/stanza -f standalone/Dockerfile .
+docker build -t gcr.io/PROJECT/stanza .
 docker push gcr.io/PROJECT/stanza
 
 # Deploy
@@ -198,7 +204,7 @@ gcloud run deploy stanza \
 
 The deployment pattern is the same everywhere:
 
-1. Build the Docker image from the workspace root
+1. Build the Docker image from the project root
 2. Mount a persistent volume at `/data` (or set `DATA_DIR`)
 3. Set `STANZA_AUTH_SIGNING_KEY` to a stable secret
 4. The platform sets `PORT` — the app reads it automatically
@@ -232,7 +238,7 @@ The `stanza backup` command uses `VACUUM INTO` for a consistent, compacted copy 
 
 - **Always set `STANZA_AUTH_SIGNING_KEY`.** Without it, JWT tokens invalidate on every restart. Generate one with `openssl rand -hex 32`.
 - **Volume is mandatory.** Without persistent storage at `/data`, you lose your database, uploads, and logs on every deploy.
-- **Build from workspace root.** The Dockerfile references both `framework/` and `standalone/` via Go's `replace` directive. Building from `standalone/` alone will fail.
+- **Build from project root.** Run `docker build .` or `make docker` from the directory containing the `Dockerfile`. The Go build fetches the framework from the Go module proxy — no local framework source needed.
 - **Migrations are automatic.** No manual migration step needed. The app runs pending migrations on every boot with an auto-backup beforehand.
 - **Default admin credentials.** The seed creates `admin@stanza.dev` / `admin`. Change the password immediately after first deploy.
 - **HTTPS.** Railway and Cloud Run provide HTTPS automatically. The app sets `Secure` and `SameSite=Lax` on auth cookies by default — this requires HTTPS. For local Docker testing without HTTPS, set `STANZA_AUTH_SECURE_COOKIES=false`.

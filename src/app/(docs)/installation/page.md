@@ -102,8 +102,8 @@ This produces a single binary (~10MB) with both frontends embedded:
 The repo includes a multi-stage Dockerfile:
 
 ```shell
-# Build the image
-docker build -t my-app -f Dockerfile ..
+# Build the image (from project root)
+docker build -t my-app .
 
 # Run it
 docker run -p 23710:23710 -v app-data:/data my-app

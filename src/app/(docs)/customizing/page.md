@@ -78,7 +78,7 @@ Update the app name in `api/main.go` — look for the health check and version i
 "app": "my-app",
 ```
 
-Also update the `standalone/Makefile` and `standalone/Dockerfile` if you've renamed the binary.
+Also update the `Makefile` and `Dockerfile` if you've renamed the binary.
 
 ---
 

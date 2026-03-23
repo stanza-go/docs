@@ -25,6 +25,7 @@ export const navigation = [
   {
     title: 'Background processing',
     links: [
+      { title: 'Task pool', href: '/task' },
       { title: 'Cron scheduler', href: '/cron' },
       { title: 'Job queue', href: '/queue' },
     ],

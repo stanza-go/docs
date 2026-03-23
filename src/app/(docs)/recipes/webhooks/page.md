@@ -24,7 +24,7 @@ The standalone app includes a full webhook management system — admins can regi
 
 ## Dispatching events
 
-Inject the `Dispatcher` into your module and call `Dispatch` when events occur:
+Inject the `Dispatcher` into your module and call `Dispatch` when events occur. Define event constants in your module to prevent typos and enable grep-ability:
 
 ```go
 package orders
@@ -33,6 +33,12 @@ import (
     "github.com/stanza-go/framework/pkg/http"
     "github.com/stanza-go/framework/pkg/sqlite"
     "github.com/stanza-go/standalone/module/webhooks"
+)
+
+// Event constants for this module.
+const (
+    EventOrderCreated   = "order.created"
+    EventOrderCompleted = "order.completed"
 )
 
 func Register(api *http.Group, db *sqlite.DB, dispatcher *webhooks.Dispatcher) {
@@ -44,7 +50,7 @@ func createHandler(db *sqlite.DB, dispatcher *webhooks.Dispatcher) func(http.Res
         // ... create the order ...
 
         // Dispatch webhook event (async — returns immediately)
-        _ = dispatcher.Dispatch(r.Context(), "order.created", map[string]any{
+        _ = dispatcher.Dispatch(r.Context(), EventOrderCreated, map[string]any{
             "id":     order.ID,
             "total":  order.Total,
             "status": "pending",
@@ -61,16 +67,54 @@ func createHandler(db *sqlite.DB, dispatcher *webhooks.Dispatcher) func(http.Res
 
 ## Event naming convention
 
-Use `entity.verb` format for event names:
+Use `entity.verb` format for event names. Always define event names as constants — never use bare strings.
 
-| Event | Description |
-|-------|-------------|
-| `user.created` | A new user registered |
-| `user.updated` | User profile was updated |
-| `user.deleted` | User was deleted |
-| `order.created` | A new order was placed |
-| `order.completed` | An order was fulfilled |
-| `webhook.test` | Test event sent from admin panel |
+### Built-in events
+
+The `webhooks` package exports constants and a `KnownEvents` list for all events the standalone app dispatches:
+
+| Constant | Value | Description |
+|----------|-------|-------------|
+| `EventUserRegistered` | `user.registered` | User self-registered |
+| `EventUserCreated` | `user.created` | Admin created a user |
+| `EventUserUpdated` | `user.updated` | User profile was updated |
+| `EventUserDeleted` | `user.deleted` | User was deleted |
+| `EventUserBulkDeleted` | `user.bulk_deleted` | Users were bulk deleted |
+| `EventAdminCreated` | `admin.created` | Admin was created |
+| `EventAdminUpdated` | `admin.updated` | Admin was updated |
+| `EventAdminDeleted` | `admin.deleted` | Admin was deleted |
+| `EventAdminBulkDeleted` | `admin.bulk_deleted` | Admins were bulk deleted |
+| `EventRoleCreated` | `role.created` | Role was created |
+| `EventRoleUpdated` | `role.updated` | Role was updated |
+| `EventRoleDeleted` | `role.deleted` | Role was deleted |
+| `EventSessionRevoked` | `session.revoked` | Session was revoked |
+| `EventSessionBulkRevoked` | `session.bulk_revoked` | Sessions were bulk revoked |
+| `EventSettingUpdated` | `setting.updated` | Setting was updated |
+| `EventWebhookTest` | `webhook.test` | Test event from admin panel |
+
+The `KnownEvents` slice pairs each constant with a human-readable label. It is served by the events discovery endpoint (see below) so the admin panel can populate event dropdowns dynamically.
+
+### Custom events
+
+When adding webhook events to your own modules, define constants in the module package and register them in your `Register` function so they appear in the discovery endpoint:
+
+```go
+const (
+    EventOrderCreated   = "order.created"
+    EventOrderCompleted = "order.completed"
+)
+
+func Register(api *http.Group, db *sqlite.DB, dispatcher *webhooks.Dispatcher) {
+    webhooks.KnownEvents = append(webhooks.KnownEvents,
+        webhooks.Event{Name: EventOrderCreated, Label: "Order Created"},
+        webhooks.Event{Name: EventOrderCompleted, Label: "Order Completed"},
+    )
+
+    api.HandleFunc("POST /orders", createHandler(db, dispatcher))
+}
+```
+
+### Wildcard subscriptions
 
 Admins can subscribe to specific events or use wildcards:
 
@@ -146,6 +190,7 @@ func createWebhooksUp(tx *sqlite.Tx) error {
 ```
 GET    /api/admin/webhooks              — list all webhooks (paginated, searchable)
 POST   /api/admin/webhooks              — create a new webhook
+GET    /api/admin/webhooks/events       — list all known event types
 GET    /api/admin/webhooks/{id}         — webhook detail with delivery stats
 PUT    /api/admin/webhooks/{id}         — update URL, events, or active status
 DELETE /api/admin/webhooks/{id}         — delete webhook and all deliveries
@@ -154,6 +199,26 @@ POST   /api/admin/webhooks/{id}/test    — send a test event
 ```
 
 All endpoints require the `admin:webhooks` scope.
+
+### Discovering available events
+
+```bash
+curl http://localhost:23710/api/admin/webhooks/events
+```
+
+Returns all events from `KnownEvents` with their labels:
+
+```json
+{
+  "events": [
+    {"name": "user.registered", "label": "User Registered"},
+    {"name": "user.created", "label": "User Created"},
+    ...
+  ]
+}
+```
+
+The admin panel uses this endpoint to populate event selection dropdowns. When you append custom events to `KnownEvents`, they appear here automatically.
 
 Webhook URLs are validated with `validate.PublicURL` to prevent SSRF — URLs pointing to localhost, private networks (10.x, 172.16-31.x, 192.168.x), or other reserved addresses are rejected.
 

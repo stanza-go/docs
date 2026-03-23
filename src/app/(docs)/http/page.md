@@ -678,6 +678,54 @@ func provideServer(lc *lifecycle.Lifecycle, router *http.Router) *http.Server {
 
 ---
 
+## Route introspection
+
+List all registered routes with `Routes()`. Routes are sorted by path then method:
+
+```go
+for _, rt := range router.Routes() {
+    fmt.Printf("%-6s %s\n", rt.Method, rt.Path)
+}
+```
+
+Each `Route` has two fields:
+
+| Field | Type | Description |
+|-------|------|-------------|
+| `Method` | `string` | HTTP method (`GET`, `POST`, etc.) or empty for catch-all patterns |
+| `Path` | `string` | URL path pattern including parameters (e.g. `/users/{id}`) |
+
+Routes registered through groups include the full resolved path:
+
+```go
+api := r.Group("/api")
+api.HandleFunc("GET /users", listUsers) // Route.Path = "/api/users"
+
+admin := api.Group("/admin")
+admin.HandleFunc("GET /roles", listRoles) // Route.Path = "/api/admin/roles"
+```
+
+### Exposing routes as an API
+
+Use `Routes()` to build a route listing endpoint for debugging or documentation:
+
+```go
+admin.HandleFunc("GET /routes", func(w http.ResponseWriter, r *http.Request) {
+    routes := router.Routes()
+    type entry struct {
+        Method string `json:"method"`
+        Path   string `json:"path"`
+    }
+    out := make([]entry, 0, len(routes))
+    for _, rt := range routes {
+        out = append(out, entry{Method: rt.Method, Path: rt.Path})
+    }
+    http.WriteJSON(w, http.StatusOK, out)
+})
+```
+
+---
+
 ## Request metrics
 
 Track request counts, status code distribution, and average latency with `Metrics`:
